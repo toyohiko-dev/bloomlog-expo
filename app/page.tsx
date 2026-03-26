@@ -1,65 +1,208 @@
-import Image from "next/image";
+import Link from "next/link";
+import { startSessionForDateAction } from "@/app/sessions/actions";
+import {
+  getPavilionProgressSummary,
+  listCollectionActivityLogs,
+  listSessions,
+  todayDateString,
+} from "@/lib/sessions";
 
-export default function Home() {
+function formatDateLabel(value: string) {
+  return new Intl.DateTimeFormat("ja-JP", {
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+    timeZone: "Asia/Tokyo",
+  }).format(new Date(`${value}T00:00:00+09:00`));
+}
+
+export default async function HomePage() {
+  const [sessions, experiences, pavilionProgress] = await Promise.all([
+    listSessions(),
+    listCollectionActivityLogs(),
+    getPavilionProgressSummary(),
+  ]);
+
+  const recentSessions = sessions.slice(0, 3);
+  const initialVisitDate = todayDateString();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="min-h-screen bg-slate-50">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
+        <section className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-white to-sky-50 shadow-sm ring-1 ring-slate-200">
+          <div className="grid gap-8 px-6 py-8 lg:grid-cols-[1.4fr_0.9fr] lg:px-10 lg:py-10">
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-emerald-700">
+                  BloomLog Expo
+                </p>
+                <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+                  今日の体験を、あとから何度も楽しめる記録に。
+                </h1>
+                <p className="max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+                  行った場所、食べたもの、手に入れたものを訪問ごとに残せます。
+                  タイムラインやコレクションを見返せば、その日の楽しさがまたよみがえります。
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-3xl bg-white/80 px-5 py-4 shadow-sm ring-1 ring-slate-200">
+                  <p className="text-xs font-medium tracking-wide text-slate-500">
+                    これまでの訪問
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-900">
+                    {sessions.length}
+                  </p>
+                </div>
+                <div className="rounded-3xl bg-white/80 px-5 py-4 shadow-sm ring-1 ring-slate-200">
+                  <p className="text-xs font-medium tracking-wide text-slate-500">
+                    記録した体験
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-900">
+                    {experiences.length}
+                  </p>
+                </div>
+                <div className="rounded-3xl bg-white/80 px-5 py-4 shadow-sm ring-1 ring-slate-200">
+                  <p className="text-xs font-medium tracking-wide text-slate-500">
+                    訪れたパビリオン
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-900">
+                    {pavilionProgress.totalPavilions > 0
+                      ? `${pavilionProgress.visitedPavilions} / ${pavilionProgress.totalPavilions}`
+                      : pavilionProgress.visitedPavilions}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    訪問をはじめる
+                  </h2>
+                  <p className="text-sm leading-6 text-slate-600">
+                    記録したい日を選ぶだけで、その日の訪問へ進めます。
+                  </p>
+                </div>
+
+                <form action={startSessionForDateAction} className="space-y-4">
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="visit-date"
+                      className="text-sm font-medium text-slate-700"
+                    >
+                      記録する日
+                    </label>
+                    <input
+                      id="visit-date"
+                      name="visitDate"
+                      type="date"
+                      defaultValue={initialVisitDate}
+                      className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+                  >
+                    訪問をはじめる
+                  </button>
+                </form>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                  <Link
+                    href="/sessions"
+                    className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+                  >
+                    訪問一覧を見る
+                  </Link>
+                  <Link
+                    href="/collection"
+                    className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+                  >
+                    コレクションを見る
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
+          <div className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  最近の訪問
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-slate-600">
+                  直近の訪問を開いて、タイムラインをすぐ見返せます。
+                </p>
+              </div>
+              <Link
+                href="/sessions"
+                className="text-sm font-medium text-slate-700 transition hover:text-slate-900"
+              >
+                すべて見る
+              </Link>
+            </div>
+
+            {recentSessions.length === 0 ? (
+              <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-sm leading-7 text-slate-600">
+                まだ訪問はありません。最初の訪問を記録すると、ここから見返せるようになります。
+              </div>
+            ) : (
+              <div className="mt-6 space-y-3">
+                {recentSessions.map((session) => (
+                  <Link
+                    key={session.id}
+                    href={`/sessions/${session.id}`}
+                    className="flex items-center justify-between gap-4 rounded-3xl border border-slate-200 px-5 py-4 transition hover:border-slate-300 hover:bg-slate-50"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-slate-500">
+                        {formatDateLabel(session.visit_date)}
+                      </p>
+                      <h3 className="mt-1 truncate text-base font-semibold text-slate-900">
+                        {session.title || "タイトル未設定"}
+                      </h3>
+                      <p className="mt-1 truncate text-sm text-slate-600">
+                        {session.memo || "まだメモはありません。"}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-sm font-medium text-slate-700">
+                      開く
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <h2 className="text-lg font-semibold text-slate-900">残せるもの</h2>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              その日の出来事を体験として重ねていくと、あとから見返す楽しみが増えていきます。
+            </p>
+            <ul className="mt-6 space-y-3 text-sm text-slate-700">
+              <li className="rounded-2xl bg-slate-50 px-4 py-3">
+                パビリオンの訪問
+              </li>
+              <li className="rounded-2xl bg-slate-50 px-4 py-3">
+                食べたものや買ったもの
+              </li>
+              <li className="rounded-2xl bg-slate-50 px-4 py-3">
+                手に入れたピンバッジ
+              </li>
+              <li className="rounded-2xl bg-slate-50 px-4 py-3">
+                あとで見返したいメモ
+              </li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }
