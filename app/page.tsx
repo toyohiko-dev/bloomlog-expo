@@ -40,7 +40,7 @@ export default async function HomePage() {
                   今日の体験を、あとから何度も楽しめる記録に。
                 </h1>
                 <p className="max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-                  行った場所、食べたもの、手に入れたものを訪問ごとに残せます。
+                  行った場所、食べたもの、手に入れたものを来場日ごとに残せます。
                   タイムラインやコレクションを見返せば、その日の楽しさがまたよみがえります。
                 </p>
               </div>
@@ -48,7 +48,7 @@ export default async function HomePage() {
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="rounded-3xl bg-white/80 px-5 py-4 shadow-sm ring-1 ring-slate-200">
                   <p className="text-xs font-medium tracking-wide text-slate-500">
-                    これまでの訪問
+                    これまでの来場日
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-slate-900">
                     {sessions.length}
@@ -79,10 +79,10 @@ export default async function HomePage() {
               <div className="space-y-5">
                 <div className="space-y-2">
                   <h2 className="text-lg font-semibold text-slate-900">
-                    訪問をはじめる
+                    来場日を作る
                   </h2>
                   <p className="text-sm leading-6 text-slate-600">
-                    記録したい日を選ぶだけで、その日の訪問へ進めます。
+                    来場日を残したい日を選ぶと、その日の記録を始められます。
                   </p>
                 </div>
 
@@ -92,7 +92,7 @@ export default async function HomePage() {
                       htmlFor="visit-date"
                       className="text-sm font-medium text-slate-700"
                     >
-                      記録する日
+                      来場日
                     </label>
                     <input
                       id="visit-date"
@@ -107,7 +107,7 @@ export default async function HomePage() {
                     type="submit"
                     className="inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
                   >
-                    訪問をはじめる
+                    来場日を作る
                   </button>
                 </form>
 
@@ -116,7 +116,7 @@ export default async function HomePage() {
                     href="/sessions"
                     className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
                   >
-                    訪問一覧を見る
+                    来場日一覧を見る
                   </Link>
                   <Link
                     href="/collection"
@@ -135,23 +135,23 @@ export default async function HomePage() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">
-                  最近の訪問
+                  最近の来場日
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-600">
-                  直近の訪問を開いて、タイムラインをすぐ見返せます。
+                  直近の来場日を開いて、タイムラインをすぐ見返せます。
                 </p>
               </div>
               <Link
                 href="/sessions"
                 className="text-sm font-medium text-slate-700 transition hover:text-slate-900"
               >
-                すべて見る
+                来場日一覧を見る
               </Link>
             </div>
 
             {recentSessions.length === 0 ? (
               <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-sm leading-7 text-slate-600">
-                まだ訪問はありません。最初の訪問を記録すると、ここから見返せるようになります。
+                まだ来場日はありません。最初の来場日を作ると、ここから見返せるようになります。
               </div>
             ) : (
               <div className="mt-6 space-y-3">
@@ -173,7 +173,7 @@ export default async function HomePage() {
                       </p>
                     </div>
                     <span className="shrink-0 text-sm font-medium text-slate-700">
-                      開く
+                      来場日を見る
                     </span>
                   </Link>
                 ))}
@@ -188,7 +188,7 @@ export default async function HomePage() {
             </p>
             <ul className="mt-6 space-y-3 text-sm text-slate-700">
               <li className="rounded-2xl bg-slate-50 px-4 py-3">
-                パビリオンの訪問
+                パビリオンでの体験
               </li>
               <li className="rounded-2xl bg-slate-50 px-4 py-3">
                 食べたものや買ったもの

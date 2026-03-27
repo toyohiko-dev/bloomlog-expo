@@ -96,7 +96,7 @@ export default async function SessionDetailPage({
             href="/sessions"
             className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
           >
-            訪問一覧へ
+            来場日一覧へ
           </Link>
         </div>
 
@@ -111,7 +111,7 @@ export default async function SessionDetailPage({
               </h1>
               <p className="max-w-2xl text-sm leading-7 text-slate-600">
                 {session.memo ||
-                  "この訪問には、まだメモがありません。思い出しておきたいことがあれば、あとから追加できます。"}
+                  "この来場日には、まだメモがありません。思い出しておきたいことがあれば、あとから追加できます。"}
               </p>
             </div>
 
@@ -123,7 +123,7 @@ export default async function SessionDetailPage({
                 href={`/sessions/${sessionId}/edit`}
                 className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
               >
-                編集
+                来場日を編集
               </Link>
               <DeleteSessionButton sessionId={sessionId} />
             </div>
@@ -190,7 +190,7 @@ export default async function SessionDetailPage({
                   まだ体験はありません。
                 </p>
                 <p className="mt-2 text-sm leading-7 text-slate-600">
-                  最初のひとつを記録すると、この日の流れがここに並びます。
+                  最初のひとつを記録すると、この来場日の流れがここに並びます。
                 </p>
               </div>
             ) : (
@@ -231,13 +231,13 @@ export default async function SessionDetailPage({
                                 href={`/sessions/${sessionId}?editLog=${log.id}#experience-editor`}
                                 className="hidden rounded-full border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900 lg:inline-flex"
                               >
-                                編集
+                                体験を編集
                               </Link>
                               <Link
                                 href={`/sessions/${sessionId}/activity-logs/${log.id}/edit`}
                                 className="inline-flex rounded-full border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900 lg:hidden"
                               >
-                                編集
+                                体験を編集
                               </Link>
                               <DeleteActivityLogButton
                                 sessionId={sessionId}
@@ -318,9 +318,9 @@ export default async function SessionDetailPage({
               }
               initialPavilionId={validEditingLog?.pavilion_id ?? null}
               successRedirectPath={resetEditorHref}
-              submitLabel={validEditingLog ? "更新する" : "記録する"}
+              submitLabel={validEditingLog ? "体験を更新する" : "体験を記録する"}
               cancelHref={validEditingLog ? resetEditorHref : undefined}
-              cancelLabel={validEditingLog ? "追加に戻る" : undefined}
+              cancelLabel={validEditingLog ? "体験の追加に戻る" : undefined}
             />
           </aside>
         </section>

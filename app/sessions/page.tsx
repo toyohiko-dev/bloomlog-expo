@@ -29,16 +29,16 @@ export default async function SessionsPage() {
         <section className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              訪問一覧
+              来場日一覧
             </h1>
             <p className="max-w-2xl text-sm leading-7 text-slate-600">
-              訪問ごとに、その日の体験をひとまとまりで見返せます。気になる日を開くと、タイムラインとメモをまとめて確認できます。
+              来場日ごとに、その日の体験をひとまとまりで見返せます。気になる日を開くと、タイムラインとメモをまとめて確認できます。
             </p>
           </div>
 
           {sessions.length === 0 ? (
             <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-sm leading-7 text-slate-600">
-              まだ訪問はありません。ホームから最初の訪問を始めてみましょう。
+              まだ来場日はありません。ホームから最初の来場日を作りましょう。
             </div>
           ) : (
             <div className="mt-6 space-y-3">
@@ -60,7 +60,7 @@ export default async function SessionsPage() {
                     </p>
                   </div>
                   <span className="shrink-0 text-sm font-medium text-slate-700">
-                    見る
+                    来場日を見る
                   </span>
                 </Link>
               ))}

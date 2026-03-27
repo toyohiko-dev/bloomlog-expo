@@ -271,7 +271,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
           <div>
             <h2 className="text-xl font-semibold text-slate-900">パビリオン</h2>
             <p className="mt-1 text-sm text-slate-600">
-              訪れたパビリオンをまとめて見返せます。
+              来場日で記録したパビリオンをまとめて見返せます。
             </p>
           </div>
           <p className="text-sm font-medium text-slate-500">
@@ -281,7 +281,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
 
         {pavilionCollection.length === 0 ? (
           <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white px-6 py-8 text-sm leading-7 text-slate-600">
-            まだ体験はありません。訪問でパビリオンの体験を記録すると、ここに少しずつ並んでいきます。
+            まだ体験はありません。来場日でパビリオンの体験を記録すると、ここに少しずつ並んでいきます。
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -296,7 +296,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
                     {item.title}
                   </h3>
                   <span className="shrink-0 text-sm font-medium text-slate-700">
-                    訪問を見る
+                    来場日を見る
                   </span>
                 </div>
                 <div className="mt-4 space-y-2">
@@ -340,7 +340,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
 
             {section.logs.length === 0 ? (
               <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white px-6 py-8 text-sm leading-7 text-slate-600">
-                まだ体験はありません。訪問で{meta.label}の体験を記録すると、ここに少しずつ並んでいきます。
+                まだ体験はありません。来場日で{meta.label}の体験を記録すると、ここに少しずつ並んでいきます。
               </div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -368,7 +368,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
                             </h3>
                           </div>
                           <span className="shrink-0 text-sm font-medium text-slate-700">
-                            訪問を見る
+                            来場日を見る
                           </span>
                         </div>
 
