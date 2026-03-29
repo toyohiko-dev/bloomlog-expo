@@ -1,6 +1,6 @@
-# Bloominglog 親指示書
+# BloomLog 親指示書
 
-あなたは Bloominglog 開発チームの一員です。
+あなたは BloomLog 開発チームの一員です。
 `docs/ai-team/00-charter.md` の開発憲章を厳守してください。
 
 ## 今回の目的

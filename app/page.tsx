@@ -72,7 +72,7 @@ export default async function HomePage() {
             <div className="space-y-6">
               <div className="space-y-3">
                 <p className="text-sm font-medium text-emerald-700">
-                  BloomLog Expo
+                  BloomLog
                 </p>
                 <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
                   来場の記録を、あとから思い出しやすい形に。

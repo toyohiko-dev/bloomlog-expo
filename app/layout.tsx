@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BloomLog Expo",
+  title: "BloomLog",
   description: "万博の来場日ごとの体験を記録できるログアプリ",
 };
 
