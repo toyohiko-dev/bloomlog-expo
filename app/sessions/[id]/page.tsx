@@ -2,7 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DeleteActivityLogButton, DeleteSessionButton } from "./delete-buttons";
 import { ActivityLogForm } from "./activity-log-form";
-import { getAcquisitionMethodLabel, getActivityTypeMeta } from "@/lib/activity-types";
+import {
+  getAcquisitionMethodLabel,
+  getActivityTypeMeta,
+  neutralSummaryTone,
+} from "@/lib/activity-types";
 import {
   getActivityLog,
   getActivityLogTitle,
@@ -32,6 +36,76 @@ function formatTime(value: string | null) {
     hour12: false,
     timeZone: "Asia/Tokyo",
   }).format(new Date(value));
+}
+
+function ActivityTypeIcon({ activityType }: { activityType: string | null }) {
+  const className = "h-5 w-5";
+
+  switch (activityType) {
+    case "pavilion_visit":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={className}>
+          <path
+            d="M4 20h16M6 20V9l6-4 6 4v11M9 20v-5h6v5"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    case "food":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={className}>
+          <path
+            d="M7 4v7M10 4v7M7 8h3M17 4c1.5 2 1.5 5 0 7v9M8.5 11v9"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    case "pin":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={className}>
+          <path
+            d="M12 20v-5M9 4l6 6-2 2 3 3-1 1-3-3-2 2-6-6 5-5Z"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    case "event_participation":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={className}>
+          <path
+            d="M5 8h14M8 4v4M16 4v4M6 20h12a1 1 0 0 0 1-1V8H5v11a1 1 0 0 0 1 1ZM9 12h2v2H9v-2Zm4 0h2v2h-2v-2Z"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    default:
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={className}>
+          <circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="1.8" />
+        </svg>
+      );
+  }
+}
+
+function getActivityTypeVisual(activityType: string | null) {
+  const meta = getActivityTypeMeta(activityType);
+
+  return {
+    iconClassName: meta.iconClassName,
+    accentClassName: meta.accentClassName,
+  };
 }
 
 type PageProps = {
@@ -67,24 +141,53 @@ export default async function SessionDetailPage({
     editingLog && String(editingLog.session_id) === String(sessionId)
       ? editingLog
       : null;
+  const resetEditorHref = `/sessions/${sessionId}#experience-recorder`;
+  const pavilionTone = getActivityTypeMeta("pavilion_visit");
+  const foodTone = getActivityTypeMeta("food");
+  const pinTone = getActivityTypeMeta("pin");
+  const eventTone = getActivityTypeMeta("event_participation");
 
-  const summary = {
-    pavilion: logs.filter((log) => log.activity_type === "pavilion_visit").length,
-    food: logs.filter((log) => log.activity_type === "food").length,
-    pin: logs.filter((log) => log.activity_type === "pin").length,
-    event: logs.filter((log) => log.activity_type === "event_participation").length,
-  };
-
-  const editorHeading = validEditingLog ? "体験を編集" : "体験を追加";
-  const editorTitle = validEditingLog ? "体験を整える" : "体験を記録する";
-  const editorHelper = validEditingLog
-    ? "内容を直すと、タイムラインにもすぐ反映されます。"
-    : "その日の出来事をひとつずつ残していくと、あとで流れを見返しやすくなります。";
-  const resetEditorHref = `/sessions/${sessionId}#experience-editor`;
+  const summaryItems = [
+    {
+      key: "total",
+      label: "体験",
+      value: logs.length,
+      cardClassName: neutralSummaryTone.cardClassName,
+      labelClassName: neutralSummaryTone.labelClassName,
+    },
+    {
+      key: "pavilion",
+      label: "パビリオン",
+      value: logs.filter((log) => log.activity_type === "pavilion_visit").length,
+      cardClassName: pavilionTone.summaryCardClassName,
+      labelClassName: pavilionTone.summaryLabelClassName,
+    },
+    {
+      key: "food",
+      label: "フード",
+      value: logs.filter((log) => log.activity_type === "food").length,
+      cardClassName: foodTone.summaryCardClassName,
+      labelClassName: foodTone.summaryLabelClassName,
+    },
+    {
+      key: "pin",
+      label: "ピンバッジ",
+      value: logs.filter((log) => log.activity_type === "pin").length,
+      cardClassName: pinTone.summaryCardClassName,
+      labelClassName: pinTone.summaryLabelClassName,
+    },
+    {
+      key: "event",
+      label: "イベント",
+      value: logs.filter((log) => log.activity_type === "event_participation").length,
+      cardClassName: eventTone.summaryCardClassName,
+      labelClassName: eventTone.summaryLabelClassName,
+    },
+  ] as const;
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6">
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/"
@@ -100,201 +203,64 @@ export default async function SessionDetailPage({
           </Link>
         </div>
 
-        <section className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-slate-500">
-                {formatVisitDate(session.visit_date)}
-              </p>
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
-                {session.title || "タイトル未設定"}
-              </h1>
-              <p className="max-w-2xl text-sm leading-7 text-slate-600">
-                {session.memo ||
-                  "この来場日には、まだメモがありません。思い出しておきたいことがあれば、あとから追加できます。"}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-start gap-3">
-              <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                タイトルやメモを整えておけます。
+        <section className="w-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-white to-sky-50 shadow-sm ring-1 ring-slate-200">
+          <div className="px-6 py-8 sm:px-6 lg:px-10 lg:py-10">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-emerald-700">
+                  {formatVisitDate(session.visit_date)}
+                </p>
+                <div className="space-y-2">
+                  <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+                    {session.title || "タイトル未設定"}
+                  </h1>
+                  {session.memo ? (
+                    <p className="max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+                      {session.memo}
+                    </p>
+                  ) : null}
+                </div>
               </div>
-              <Link
-                href={`/sessions/${sessionId}/edit`}
-                className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
-              >
-                来場日を編集
-              </Link>
-              <DeleteSessionButton sessionId={sessionId} />
-            </div>
-          </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-3xl bg-sky-50 px-5 py-4 ring-1 ring-sky-100">
-              <p className="text-xs font-medium tracking-wide text-sky-700">
-                パビリオン
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-slate-900">
-                {summary.pavilion}
-              </p>
-            </div>
-            <div className="rounded-3xl bg-amber-50 px-5 py-4 ring-1 ring-amber-100">
-              <p className="text-xs font-medium tracking-wide text-amber-700">
-                フード
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-slate-900">
-                {summary.food}
-              </p>
-            </div>
-            <div className="rounded-3xl bg-fuchsia-50 px-5 py-4 ring-1 ring-fuchsia-100">
-              <p className="text-xs font-medium tracking-wide text-fuchsia-700">
-                ピンバッジ
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-slate-900">
-                {summary.pin}
-              </p>
-            </div>
-            <div className="rounded-3xl bg-emerald-50 px-5 py-4 ring-1 ring-emerald-100">
-              <p className="text-xs font-medium tracking-wide text-emerald-700">
-                イベント
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-slate-900">
-                {summary.event}
-              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href={`/sessions/${sessionId}/edit`}
+                  className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+                >
+                  来場日を編集する
+                </Link>
+                <DeleteSessionButton sessionId={sessionId} />
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_24rem]">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between gap-3 rounded-[1.75rem] bg-white px-6 py-5 shadow-sm ring-1 ring-slate-200">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-900">
-                  タイムライン
-                </h2>
-                <p className="mt-1 text-sm leading-6 text-slate-600">
-                  その日の流れを、体験ごとにたどれます。
-                </p>
-              </div>
-              <Link
-                href={`/sessions/${sessionId}/activities/new`}
-                className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 lg:hidden"
-              >
-                ＋ 体験を追加
-              </Link>
+        <section
+          id="experience-recorder"
+          className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-7"
+        >
+          <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-emerald-700">
+                {validEditingLog ? "体験を編集中" : "体験を記録する"}
+              </p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
+                {validEditingLog ? "体験を編集する" : "体験を記録する"}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                種類を選ぶと、そのまま必要な入力だけが表示されます。
+              </p>
             </div>
 
-            {logs.length === 0 ? (
-              <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white px-6 py-10 text-center shadow-sm">
-                <p className="text-base font-medium text-slate-900">
-                  まだ体験はありません。
-                </p>
-                <p className="mt-2 text-sm leading-7 text-slate-600">
-                  最初のひとつを記録すると、この来場日の流れがここに並びます。
-                </p>
+            {validEditingLog ? (
+              <div className="rounded-2xl bg-sky-50 px-4 py-3 text-sm text-sky-700 ring-1 ring-sky-100">
+                編集中の体験:{" "}
+                {getActivityLogTitle(validEditingLog) || "タイトル未設定"}
               </div>
-            ) : (
-              <div className="space-y-3">
-                {logs.map((log) => {
-                  const meta = getActivityTypeMeta(log.activity_type);
-                  const isEditing = validEditingLog?.id === log.id;
-
-                  return (
-                    <article
-                      key={log.id}
-                      className={`rounded-[1.75rem] bg-white p-5 shadow-sm ring-1 transition ${
-                        isEditing ? "ring-sky-300" : "ring-slate-200"
-                      }`}
-                    >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                        <div className="w-24 shrink-0">
-                          <p className="text-sm font-semibold text-slate-900">
-                            {formatTime(log.occurred_at)}
-                          </p>
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                            <div className="min-w-0">
-                              <span
-                                className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${meta.badgeClassName}`}
-                              >
-                                {meta.label}
-                              </span>
-                              <h3 className="mt-3 text-lg font-semibold text-slate-900">
-                                {getActivityLogTitle(log) || "名前未設定"}
-                              </h3>
-                            </div>
-
-                            <div className="flex flex-wrap gap-2">
-                              <Link
-                                href={`/sessions/${sessionId}?editLog=${log.id}#experience-editor`}
-                                className="hidden rounded-full border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900 lg:inline-flex"
-                              >
-                                体験を編集
-                              </Link>
-                              <Link
-                                href={`/sessions/${sessionId}/activity-logs/${log.id}/edit`}
-                                className="inline-flex rounded-full border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900 lg:hidden"
-                              >
-                                体験を編集
-                              </Link>
-                              <DeleteActivityLogButton
-                                sessionId={sessionId}
-                                logId={log.id}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="mt-4 space-y-2">
-                            {log.price !== null ? (
-                              <p className="text-sm text-slate-600">
-                                <span className="font-medium text-slate-500">
-                                  価格
-                                </span>{" "}
-                                ¥{log.price}
-                              </p>
-                            ) : null}
-                            {log.acquisition_method ? (
-                              <p className="text-sm text-slate-600">
-                                <span className="font-medium text-slate-500">
-                                  入手方法
-                                </span>{" "}
-                                {getAcquisitionMethodLabel(log.acquisition_method) ??
-                                  "未設定"}
-                              </p>
-                            ) : null}
-                            <p className="text-sm leading-7 text-slate-600">
-                              {log.memo ||
-                                "この体験には、まだメモがありません。"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
+            ) : null}
           </div>
 
-          <aside
-            id="experience-editor"
-            className="hidden h-fit rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200 lg:block"
-          >
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-slate-500">{editorHeading}</p>
-              <h2 className="text-xl font-semibold text-slate-900">
-                {editorTitle}
-              </h2>
-              <p className="text-sm leading-6 text-slate-600">{editorHelper}</p>
-              {validEditingLog ? (
-                <div className="rounded-2xl bg-sky-50 px-4 py-3 text-sm text-sky-700">
-                  編集中: {getActivityLogTitle(validEditingLog) || "名前未設定"}
-                </div>
-              ) : null}
-            </div>
-
+          <div className="mt-6">
             <ActivityLogForm
               key={validEditingLog ? `edit:${validEditingLog.id}` : "create"}
               sessionId={sessionId}
@@ -318,11 +284,146 @@ export default async function SessionDetailPage({
               }
               initialPavilionId={validEditingLog?.pavilion_id ?? null}
               successRedirectPath={resetEditorHref}
-              submitLabel={validEditingLog ? "体験を更新する" : "体験を記録する"}
+              submitLabel={validEditingLog ? "保存する" : "記録する"}
               cancelHref={validEditingLog ? resetEditorHref : undefined}
-              cancelLabel={validEditingLog ? "体験の追加に戻る" : undefined}
+              cancelLabel={validEditingLog ? "新しい体験に戻る" : undefined}
             />
-          </aside>
+          </div>
+        </section>
+
+        <section className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-7">
+          <div className="flex flex-col gap-2 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-500">この日のサマリー</p>
+              <h2 className="mt-1 text-xl font-semibold text-slate-900">
+                この来場日の体験
+              </h2>
+            </div>
+            <p className="text-sm text-slate-500">
+              入力した内容が、あとから見返しやすい形でまとまります。
+            </p>
+          </div>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {summaryItems.map((item) => (
+              <div
+                key={item.key}
+                className={`rounded-3xl px-4 py-4 ring-1 ${item.cardClassName}`}
+              >
+                <p className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+                  {item.value}
+                </p>
+                <p
+                  className={`mt-1 text-xs font-medium tracking-wide ${item.labelClassName}`}
+                >
+                  {item.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <div className="flex flex-col gap-2 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-500">タイムライン</p>
+              <h2 className="mt-1 text-xl font-semibold text-slate-900">
+                今日の流れ
+              </h2>
+            </div>
+            <p className="text-sm text-slate-500">
+              入力した体験が時系列で並びます。
+            </p>
+          </div>
+
+          {logs.length === 0 ? (
+            <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-5 py-6 text-sm leading-7 text-slate-600">
+              まだ体験はありません。上の入力エリアから、その日の体験を記録できます。
+            </div>
+          ) : (
+            <div className="mt-6 space-y-3">
+              {logs.map((log) => {
+                const meta = getActivityTypeMeta(log.activity_type);
+                const isEditing = validEditingLog?.id === log.id;
+                const visual = getActivityTypeVisual(log.activity_type);
+
+                return (
+                  <article
+                    key={log.id}
+                    className={`rounded-[1.5rem] bg-white p-5 ring-1 transition ${
+                      isEditing ? "ring-sky-200 bg-sky-50/40" : "ring-slate-200"
+                    }`}
+                  >
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                      <div className="flex shrink-0 items-center gap-3 sm:w-28 sm:flex-col sm:items-start sm:gap-4">
+                        <span
+                          className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl ${visual.iconClassName}`}
+                        >
+                          <ActivityTypeIcon activityType={log.activity_type} />
+                        </span>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {formatTime(log.occurred_at)}
+                        </p>
+                      </div>
+
+                      <div
+                        className={`min-w-0 flex-1 border-l pl-4 ${visual.accentClassName}`}
+                      >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <span
+                              className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${meta.badgeClassName}`}
+                            >
+                              {meta.label}
+                            </span>
+                            <h3 className="mt-3 text-lg font-semibold text-slate-900">
+                              {getActivityLogTitle(log) || "タイトル未設定"}
+                            </h3>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <Link
+                              href={`/sessions/${sessionId}?editLog=${log.id}#experience-recorder`}
+                              className="inline-flex rounded-full border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+                            >
+                              編集する
+                            </Link>
+                            <DeleteActivityLogButton
+                              sessionId={sessionId}
+                              logId={log.id}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-4 space-y-2">
+                          {log.price !== null ? (
+                            <p className="text-sm text-slate-600">
+                              <span className="font-medium text-slate-500">
+                                価格
+                              </span>{" "}
+                              ¥{log.price}
+                            </p>
+                          ) : null}
+                          {log.acquisition_method ? (
+                            <p className="text-sm text-slate-600">
+                              <span className="font-medium text-slate-500">
+                                入手方法
+                              </span>{" "}
+                              {getAcquisitionMethodLabel(log.acquisition_method) ??
+                                "未設定"}
+                            </p>
+                          ) : null}
+                          <p className="text-sm leading-7 text-slate-600">
+                            {log.memo || "この体験にはまだメモがありません。"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
         </section>
       </div>
     </main>

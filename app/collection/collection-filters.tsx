@@ -1,10 +1,11 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   getAcquisitionMethodLabel,
   getActivityTypeMeta,
+  neutralSummaryTone,
   type ActivityType,
 } from "@/lib/activity-types";
 import { getActivityLogTitle, type ActivityLog } from "@/lib/sessions";
@@ -170,12 +171,42 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
     ),
   };
 
+  const pavilionTone = getActivityTypeMeta("pavilion_visit");
+  const foodTone = getActivityTypeMeta("food");
+  const pinTone = getActivityTypeMeta("pin");
+  const eventTone = getActivityTypeMeta("event_participation");
+
   const summaryItems = [
-    { label: "集めた体験", value: filteredLogs.length },
-    { label: "パビリオン", value: pavilionCollection.length },
-    { label: "フード", value: groupedLogs.food.length },
-    { label: "ピンバッジ", value: groupedLogs.pin.length },
-    { label: "イベント", value: groupedLogs.event_participation.length },
+    {
+      label: "体験",
+      value: filteredLogs.length,
+      cardClassName: neutralSummaryTone.cardClassName,
+      labelClassName: neutralSummaryTone.labelClassName,
+    },
+    {
+      label: "パビリオン",
+      value: pavilionCollection.length,
+      cardClassName: pavilionTone.summaryCardClassName,
+      labelClassName: pavilionTone.summaryLabelClassName,
+    },
+    {
+      label: "フード",
+      value: groupedLogs.food.length,
+      cardClassName: foodTone.summaryCardClassName,
+      labelClassName: foodTone.summaryLabelClassName,
+    },
+    {
+      label: "ピンバッジ",
+      value: groupedLogs.pin.length,
+      cardClassName: pinTone.summaryCardClassName,
+      labelClassName: pinTone.summaryLabelClassName,
+    },
+    {
+      label: "イベント",
+      value: groupedLogs.event_participation.length,
+      cardClassName: eventTone.summaryCardClassName,
+      labelClassName: eventTone.summaryLabelClassName,
+    },
   ];
 
   const listSections: {
@@ -198,7 +229,8 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
             コレクション
           </h1>
           <p className="max-w-3xl text-sm leading-7 text-slate-600">
-            集めた体験をカテゴリごとに見返せます。パビリオンはまとめて振り返り、フードやピンバッジはひとつずつ楽しめる一覧にしています。
+            記録した体験をカテゴリごとに見返せます。パビリオンはまとめて振り返り、
+            フードやピンバッジはひとつずつ一覧にしています。
           </p>
         </div>
 
@@ -206,9 +238,9 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
           {summaryItems.map((item) => (
             <div
               key={item.label}
-              className="rounded-3xl bg-slate-50 px-5 py-4 ring-1 ring-slate-200"
+              className={`rounded-3xl px-5 py-4 ring-1 ${item.cardClassName}`}
             >
-              <p className="text-xs font-medium tracking-wide text-slate-500">
+              <p className={`text-xs font-medium tracking-wide ${item.labelClassName}`}>
                 {item.label}
               </p>
               <p className="mt-2 text-2xl font-semibold text-slate-900">
@@ -271,17 +303,17 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
           <div>
             <h2 className="text-xl font-semibold text-slate-900">パビリオン</h2>
             <p className="mt-1 text-sm text-slate-600">
-              来場日で記録したパビリオンをまとめて見返せます。
+              来場日ごとに、訪れたパビリオンをまとめて見返せます。
             </p>
           </div>
           <p className="text-sm font-medium text-slate-500">
-            {pavilionCollection.length}種類
+            {pavilionCollection.length}件
           </p>
         </div>
 
         {pavilionCollection.length === 0 ? (
           <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white px-6 py-8 text-sm leading-7 text-slate-600">
-            まだ体験はありません。来場日でパビリオンの体験を記録すると、ここに少しずつ並んでいきます。
+            まだ体験はありません。来場日でパビリオンの体験を記録すると、ここに並びます。
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -292,26 +324,24 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
                 className="rounded-[1.75rem] bg-white p-5 shadow-sm ring-1 ring-slate-200 transition hover:ring-slate-300"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-base font-semibold text-slate-900">
-                    {item.title}
-                  </h3>
+                  <div className="min-w-0">
+                    <span
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${pavilionTone.badgeClassName}`}
+                    >
+                      パビリオン
+                    </span>
+                    <h3 className="mt-3 text-base font-semibold text-slate-900">
+                      {item.title}
+                    </h3>
+                  </div>
                   <span className="shrink-0 text-sm font-medium text-slate-700">
                     来場日を見る
                   </span>
                 </div>
                 <div className="mt-4 space-y-2">
-                  <DetailLine
-                    label="訪れた回数"
-                    value={`${item.count}回`}
-                  />
-                  <DetailLine
-                    label="はじめて"
-                    value={formatDateTime(item.firstVisitedAt)}
-                  />
-                  <DetailLine
-                    label="最近"
-                    value={formatDateTime(item.latestVisitedAt)}
-                  />
+                  <DetailLine label="回数" value={`${item.count}回`} />
+                  <DetailLine label="初回" value={formatDateTime(item.firstVisitedAt)} />
+                  <DetailLine label="最近" value={formatDateTime(item.latestVisitedAt)} />
                 </div>
               </Link>
             ))}
@@ -330,7 +360,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
                   {meta.label}
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  記録した体験をそのまま見返せます。
+                  体験をそのまま一覧で見返せます。
                 </p>
               </div>
               <p className="text-sm font-medium text-slate-500">
@@ -340,7 +370,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
 
             {section.logs.length === 0 ? (
               <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white px-6 py-8 text-sm leading-7 text-slate-600">
-                まだ体験はありません。来場日で{meta.label}の体験を記録すると、ここに少しずつ並んでいきます。
+                まだ体験はありません。来場日で{meta.label}の体験を記録すると、ここに並びます。
               </div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -406,3 +436,4 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
     </section>
   );
 }
+

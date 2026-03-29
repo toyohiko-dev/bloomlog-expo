@@ -27,7 +27,24 @@ export type Pavilion = {
   updated_at: string;
 };
 
+export type PavilionAlias = {
+  alias: string;
+};
+
 export type PavilionOption = Pick<
+  Pavilion,
+  | "id"
+  | "name"
+  | "official_name"
+  | "country_id"
+  | "area_id"
+  | "spot_id"
+  | "sort_order"
+> & {
+  aliases: string[];
+};
+
+export type ActivityLogPavilion = Pick<
   Pavilion,
   "id" | "name" | "official_name" | "country_id" | "area_id" | "spot_id"
 >;
@@ -44,7 +61,7 @@ export type ActivityLog = {
   price: number | null;
   acquisition_method: string | null;
   pavilion_id: string | null;
-  pavilion: PavilionOption | null;
+  pavilion: ActivityLogPavilion | null;
 };
 
 export type PavilionProgressSummary = {
@@ -74,6 +91,17 @@ const activityLogSelect = `
     spot_id
   )
 `;
+
+function normalizeActivityLog(
+  log: Omit<ActivityLog, "pavilion"> & {
+    pavilion: ActivityLogPavilion | ActivityLogPavilion[] | null;
+  },
+): ActivityLog {
+  return {
+    ...log,
+    pavilion: Array.isArray(log.pavilion) ? (log.pavilion[0] ?? null) : log.pavilion,
+  };
+}
 
 export async function listSessions() {
   const { data, error } = await supabase
@@ -150,7 +178,13 @@ export async function listActivityLogs(sessionId: string) {
     throw new Error(error.message);
   }
 
-  return ((data ?? []) as ActivityLog[]).sort((left, right) => {
+  return ((data ?? []) as Array<
+    Omit<ActivityLog, "pavilion"> & {
+      pavilion: ActivityLogPavilion | ActivityLogPavilion[] | null;
+    }
+  >)
+    .map(normalizeActivityLog)
+    .sort((left, right) => {
     if (left.occurred_at && right.occurred_at) {
       return (
         new Date(left.occurred_at).getTime() - new Date(right.occurred_at).getTime()
@@ -164,9 +198,10 @@ export async function listActivityLogs(sessionId: string) {
     if (!left.occurred_at && right.occurred_at) {
       return 1;
     }
-
-    return new Date(left.created_at).getTime() - new Date(right.created_at).getTime();
-  });
+      return (
+        new Date(left.created_at).getTime() - new Date(right.created_at).getTime()
+      );
+    });
 }
 
 export async function getActivityLog(logId: string) {
@@ -180,7 +215,13 @@ export async function getActivityLog(logId: string) {
     throw new Error(error.message);
   }
 
-  return data as ActivityLog | null;
+  return data
+    ? normalizeActivityLog(
+        data as Omit<ActivityLog, "pavilion"> & {
+          pavilion: ActivityLogPavilion | ActivityLogPavilion[] | null;
+        },
+      )
+    : null;
 }
 
 export async function listCollectionActivityLogs() {
@@ -194,14 +235,18 @@ export async function listCollectionActivityLogs() {
     throw new Error(error.message);
   }
 
-  return (data ?? []) as ActivityLog[];
+  return ((data ?? []) as Array<
+    Omit<ActivityLog, "pavilion"> & {
+      pavilion: ActivityLogPavilion | ActivityLogPavilion[] | null;
+    }
+  >).map(normalizeActivityLog);
 }
 
 export async function listPavilions() {
   const { data, error } = await supabase
     .from("pavilions")
     .select(
-      "id, name, official_name, country_id, area_id, spot_id, is_active, sort_order, created_at, updated_at",
+      "id, name, official_name, country_id, area_id, spot_id, is_active, sort_order, created_at, updated_at, pavilion_aliases(alias)",
     )
     .eq("is_active", true)
     .order("sort_order", { ascending: true })
@@ -211,7 +256,22 @@ export async function listPavilions() {
     throw new Error(error.message);
   }
 
-  return (data ?? []) as Pavilion[];
+  return ((data ?? []) as Array<
+    Pavilion & {
+      pavilion_aliases?: PavilionAlias[] | null;
+    }
+  >).map((pavilion) => ({
+    id: pavilion.id,
+    name: pavilion.name,
+    official_name: pavilion.official_name,
+    country_id: pavilion.country_id,
+    area_id: pavilion.area_id,
+    spot_id: pavilion.spot_id,
+    sort_order: pavilion.sort_order,
+    aliases: (pavilion.pavilion_aliases ?? [])
+      .map((entry) => entry.alias.trim())
+      .filter(Boolean),
+  }));
 }
 
 export async function getPavilion(pavilionId: string) {
@@ -280,6 +340,78 @@ export async function listEvents() {
 
 export function getActivityLogTitle(log: Pick<ActivityLog, "title" | "pavilion">) {
   return log.pavilion?.name ?? log.title ?? null;
+}
+
+function normalizeSearchText(value: string) {
+  return value.trim().toLocaleLowerCase("ja-JP");
+}
+
+export function getPavilionSearchTerms(pavilion: PavilionOption) {
+  return Array.from(
+    new Set(
+      [pavilion.name, pavilion.official_name, ...pavilion.aliases]
+        .filter((value): value is string => Boolean(value))
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+export function searchPavilions(
+  pavilions: PavilionOption[],
+  keyword: string,
+  limit = 8,
+) {
+  const normalizedKeyword = normalizeSearchText(keyword);
+
+  if (!normalizedKeyword) {
+    return [];
+  }
+
+  return pavilions
+    .map((pavilion) => {
+      const terms = getPavilionSearchTerms(pavilion);
+      const normalizedName = normalizeSearchText(pavilion.name);
+      const normalizedTerms = terms.map(normalizeSearchText);
+      let score = Number.POSITIVE_INFINITY;
+
+      if (normalizedName === normalizedKeyword) {
+        score = 0;
+      } else if (normalizedTerms.some((term) => term === normalizedKeyword)) {
+        score = 1;
+      } else if (normalizedName.startsWith(normalizedKeyword)) {
+        score = 2;
+      } else if (
+        normalizedTerms.some(
+          (term) => term !== normalizedName && term.startsWith(normalizedKeyword),
+        )
+      ) {
+        score = 3;
+      } else if (normalizedName.includes(normalizedKeyword)) {
+        score = 4;
+      } else if (normalizedTerms.some((term) => term.includes(normalizedKeyword))) {
+        score = 5;
+      }
+
+      return {
+        pavilion,
+        score,
+      };
+    })
+    .filter((entry) => Number.isFinite(entry.score))
+    .sort((left, right) => {
+      if (left.score !== right.score) {
+        return left.score - right.score;
+      }
+
+      if (left.pavilion.sort_order !== right.pavilion.sort_order) {
+        return left.pavilion.sort_order - right.pavilion.sort_order;
+      }
+
+      return left.pavilion.name.localeCompare(right.pavilion.name, "ja-JP");
+    })
+    .slice(0, limit)
+    .map((entry) => entry.pavilion);
 }
 
 export function todayDateString() {

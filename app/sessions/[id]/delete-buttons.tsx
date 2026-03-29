@@ -10,7 +10,7 @@ export function DeleteSessionButton({ sessionId }: { sessionId: string }) {
     <form
       action={deleteSessionAction}
       onSubmit={(event) => {
-        if (!window.confirm("この訪問を削除しますか？")) {
+        if (!window.confirm("この来場日を削除しますか？")) {
           event.preventDefault();
         }
       }}
@@ -18,9 +18,9 @@ export function DeleteSessionButton({ sessionId }: { sessionId: string }) {
       <input type="hidden" name="id" value={sessionId} />
       <button
         type="submit"
-        className="inline-flex items-center justify-center rounded-full border border-rose-300 px-5 py-3 text-sm font-medium text-rose-700 transition hover:border-rose-500 hover:bg-rose-50"
+        className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-5 py-3 text-sm font-medium text-rose-700 transition hover:border-rose-400 hover:bg-rose-50"
       >
-        削除
+        削除する
       </button>
     </form>
   );
@@ -46,9 +46,9 @@ export function DeleteActivityLogButton({
       <input type="hidden" name="logId" value={logId} />
       <button
         type="submit"
-        className="inline-flex items-center justify-center rounded-full border border-rose-200 px-3 py-1 text-xs font-medium text-rose-700 transition hover:border-rose-400 hover:bg-rose-50"
+        className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-medium text-rose-700 transition hover:border-rose-400 hover:bg-rose-50"
       >
-        削除
+        削除する
       </button>
     </form>
   );

@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { listCollectionActivityLogs } from "@/lib/sessions";
 import { CollectionFilters } from "./collection-filters";
 
@@ -19,7 +19,7 @@ export default async function CollectionPage() {
             href="/sessions"
             className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
           >
-            訪問一覧へ
+            来場日一覧へ
           </Link>
         </div>
 

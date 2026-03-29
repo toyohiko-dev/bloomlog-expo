@@ -47,12 +47,12 @@ export default async function ActivityLogEditPage({
         </div>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <p className="text-sm font-medium text-sky-700">Edit Experience</p>
+          <p className="text-sm font-medium text-sky-700">体験を編集</p>
           <h1 className="mt-2 text-3xl font-semibold text-slate-900">
             体験を編集
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            この体験の内容を整えて、訪問のタイムラインに反映します。
+            この体験の内容を整えて、来場日のタイムラインに反映します。
           </p>
 
           <ActivityLogForm
@@ -60,9 +60,9 @@ export default async function ActivityLogEditPage({
             pavilions={pavilions}
             mode="edit"
             logId={log.id}
-            submitLabel="更新する"
-            cancelHref={`/sessions/${session.id}`}
-            cancelLabel="訪問へ戻る"
+            submitLabel="体験を更新する"
+            cancelHref={`/sessions/${session.id}#experience-recorder`}
+            cancelLabel="入力画面に戻る"
             initialActivityType={(log.activity_type ?? "pavilion_visit") as ActivityType}
             initialTitle={log.title ?? ""}
             initialMemo={log.memo ?? ""}

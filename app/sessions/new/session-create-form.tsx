@@ -23,7 +23,7 @@ export function SessionCreateForm({
 }) {
   const [pending, startTransition] = useTransition();
   const [state, setState] = useState<SessionFormState>(initialSessionFormState);
-  const [title, setTitle] = useState(`${initialVisitDate} の訪問`);
+  const [title, setTitle] = useState(`${initialVisitDate} の来場日`);
   const [visitDate, setVisitDate] = useState(initialVisitDate);
   const [notes, setNotes] = useState("");
 
@@ -113,7 +113,7 @@ export function SessionCreateForm({
             className={fieldClass(Boolean(state.fieldErrors.visitDate))}
           />
           <p className="mt-2 text-xs text-slate-500">
-            1日ごとにひとつの訪問として記録します。
+            1日ごとにひとつの来場日として記録します。
           </p>
           {state.fieldErrors.visitDate ? (
             <p className="mt-2 text-sm text-rose-600">
@@ -156,13 +156,13 @@ export function SessionCreateForm({
           disabled={pending}
           className="inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300 sm:w-auto"
         >
-          {pending ? "作成中..." : "訪問を作成する"}
+          {pending ? "作成中..." : "来場日を作成する"}
         </button>
         <Link
           href="/sessions"
           className="inline-flex w-full items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900 sm:w-auto"
         >
-          訪問一覧へ
+          来場日一覧へ
         </Link>
       </div>
     </form>

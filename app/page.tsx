@@ -1,20 +1,12 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { startSessionForDateAction } from "@/app/sessions/actions";
+import { getActivityTypeMeta, neutralSummaryTone } from "@/lib/activity-types";
 import {
   getPavilionProgressSummary,
   listCollectionActivityLogs,
   listSessions,
   todayDateString,
 } from "@/lib/sessions";
-
-function formatDateLabel(value: string) {
-  return new Intl.DateTimeFormat("ja-JP", {
-    month: "long",
-    day: "numeric",
-    weekday: "short",
-    timeZone: "Asia/Tokyo",
-  }).format(new Date(`${value}T00:00:00+09:00`));
-}
 
 export default async function HomePage() {
   const [sessions, experiences, pavilionProgress] = await Promise.all([
@@ -23,183 +15,162 @@ export default async function HomePage() {
     getPavilionProgressSummary(),
   ]);
 
-  const recentSessions = sessions.slice(0, 3);
   const initialVisitDate = todayDateString();
+  const foodCount = experiences.filter(
+    (experience) => experience.activity_type === "food",
+  ).length;
+  const pinBadgeCount = experiences.filter(
+    (experience) => experience.activity_type === "pin",
+  ).length;
+  const eventCount = experiences.filter(
+    (experience) => experience.activity_type === "event_participation",
+  ).length;
+  const pavilionTone = getActivityTypeMeta("pavilion_visit");
+  const foodTone = getActivityTypeMeta("food");
+  const pinTone = getActivityTypeMeta("pin");
+  const eventTone = getActivityTypeMeta("event_participation");
+  const summaryItems = [
+    {
+      label: "来場日",
+      value: sessions.length,
+      cardClassName: neutralSummaryTone.cardClassName,
+      labelClassName: neutralSummaryTone.labelClassName,
+    },
+    {
+      label: "パビリオン",
+      value: pavilionProgress.visitedPavilions,
+      cardClassName: pavilionTone.summaryCardClassName,
+      labelClassName: pavilionTone.summaryLabelClassName,
+    },
+    {
+      label: "フード",
+      value: foodCount,
+      cardClassName: foodTone.summaryCardClassName,
+      labelClassName: foodTone.summaryLabelClassName,
+    },
+    {
+      label: "ピンバッジ",
+      value: pinBadgeCount,
+      cardClassName: pinTone.summaryCardClassName,
+      labelClassName: pinTone.summaryLabelClassName,
+    },
+    {
+      label: "イベント",
+      value: eventCount,
+      cardClassName: eventTone.summaryCardClassName,
+      labelClassName: eventTone.summaryLabelClassName,
+    },
+  ];
+  const secondaryLinkClassName =
+    "inline-flex w-full items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900";
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
-        <section className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-white to-sky-50 shadow-sm ring-1 ring-slate-200">
-          <div className="grid gap-8 px-6 py-8 lg:grid-cols-[1.4fr_0.9fr] lg:px-10 lg:py-10">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-8">
+        <section className="w-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-white to-sky-50 shadow-sm ring-1 ring-slate-200">
+          <div className="px-6 py-8 sm:px-6 lg:px-10 lg:py-10">
             <div className="space-y-6">
               <div className="space-y-3">
                 <p className="text-sm font-medium text-emerald-700">
                   BloomLog Expo
                 </p>
-                <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-                  今日の体験を、あとから何度も楽しめる記録に。
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+                  来場の記録を、あとから思い出しやすい形に。
                 </h1>
-                <p className="max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-                  行った場所、食べたもの、手に入れたものを来場日ごとに残せます。
-                  タイムラインやコレクションを見返せば、その日の楽しさがまたよみがえります。
+                <p className="max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+                  行った日ごとに、その場で入力した体験を残せます。
+                  まずは来場日を開いて記録を始め、あとから一覧やコレクションで振り返れます。
                 </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-3xl bg-white/80 px-5 py-4 shadow-sm ring-1 ring-slate-200">
-                  <p className="text-xs font-medium tracking-wide text-slate-500">
-                    これまでの来場日
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold text-slate-900">
-                    {sessions.length}
-                  </p>
-                </div>
-                <div className="rounded-3xl bg-white/80 px-5 py-4 shadow-sm ring-1 ring-slate-200">
-                  <p className="text-xs font-medium tracking-wide text-slate-500">
-                    記録した体験
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold text-slate-900">
-                    {experiences.length}
-                  </p>
-                </div>
-                <div className="rounded-3xl bg-white/80 px-5 py-4 shadow-sm ring-1 ring-slate-200">
-                  <p className="text-xs font-medium tracking-wide text-slate-500">
-                    訪れたパビリオン
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold text-slate-900">
-                    {pavilionProgress.totalPavilions > 0
-                      ? `${pavilionProgress.visitedPavilions} / ${pavilionProgress.totalPavilions}`
-                      : pavilionProgress.visitedPavilions}
-                  </p>
-                </div>
-              </div>
-            </div>
+              <div className="w-full rounded-[1.75rem] bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
+                <form action={startSessionForDateAction}>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="visit-date"
+                        className="text-sm font-medium text-slate-700"
+                      >
+                        来場日
+                      </label>
+                      <input
+                        id="visit-date"
+                        name="visitDate"
+                        type="date"
+                        defaultValue={initialVisitDate}
+                        className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                      />
+                    </div>
 
-            <div className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-              <div className="space-y-5">
-                <div className="space-y-2">
-                  <h2 className="text-lg font-semibold text-slate-900">
-                    来場日を作る
-                  </h2>
-                  <p className="text-sm leading-6 text-slate-600">
-                    来場日を残したい日を選ぶと、その日の記録を始められます。
-                  </p>
-                </div>
-
-                <form action={startSessionForDateAction} className="space-y-4">
-                  <div className="space-y-2">
-                    <label
-                      htmlFor="visit-date"
-                      className="text-sm font-medium text-slate-700"
+                    <button
+                      type="submit"
+                      className="inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-4 text-base font-semibold text-white transition hover:bg-slate-700"
                     >
-                      来場日
-                    </label>
-                    <input
-                      id="visit-date"
-                      name="visitDate"
-                      type="date"
-                      defaultValue={initialVisitDate}
-                      className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-                    />
+                      来場日を開く
+                    </button>
                   </div>
-
-                  <button
-                    type="submit"
-                    className="inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-                  >
-                    来場日を作る
-                  </button>
                 </form>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                  <Link
-                    href="/sessions"
-                    className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
-                  >
-                    来場日一覧を見る
-                  </Link>
-                  <Link
-                    href="/collection"
-                    className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
-                  >
-                    コレクションを見る
-                  </Link>
+                <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {summaryItems.map((item) => (
+                    <div
+                      key={item.label}
+                      className={`rounded-3xl px-4 py-4 ring-1 ${item.cardClassName}`}
+                    >
+                      <p className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+                        {item.value}
+                      </p>
+                      <p
+                        className={`mt-1 text-xs font-medium tracking-wide ${item.labelClassName}`}
+                      >
+                        {item.label}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
-          <div className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <section className="w-full flex flex-col gap-6">
+          <div className="w-full rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">
                   最近の来場日
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-600">
-                  直近の来場日を開いて、タイムラインをすぐ見返せます。
+                  直近の来場日から記録を開いて、続きをすぐに残せます。
                 </p>
               </div>
-              <Link
-                href="/sessions"
-                className="text-sm font-medium text-slate-700 transition hover:text-slate-900"
-              >
-                来場日一覧を見る
-              </Link>
             </div>
 
-            {recentSessions.length === 0 ? (
+            {sessions.length === 0 ? (
               <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-sm leading-7 text-slate-600">
-                まだ来場日はありません。最初の来場日を作ると、ここから見返せるようになります。
+                まだ来場日はありません。最初の来場日を開くと、ここから記録を始められるようになります。
               </div>
             ) : (
-              <div className="mt-6 space-y-3">
-                {recentSessions.map((session) => (
-                  <Link
-                    key={session.id}
-                    href={`/sessions/${session.id}`}
-                    className="flex items-center justify-between gap-4 rounded-3xl border border-slate-200 px-5 py-4 transition hover:border-slate-300 hover:bg-slate-50"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-slate-500">
-                        {formatDateLabel(session.visit_date)}
-                      </p>
-                      <h3 className="mt-1 truncate text-base font-semibold text-slate-900">
-                        {session.title || "タイトル未設定"}
-                      </h3>
-                      <p className="mt-1 truncate text-sm text-slate-600">
-                        {session.memo || "まだメモはありません。"}
-                      </p>
-                    </div>
-                    <span className="shrink-0 text-sm font-medium text-slate-700">
-                      来場日を見る
-                    </span>
-                  </Link>
-                ))}
+              <div className="mt-6">
+                <Link href="/sessions" className={secondaryLinkClassName}>
+                  来場日一覧を見る
+                </Link>
               </div>
             )}
           </div>
 
-          <div className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <h2 className="text-lg font-semibold text-slate-900">残せるもの</h2>
+          <div className="w-full rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <h2 className="text-lg font-semibold text-slate-900">
+              コレクション
+            </h2>
             <p className="mt-1 text-sm leading-6 text-slate-600">
-              その日の出来事を体験として重ねていくと、あとから見返す楽しみが増えていきます。
+              記録したフードやピンバッジをまとめて振り返れます。
             </p>
-            <ul className="mt-6 space-y-3 text-sm text-slate-700">
-              <li className="rounded-2xl bg-slate-50 px-4 py-3">
-                パビリオンでの体験
-              </li>
-              <li className="rounded-2xl bg-slate-50 px-4 py-3">
-                食べたものや買ったもの
-              </li>
-              <li className="rounded-2xl bg-slate-50 px-4 py-3">
-                手に入れたピンバッジ
-              </li>
-              <li className="rounded-2xl bg-slate-50 px-4 py-3">
-                あとで見返したいメモ
-              </li>
-            </ul>
+            <div className="mt-6">
+              <Link href="/collection" className={secondaryLinkClassName}>
+                コレクションを見る
+              </Link>
+            </div>
           </div>
         </section>
       </div>

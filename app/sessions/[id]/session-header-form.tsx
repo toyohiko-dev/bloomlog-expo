@@ -87,7 +87,7 @@ export function SessionHeaderForm({
         disabled={pending}
         className="inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400 sm:w-auto"
       >
-        {pending ? "保存中..." : "保存"}
+        {pending ? "保存中..." : "保存する"}
       </button>
     </form>
   );
