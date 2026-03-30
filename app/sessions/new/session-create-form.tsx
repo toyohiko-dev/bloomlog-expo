@@ -23,7 +23,7 @@ export function SessionCreateForm({
 }) {
   const [pending, startTransition] = useTransition();
   const [state, setState] = useState<SessionFormState>(initialSessionFormState);
-  const [title, setTitle] = useState(`${initialVisitDate} の来場日`);
+  const [title, setTitle] = useState("");
   const [visitDate, setVisitDate] = useState(initialVisitDate);
   const [notes, setNotes] = useState("");
 
@@ -71,30 +71,6 @@ export function SessionCreateForm({
       >
         <div>
           <label
-            htmlFor="new-session-title"
-            className="mb-2 block text-sm font-medium text-slate-700"
-          >
-            タイトル
-          </label>
-          <input
-            id="new-session-title"
-            name="title"
-            type="text"
-            required
-            value={title}
-            onChange={(event) => {
-              setTitle(event.target.value);
-              clearFieldState("title");
-            }}
-            className={fieldClass(Boolean(state.fieldErrors.title))}
-          />
-          {state.fieldErrors.title ? (
-            <p className="mt-2 text-sm text-rose-600">{state.fieldErrors.title}</p>
-          ) : null}
-        </div>
-
-        <div>
-          <label
             htmlFor="new-session-date"
             className="mb-2 block text-sm font-medium text-slate-700"
           >
@@ -113,12 +89,39 @@ export function SessionCreateForm({
             className={fieldClass(Boolean(state.fieldErrors.visitDate))}
           />
           <p className="mt-2 text-xs text-slate-500">
-            1日ごとにひとつの来場日として記録します。
+            1日ごとに来場日を作成します。
           </p>
           {state.fieldErrors.visitDate ? (
             <p className="mt-2 text-sm text-rose-600">
               {state.fieldErrors.visitDate}
             </p>
+          ) : null}
+        </div>
+
+        <div>
+          <label
+            htmlFor="new-session-title"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
+            タイトル
+          </label>
+          <input
+            id="new-session-title"
+            name="title"
+            type="text"
+            value={title}
+            onChange={(event) => {
+              setTitle(event.target.value);
+              clearFieldState("title");
+            }}
+            placeholder="例：初めての来場 / 夜のライトアップ巡り"
+            className={fieldClass(Boolean(state.fieldErrors.title))}
+          />
+          <p className="mt-2 text-xs text-slate-500">
+            この日をひとことで表す短い名前をつけます。
+          </p>
+          {state.fieldErrors.title ? (
+            <p className="mt-2 text-sm text-rose-600">{state.fieldErrors.title}</p>
           ) : null}
         </div>
 
@@ -138,11 +141,11 @@ export function SessionCreateForm({
               setNotes(event.target.value);
               clearFieldState("notes");
             }}
-            placeholder="あとで見返したいことを残せます。"
+            placeholder="その日の出来事や印象を書きます"
             className={fieldClass(Boolean(state.fieldErrors.notes))}
           />
           <p className="mt-2 text-xs text-slate-500">
-            その日の雰囲気や予定を書いておくと、あとで振り返りやすくなります。
+            あとで振り返りたいことを書きます。
           </p>
           {state.fieldErrors.notes ? (
             <p className="mt-2 text-sm text-rose-600">{state.fieldErrors.notes}</p>

@@ -2,9 +2,20 @@ import Link from "next/link";
 import { SessionCreateForm } from "@/app/sessions/new/session-create-form";
 import { getSessionByVisitDate, todayDateString } from "@/lib/sessions";
 
-export default async function NewSessionPage() {
+type NewSessionPageProps = {
+  searchParams?: Promise<{ visitDate?: string | string[] | undefined }>;
+};
+
+export default async function NewSessionPage({
+  searchParams,
+}: NewSessionPageProps) {
   const today = todayDateString();
-  const todaySession = await getSessionByVisitDate(today);
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const requestedVisitDate = Array.isArray(resolvedSearchParams?.visitDate)
+    ? resolvedSearchParams?.visitDate[0]
+    : resolvedSearchParams?.visitDate;
+  const visitDate = requestedVisitDate || today;
+  const existingSession = await getSessionByVisitDate(visitDate);
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -19,6 +30,12 @@ export default async function NewSessionPage() {
           >
             来場日一覧へ
           </Link>
+          <Link
+            href="/collection"
+            className="text-slate-500 transition hover:text-slate-900"
+          >
+            思い出アルバム
+          </Link>
         </div>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
@@ -27,18 +44,22 @@ export default async function NewSessionPage() {
             来場日を作成する
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            記録したい日をひとつの来場日として作成します。あとから体験を記録して、その日の流れを残せます。
+            日付に加えて、この日をひとことで表すタイトルや、あとで振り返りたいメモを最初から入力できます。
           </p>
 
-          {todaySession ? (
+          {existingSession ? (
             <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-              <p className="font-medium">今日の来場日は、すでにあります。</p>
+              <p className="font-medium">
+                {visitDate === today
+                  ? "今日の来場日は、すでにあります。"
+                  : "この日の来場日は、すでにあります。"}
+              </p>
               <p className="mt-2 leading-6">
-                続きから記録する場合は、既存の来場日を開いてください。
+                続きを記録する場合は、既存の来場日を開いてください。
               </p>
               <div className="mt-4">
                 <Link
-                  href={`/sessions/${todaySession.id}`}
+                  href={`/sessions/${existingSession.id}`}
                   className="inline-flex items-center justify-center rounded-full bg-amber-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-amber-700"
                 >
                   来場日を開く
@@ -48,7 +69,7 @@ export default async function NewSessionPage() {
           ) : null}
 
           <div className="mt-8">
-            <SessionCreateForm initialVisitDate={today} />
+            <SessionCreateForm initialVisitDate={visitDate} />
           </div>
         </section>
       </div>
