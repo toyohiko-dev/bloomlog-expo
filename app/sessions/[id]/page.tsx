@@ -150,7 +150,7 @@ export default async function SessionDetailPage({
   const summaryItems = [
     {
       key: "total",
-      label: "体験",
+      label: "思い出",
       value: logs.length,
       cardClassName: neutralSummaryTone.cardClassName,
       labelClassName: neutralSummaryTone.labelClassName,
@@ -201,6 +201,12 @@ export default async function SessionDetailPage({
           >
             来場日一覧へ
           </Link>
+          <Link
+            href="/collection"
+            className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+          >
+            思い出アルバム
+          </Link>
         </div>
 
         <section className="w-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-white to-sky-50 shadow-sm ring-1 ring-slate-200">
@@ -211,9 +217,11 @@ export default async function SessionDetailPage({
                   {formatVisitDate(session.visit_date)}
                 </p>
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-                    {session.title || "タイトル未設定"}
-                  </h1>
+                  {session.title ? (
+                    <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+                      {session.title}
+                    </h1>
+                  ) : null}
                   {session.memo ? (
                     <p className="max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
                       {session.memo}
@@ -242,10 +250,10 @@ export default async function SessionDetailPage({
           <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-sm font-medium text-emerald-700">
-                {validEditingLog ? "体験を編集中" : "体験を記録する"}
+                {validEditingLog ? "思い出を編集中" : "思い出を記録する"}
               </p>
               <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
-                {validEditingLog ? "体験を編集する" : "体験を記録する"}
+                {validEditingLog ? "思い出を編集する" : "思い出を記録する"}
               </h2>
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 種類を選ぶと、そのまま必要な入力だけが表示されます。
@@ -254,7 +262,7 @@ export default async function SessionDetailPage({
 
             {validEditingLog ? (
               <div className="rounded-2xl bg-sky-50 px-4 py-3 text-sm text-sky-700 ring-1 ring-sky-100">
-                編集中の体験:{" "}
+                編集中の思い出:{" "}
                 {getActivityLogTitle(validEditingLog) || "タイトル未設定"}
               </div>
             ) : null}
@@ -286,7 +294,7 @@ export default async function SessionDetailPage({
               successRedirectPath={resetEditorHref}
               submitLabel={validEditingLog ? "保存する" : "記録する"}
               cancelHref={validEditingLog ? resetEditorHref : undefined}
-              cancelLabel={validEditingLog ? "新しい体験に戻る" : undefined}
+              cancelLabel={validEditingLog ? "新しい思い出に戻る" : undefined}
             />
           </div>
         </section>
@@ -296,7 +304,7 @@ export default async function SessionDetailPage({
             <div>
               <p className="text-sm font-medium text-slate-500">この日のサマリー</p>
               <h2 className="mt-1 text-xl font-semibold text-slate-900">
-                この来場日の体験
+                この来場日の思い出
               </h2>
             </div>
             <p className="text-sm text-slate-500">
@@ -332,13 +340,13 @@ export default async function SessionDetailPage({
               </h2>
             </div>
             <p className="text-sm text-slate-500">
-              入力した体験が時系列で並びます。
+              入力した思い出が時系列で並びます。
             </p>
           </div>
 
           {logs.length === 0 ? (
             <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-5 py-6 text-sm leading-7 text-slate-600">
-              まだ体験はありません。上の入力エリアから、その日の体験を記録できます。
+              まだ思い出はありません。上の入力エリアから、その日の思い出を記録できます。
             </div>
           ) : (
             <div className="mt-6 space-y-3">
@@ -414,7 +422,7 @@ export default async function SessionDetailPage({
                             </p>
                           ) : null}
                           <p className="text-sm leading-7 text-slate-600">
-                            {log.memo || "この体験にはまだメモがありません。"}
+                            {log.memo || "この思い出にはまだメモがありません。"}
                           </p>
                         </div>
                       </div>

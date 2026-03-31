@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -178,7 +178,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
 
   const summaryItems = [
     {
-      label: "体験",
+      label: "思い出",
       value: filteredLogs.length,
       cardClassName: neutralSummaryTone.cardClassName,
       labelClassName: neutralSummaryTone.labelClassName,
@@ -226,11 +226,10 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
       <div className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-            コレクション
+            思い出アルバム
           </h1>
           <p className="max-w-3xl text-sm leading-7 text-slate-600">
-            記録した体験をカテゴリごとに見返せます。パビリオンはまとめて振り返り、
-            フードやピンバッジはひとつずつ一覧にしています。
+            記録した思い出をカテゴリごとに見返せます。パビリオンはまとめて振り返り、フードやピンバッジ、イベントはひとつずつ一覧にしています。
           </p>
         </div>
 
@@ -240,11 +239,13 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
               key={item.label}
               className={`rounded-3xl px-5 py-4 ring-1 ${item.cardClassName}`}
             >
-              <p className={`text-xs font-medium tracking-wide ${item.labelClassName}`}>
-                {item.label}
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-slate-900">
+              <p className="text-2xl font-semibold text-slate-900">
                 {item.value}
+              </p>
+              <p
+                className={`mt-2 text-xs font-medium tracking-wide ${item.labelClassName}`}
+              >
+                {item.label}
               </p>
             </div>
           ))}
@@ -313,7 +314,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
 
         {pavilionCollection.length === 0 ? (
           <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white px-6 py-8 text-sm leading-7 text-slate-600">
-            まだ体験はありません。来場日でパビリオンの体験を記録すると、ここに並びます。
+            まだ思い出はありません。来場日でパビリオンの思い出を記録すると、ここに並びます。
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -360,7 +361,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
                   {meta.label}
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  体験をそのまま一覧で見返せます。
+                  記録した思い出をそのまま一覧で見返せます。
                 </p>
               </div>
               <p className="text-sm font-medium text-slate-500">
@@ -370,7 +371,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
 
             {section.logs.length === 0 ? (
               <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white px-6 py-8 text-sm leading-7 text-slate-600">
-                まだ体験はありません。来場日で{meta.label}の体験を記録すると、ここに並びます。
+                まだ思い出はありません。来場日で{meta.label}の思い出を記録すると、ここに並びます。
               </div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -436,4 +437,3 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
     </section>
   );
 }
-

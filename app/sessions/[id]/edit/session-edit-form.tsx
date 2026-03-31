@@ -100,14 +100,17 @@ export function SessionEditForm({
             id="session-title"
             name="title"
             type="text"
-            required
             value={title}
             onChange={(event) => {
               setTitle(event.target.value);
               clearFieldState("title");
             }}
+            placeholder="例：初めての来場 / 夜のライトアップ巡り"
             className={fieldClass(Boolean(state.fieldErrors.title))}
           />
+          <p className="mt-2 text-xs text-slate-500">
+            この日をひとことで表す短い名前をつけます。
+          </p>
           {state.fieldErrors.title ? (
             <p className="mt-2 text-sm text-rose-600">{state.fieldErrors.title}</p>
           ) : null}
@@ -133,7 +136,7 @@ export function SessionEditForm({
             className={fieldClass(Boolean(state.fieldErrors.visitDate))}
           />
           <p className="mt-2 text-xs text-slate-500">
-            訪問した日付を設定します。同じ日の訪問は1つまでです。
+            来場日を設定します。同じ日の来場日は1つまでです。
           </p>
           {state.fieldErrors.visitDate ? (
             <p className="mt-2 text-sm text-rose-600">
@@ -162,11 +165,11 @@ export function SessionEditForm({
               clearFieldState("notes");
             }}
             maxLength={1000}
-            placeholder="その日の印象や、あとで思い出したいことを書けます。"
+            placeholder="その日の出来事や印象を書きます"
             className={fieldClass(Boolean(state.fieldErrors.notes))}
           />
           <p className="mt-2 text-xs text-slate-500">
-            メモは1000文字まで入力できます。
+            あとで振り返りたいことを書きます。
           </p>
           {state.fieldErrors.notes ? (
             <p className="mt-2 text-sm text-rose-600">{state.fieldErrors.notes}</p>
@@ -186,7 +189,7 @@ export function SessionEditForm({
           href={`/sessions/${sessionId}`}
           className="inline-flex w-full items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900 sm:w-auto"
         >
-          訪問へ戻る
+          来場日に戻る
         </Link>
       </div>
     </form>

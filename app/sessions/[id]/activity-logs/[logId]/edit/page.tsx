@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AppPrimaryNav } from "@/app/_components/app-primary-nav";
 import { ActivityLogForm } from "@/app/sessions/[id]/activity-log-form";
 import type { ActivityType } from "@/lib/activity-types";
 import { getActivityLog, getSession, listPavilions } from "@/lib/sessions";
@@ -11,9 +12,7 @@ type ActivityLogEditPageProps = {
   }>;
 };
 
-export default async function ActivityLogEditPage({
-  params,
-}: ActivityLogEditPageProps) {
+export default async function ActivityLogEditPage({ params }: ActivityLogEditPageProps) {
   const { id, logId } = await params;
   const [session, log, pavilions] = await Promise.all([
     getSession(id),
@@ -28,31 +27,18 @@ export default async function ActivityLogEditPage({
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-        <div className="mb-6 flex flex-wrap items-center gap-4 text-sm font-medium">
-          <Link href="/" className="text-slate-500 transition hover:text-slate-900">
-            ホームへ
-          </Link>
-          <Link
-            href="/sessions"
-            className="text-sky-700 transition hover:text-sky-900"
-          >
-            訪問一覧へ
-          </Link>
-          <Link
-            href={`/sessions/${session.id}`}
-            className="text-slate-500 transition hover:text-slate-900"
-          >
-            訪問へ戻る
+        <div className="space-y-4">
+          <AppPrimaryNav currentPath="/sessions" />
+          <Link href={`/sessions/${session.id}`} className="inline-flex text-sm font-medium text-slate-500 transition hover:text-slate-900">
+            この来場日に戻る
           </Link>
         </div>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <p className="text-sm font-medium text-sky-700">体験を編集</p>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-900">
-            体験を編集
-          </h1>
+          <p className="text-sm font-medium text-sky-700">思い出を編集する</p>
+          <h1 className="mt-2 text-3xl font-semibold text-slate-900">思い出を編集する</h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            この体験の内容を整えて、来場日のタイムラインに反映します。
+            この思い出の内容を整えて、来場日のタイムラインに反映します。
           </p>
 
           <ActivityLogForm
@@ -60,7 +46,7 @@ export default async function ActivityLogEditPage({
             pavilions={pavilions}
             mode="edit"
             logId={log.id}
-            submitLabel="体験を更新する"
+            submitLabel="保存する"
             cancelHref={`/sessions/${session.id}#experience-recorder`}
             cancelLabel="入力画面に戻る"
             initialActivityType={(log.activity_type ?? "pavilion_visit") as ActivityType}

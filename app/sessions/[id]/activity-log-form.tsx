@@ -242,6 +242,39 @@ export function ActivityLogForm({
   }
 
   function handleActivityTypeChange(nextActivityType: ActivityType) {
+    if (mode === "create") {
+      draftsRef.current = {
+        pavilion_visit: createEmptyDraft(),
+        food: createEmptyDraft(),
+        pin: createEmptyDraft(),
+        event_participation: createEmptyDraft(),
+      };
+      setActivityType(nextActivityType);
+      setTitle("");
+      setMemo("");
+      setOccurredAt("");
+      setPrice("");
+      setAcquisitionMethod("");
+      setPavilionSearch("");
+      setSelectedPavilionId("");
+      setState((current) => ({
+        ...current,
+        status: "idle",
+        message: "",
+        fieldErrors: {
+          ...current.fieldErrors,
+          activityType: undefined,
+          pavilionId: undefined,
+          title: undefined,
+          memo: undefined,
+          occurredAt: undefined,
+          price: undefined,
+          acquisitionMethod: undefined,
+        },
+      }));
+      return;
+    }
+
     draftsRef.current[activityType] = buildCurrentDraft();
     const nextDraft = draftsRef.current[nextActivityType] ?? createEmptyDraft();
 
@@ -331,7 +364,7 @@ export function ActivityLogForm({
           <div className="border-b border-slate-200 bg-white/80 px-5 py-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500">体験の種類</p>
+                <p className="text-sm font-medium text-slate-500">思い出の種類</p>
                 <h3 className="mt-1 text-lg font-semibold text-slate-900">
                   まず種類を選ぶ
                 </h3>
@@ -344,7 +377,7 @@ export function ActivityLogForm({
             </div>
 
             <fieldset className="mt-5">
-              <legend className="sr-only">体験の種類</legend>
+              <legend className="sr-only">思い出の種類</legend>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {activityTypeOptions.map((option) => {
                   const active = activityType === option.value;
@@ -644,7 +677,7 @@ export function ActivityLogForm({
                   clearFieldState("memo");
                 }}
                 maxLength={1000}
-                placeholder="あとで見返したいことを残せます。"
+                placeholder="あとで見返したいことを記録できます。"
                 className={fieldClass(Boolean(state.fieldErrors.memo))}
               />
               <p className="mt-2 text-xs text-slate-500">
@@ -672,7 +705,7 @@ export function ActivityLogForm({
         </button>
         {mode === "create" ? (
           <span className="text-sm text-slate-500">
-            保存した体験は下のタイムラインにすぐ追加されます。
+            保存した思い出は下のタイムラインにすぐ追加されます。
           </span>
         ) : null}
         {cancelHref ? (

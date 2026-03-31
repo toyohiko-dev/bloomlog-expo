@@ -28,23 +28,23 @@ export default async function SessionEditPage({
             href="/sessions"
             className="text-sky-700 transition hover:text-sky-900"
           >
-            訪問一覧へ
+            来場日一覧へ
           </Link>
           <Link
-            href={`/sessions/${session.id}`}
+            href="/collection"
             className="text-slate-500 transition hover:text-slate-900"
           >
-            訪問へ戻る
+            思い出アルバム
           </Link>
         </div>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <p className="text-sm font-medium text-sky-700">Edit Visit</p>
+          <p className="text-sm font-medium text-sky-700">来場日</p>
           <h1 className="mt-2 text-3xl font-semibold text-slate-900">
-            訪問を編集
+            来場日を編集する
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            タイトル・日付・メモを見直して、この訪問を整えられます。
+            タイトル・日付・メモを見直して、この来場日を整えられます。
           </p>
 
           <div className="mt-8">

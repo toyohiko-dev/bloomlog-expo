@@ -1,4 +1,5 @@
-﻿import Link from "next/link";
+import Link from "next/link";
+import { AppPrimaryNav } from "@/app/_components/app-primary-nav";
 import { startSessionForDateAction } from "@/app/sessions/actions";
 import { getActivityTypeMeta, neutralSummaryTone } from "@/lib/activity-types";
 import {
@@ -67,19 +68,18 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-8">
+        <AppPrimaryNav currentPath="/" />
+
         <section className="w-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-white to-sky-50 shadow-sm ring-1 ring-slate-200">
           <div className="px-6 py-8 sm:px-6 lg:px-10 lg:py-10">
             <div className="space-y-6">
               <div className="space-y-3">
-                <p className="text-sm font-medium text-emerald-700">
-                  BloomLog
-                </p>
+                <p className="text-sm font-medium text-emerald-700">BloomLog</p>
                 <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-                  来場の記録を、あとから思い出しやすい形に。
+                  来場日の思い出を、あとから振り返りやすい形に。
                 </h1>
                 <p className="max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                  行った日ごとに、その場で入力した体験を残せます。
-                  まずは来場日を開いて記録を始め、あとから一覧やコレクションで振り返れます。
+                  行った日ごとに、思い出を記録できます。まずは来場日を開いて記録を始めましょう。記録した思い出はあとから思い出アルバムで振り返れます。
                 </p>
               </div>
 
@@ -137,18 +137,16 @@ export default async function HomePage() {
           <div className="w-full rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">
-                  最近の来場日
-                </h2>
+                <h2 className="text-lg font-semibold text-slate-900">最近の来場日</h2>
                 <p className="mt-1 text-sm leading-6 text-slate-600">
-                  直近の来場日から記録を開いて、続きをすぐに残せます。
+                  直近の来場日を開くと、思い出の続きをすぐに記録できます。
                 </p>
               </div>
             </div>
 
             {sessions.length === 0 ? (
               <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-sm leading-7 text-slate-600">
-                まだ来場日はありません。最初の来場日を開くと、ここから記録を始められるようになります。
+                まだ来場日はありません。最初の来場日を開くと、ここから思い出を記録できるようになります。
               </div>
             ) : (
               <div className="mt-6">
@@ -160,15 +158,13 @@ export default async function HomePage() {
           </div>
 
           <div className="w-full rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <h2 className="text-lg font-semibold text-slate-900">
-              コレクション
-            </h2>
+            <h2 className="text-lg font-semibold text-slate-900">思い出アルバム</h2>
             <p className="mt-1 text-sm leading-6 text-slate-600">
-              記録したフードやピンバッジをまとめて振り返れます。
+              記録した思い出をカテゴリごとにまとめて振り返れます。
             </p>
             <div className="mt-6">
               <Link href="/collection" className={secondaryLinkClassName}>
-                コレクションを見る
+                思い出アルバムを見る
               </Link>
             </div>
           </div>

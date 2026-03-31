@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "BloomLog",
-  description: "万博の来場日ごとの体験を記録できるログアプリ",
+  description: "万博の来場日ごとの思い出を記録して振り返れるアプリ",
 };
 
 export default function RootLayout({

@@ -208,44 +208,19 @@ export async function startSessionForDateAction(formData: FormData) {
     redirect(`/sessions/${existingSession.id}`);
   }
 
-  const fixedEventId = await getFixedEventId();
-  const defaultTitle = `${visitDate} の訪問`;
-
-  const { data, error } = await supabase
-    .from("visit_sessions")
-    .insert({
-      visit_date: visitDate,
-      title: defaultTitle,
-      memo: "",
-      ...(fixedEventId ? { event_id: fixedEventId } : {}),
-    })
-    .select("id")
-    .single();
-
-  if (error) {
-    throw new Error(`訪問の開始に失敗しました: ${error.message}`);
-  }
-
-  revalidatePath("/");
-  revalidatePath("/sessions");
-  revalidatePath("/sessions/new");
-  redirect(`/sessions/${data.id}`);
+  redirect(`/sessions/new?visitDate=${encodeURIComponent(visitDate)}`);
 }
 
 export async function createSessionAction(
   formData?: FormData,
 ): Promise<SessionFormState | never> {
   const visitDate = formData ? readText(formData, "visitDate") : todayDateString();
-  const title = formData ? readText(formData, "title") : `${visitDate} の訪問`;
+  const title = formData ? readText(formData, "title") : "";
   const notes = formData ? readText(formData, "notes") : "";
   const fieldErrors: SessionFieldErrors = {};
 
   if (!visitDate) {
     fieldErrors.visitDate = "日付を入力してください。";
-  }
-
-  if (!title) {
-    fieldErrors.title = "タイトルを入力してください。";
   }
 
   if (notes.length > 1000) {
@@ -272,7 +247,7 @@ export async function createSessionAction(
     .from("visit_sessions")
     .insert({
       visit_date: visitDate,
-      title,
+      title: title || null,
       memo: notes,
       ...(fixedEventId ? { event_id: fixedEventId } : {}),
     })
@@ -310,10 +285,6 @@ export async function updateSessionAction(
       };
     }
 
-    if (!title) {
-      fieldErrors.title = "タイトルを入力してください。";
-    }
-
     if (!visitDate) {
       fieldErrors.visitDate = "日付を入力してください。";
     }
@@ -344,7 +315,7 @@ export async function updateSessionAction(
     const { error } = await supabase
       .from("visit_sessions")
       .update({
-        title,
+        title: title || null,
         visit_date: visitDate,
         memo: notes,
         event_id: fixedEventId ?? null,

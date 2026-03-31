@@ -37,7 +37,7 @@ export function DeleteActivityLogButton({
     <form
       action={deleteActivityLogAction}
       onSubmit={(event) => {
-        if (!window.confirm("この体験を削除しますか？")) {
+        if (!window.confirm("この思い出を削除しますか？")) {
           event.preventDefault();
         }
       }}
