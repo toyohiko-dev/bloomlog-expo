@@ -41,15 +41,15 @@ export function ProfileForm({
       displayName: initialDisplayName,
     },
   );
-  const [nicknameValue, setNicknameValue] = useState(initialDisplayName);
+  const [displayNameValue, setDisplayNameValue] = useState(initialDisplayName);
 
   useEffect(() => {
-    setNicknameValue(initialDisplayName);
+    setDisplayNameValue(initialDisplayName);
   }, [initialDisplayName]);
 
   useEffect(() => {
     if (state.status === "success" || state.status === "error") {
-      setNicknameValue(state.displayName);
+      setDisplayNameValue(state.displayName);
     }
   }, [state.displayName, state.status]);
 
@@ -75,27 +75,27 @@ export function ProfileForm({
 
       <div>
         <label
-          htmlFor="nickname"
+          htmlFor="displayName"
           className="mb-2 block text-sm font-medium text-slate-700"
         >
-          ニックネーム
+          表示名
         </label>
         <input
-          id="nickname"
-          name="nickname"
+          id="displayName"
+          name="displayName"
           type="text"
           required
           maxLength={20}
-          value={nicknameValue}
-          onChange={(event) => setNicknameValue(event.target.value)}
-          placeholder="例: はなみ / たろう"
-          className={fieldClass(Boolean(state.fieldErrors.nickname))}
+          value={displayNameValue}
+          onChange={(event) => setDisplayNameValue(event.target.value)}
+          placeholder="例: はなみ / taro"
+          className={fieldClass(Boolean(state.fieldErrors.displayName))}
         />
         <p className="mt-2 text-xs text-slate-500">
           表示名として使います。20文字以内で設定してください。
         </p>
-        {state.fieldErrors.nickname ? (
-          <p className="mt-2 text-sm text-rose-600">{state.fieldErrors.nickname}</p>
+        {state.fieldErrors.displayName ? (
+          <p className="mt-2 text-sm text-rose-600">{state.fieldErrors.displayName}</p>
         ) : null}
       </div>
 

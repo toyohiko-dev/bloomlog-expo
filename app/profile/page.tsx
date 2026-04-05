@@ -15,10 +15,10 @@ export default async function ProfilePage() {
           <div className="space-y-2">
             <p className="text-sm font-medium text-emerald-700">プロフィール</p>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              ニックネーム設定
+              表示名の設定
             </h1>
             <p className="text-sm leading-6 text-slate-600">
-              BloomLog で表示する名前を設定します。ログイン ID ではなく、体験を振り返るときの表示名です。
+              BloomLog で表示する名前を設定できます。ログインIDではなく、表示用の名前です。
             </p>
           </div>
 

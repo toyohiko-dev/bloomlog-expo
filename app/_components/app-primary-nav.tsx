@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AccountMenu } from "@/app/_components/account-menu";
 import { getCurrentUser } from "@/lib/auth";
-import { getCurrentProfile } from "@/lib/profiles";
+import { getCurrentProfile, hasCompletedProfile } from "@/lib/profiles";
 
 type AppPrimaryNavProps = {
   currentPath: "/" | "/sessions" | "/collection";
@@ -15,8 +15,8 @@ const navItems = [
 
 export async function AppPrimaryNav({ currentPath }: AppPrimaryNavProps) {
   const [user, profile] = await Promise.all([getCurrentUser(), getCurrentProfile()]);
-  const displayLabel = profile?.display_name ?? user?.email ?? user?.id;
-  const profileHref = profile ? "/profile" : "/profile/setup";
+  const displayLabel = profile?.display_name ?? user?.email ?? user?.id ?? "Account";
+  const profileHref = hasCompletedProfile(profile) ? "/profile" : "/profile/setup";
 
   return (
     <div className="rounded-[1.5rem] bg-white p-3 shadow-sm ring-1 ring-slate-200">

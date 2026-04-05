@@ -10,7 +10,7 @@ export type ProfileFormState = {
   message: string;
   displayName: string;
   fieldErrors: {
-    nickname?: string;
+    displayName?: string;
   };
 };
 

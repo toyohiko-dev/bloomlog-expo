@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getSafeRedirectPath, requireUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import type { ProfileFormState } from "@/lib/profile-shared";
 import { createServerSupabaseClient } from "@/lib/supabase";
 import {
@@ -30,16 +30,16 @@ export async function saveProfileAction(
     createServerSupabaseClient(),
     requireUser(),
   ]);
-  const nicknameInput = readText(formData, "nickname");
-  const { displayName, error } = validateDisplayName(nicknameInput);
+  const displayNameInput = readText(formData, "displayName");
+  const { displayName, error } = validateDisplayName(displayNameInput);
 
   if (error) {
     return {
       status: "error",
-      message: `ニックネームは必須で、${MAX_DISPLAY_NAME_LENGTH}文字以内です。`,
+      message: `表示名は1文字以上、${MAX_DISPLAY_NAME_LENGTH}文字以内で入力してください。`,
       displayName,
       fieldErrors: {
-        nickname: error,
+        displayName: error,
       },
     };
   }
@@ -69,8 +69,8 @@ export async function saveProfileAction(
   return {
     status: "success",
     message: existingProfile
-      ? "ニックネームを更新しました。"
-      : "ニックネームを設定しました。",
+      ? "表示名を更新しました。"
+      : "表示名を設定しました。",
     displayName,
     fieldErrors: {},
   };
@@ -86,6 +86,5 @@ export async function saveProfileSetupAction(
     return result;
   }
 
-  const nextPath = getSafeRedirectPath(readText(formData, "next"));
-  redirect(nextPath);
+  redirect("/");
 }

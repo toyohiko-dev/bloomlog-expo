@@ -5,6 +5,17 @@ import { getAuthCallbackURL, getSafeRedirectPath } from "@/lib/auth";
 import type { LoginFormState } from "@/app/login/form-state";
 import { createServerSupabaseClient } from "@/lib/supabase";
 
+function createLoginErrorRedirect(errorCode: string, nextPath = "/") {
+  const safeNextPath = getSafeRedirectPath(nextPath);
+  const searchParams = new URLSearchParams({ error: errorCode });
+
+  if (safeNextPath !== "/") {
+    searchParams.set("next", safeNextPath);
+  }
+
+  return `/login?${searchParams.toString()}`;
+}
+
 function readText(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
@@ -14,6 +25,7 @@ export async function requestMagicLinkAction(
   _previousState: LoginFormState,
   formData: FormData,
 ): Promise<LoginFormState> {
+  // Magic Link is intentionally retained for future reuse, but is not exposed in the production login UI.
   const email = readText(formData, "email");
   const nextPath = getSafeRedirectPath(readText(formData, "next"));
 
@@ -33,15 +45,12 @@ export async function requestMagicLinkAction(
   });
 
   if (error) {
-    return {
-      status: "error",
-      message: error.message,
-    };
+    redirect(createLoginErrorRedirect("unexpected", nextPath));
   }
 
   return {
     status: "success",
-    message: "Magic Link を送信しました。メールを確認してください。",
+    message: "Magic Link を送信しました。",
   };
 }
 
@@ -57,7 +66,12 @@ export async function signInWithGoogleAction(formData: FormData) {
   });
 
   if (error || !data.url) {
-    redirect("/login?error=oauth");
+    const errorCode =
+      error?.message.includes("provider is not enabled")
+        ? "google_not_enabled"
+        : "unexpected";
+
+    redirect(createLoginErrorRedirect(errorCode, nextPath));
   }
 
   redirect(data.url);

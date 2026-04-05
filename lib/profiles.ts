@@ -13,20 +13,30 @@ function normalizeDisplayName(value: string) {
   return value.trim();
 }
 
+export function hasDisplayName(value?: string | null) {
+  return Boolean(value?.trim());
+}
+
+export function hasCompletedProfile(
+  profile?: Pick<Profile, "display_name"> | null,
+) {
+  return hasDisplayName(profile?.display_name);
+}
+
 export function validateDisplayName(value: string) {
   const displayName = normalizeDisplayName(value);
 
   if (!displayName) {
     return {
       displayName,
-      error: "ニックネームを入力してください。",
+      error: "表示名を入力してください。",
     };
   }
 
   if (displayName.length > MAX_DISPLAY_NAME_LENGTH) {
     return {
       displayName,
-      error: `ニックネームは${MAX_DISPLAY_NAME_LENGTH}文字以内で入力してください。`,
+      error: `表示名は${MAX_DISPLAY_NAME_LENGTH}文字以内で入力してください。`,
     };
   }
 
@@ -57,13 +67,14 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
 
 export async function getCurrentDisplayName() {
   const [profile, user] = await Promise.all([getCurrentProfile(), requireUser()]);
-  return profile?.display_name ?? user.email ?? user.id;
+  const displayName = profile?.display_name;
+  return hasDisplayName(displayName) ? displayName : user.email ?? user.id;
 }
 
 export async function redirectToProfileSetupIfNeeded(nextPath = "/") {
   const profile = await getCurrentProfile();
 
-  if (!profile) {
+  if (!hasCompletedProfile(profile)) {
     const safeNextPath = getSafeRedirectPath(nextPath);
     redirect(`/profile/setup?next=${encodeURIComponent(safeNextPath)}`);
   }

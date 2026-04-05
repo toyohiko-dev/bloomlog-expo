@@ -1,24 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSafeRedirectPath } from "@/lib/auth";
+import { hasDisplayName } from "@/lib/profiles";
 import { createRouteHandlerSupabaseClient } from "@/lib/supabase";
 
-function createRedirectResponse(request: NextRequest, path: string) {
-  return NextResponse.redirect(new URL(path, request.url));
+function createRedirect(origin: string, path: string) {
+  return NextResponse.redirect(new URL(path, origin));
+}
+
+function applyCookies(from: NextResponse, to: NextResponse) {
+  from.cookies.getAll().forEach(({ name, value, ...options }) => {
+    to.cookies.set(name, value, options);
+  });
 }
 
 export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url);
-  const code = requestUrl.searchParams.get("code");
-  const nextPath = getSafeRedirectPath(requestUrl.searchParams.get("next"));
-  const response = createRedirectResponse(request, nextPath);
-  const supabase = createRouteHandlerSupabaseClient(request, response);
+  const { origin, searchParams } = new URL(request.url);
+  const code = searchParams.get("code");
 
-  if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+  if (!code) {
+    return createRedirect(origin, "/login?error=callback_failed");
+  }
 
-    if (error) {
-      return createRedirectResponse(request, "/login?error=oauth");
-    }
+  const authResponse = createRedirect(origin, "/");
+  const supabase = createRouteHandlerSupabaseClient(request, authResponse);
+  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (exchangeError) {
+    const response = createRedirect(origin, "/login?error=callback_failed");
+    applyCookies(authResponse, response);
+    return response;
   }
 
   const {
@@ -26,19 +35,25 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return createRedirectResponse(request, "/login?error=oauth");
+    const response = createRedirect(origin, "/login?error=callback_failed");
+    applyCookies(authResponse, response);
+    return response;
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("id")
+    .select("display_name")
     .eq("id", user.id)
     .maybeSingle();
 
-  const destination = profile
-    ? nextPath
-    : `/profile/setup?next=${encodeURIComponent(nextPath)}`;
+  if (profileError) {
+    const response = createRedirect(origin, "/login?error=callback_failed");
+    applyCookies(authResponse, response);
+    return response;
+  }
 
-  response.headers.set("Location", new URL(destination, request.url).toString());
+  const destination = hasDisplayName(profile?.display_name) ? "/" : "/profile/setup";
+  const response = createRedirect(origin, destination);
+  applyCookies(authResponse, response);
   return response;
 }
