@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import type { ProfileFormState } from "@/lib/profile-shared";
-import { createServerSupabaseClient } from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
   MAX_DISPLAY_NAME_LENGTH,
   getCurrentProfile,

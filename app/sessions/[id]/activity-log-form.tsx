@@ -124,6 +124,8 @@ export function ActivityLogForm({
   const [selectedPavilionId, setSelectedPavilionId] = useState(
     initialSelectedPavilion?.id ?? "",
   );
+  const [hasSelectedPhoto, setHasSelectedPhoto] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const deferredPavilionSearch = useDeferredValue(pavilionSearch);
 
   const draftsRef = useRef<Record<ActivityType, ActivityTypeDraft>>({
@@ -182,6 +184,7 @@ export function ActivityLogForm({
   const showPrice = activityType === "food" || activityType === "pin";
   const showAcquisitionMethod = activityType === "pin";
   const showPavilionPicker = activityType === "pavilion_visit";
+  const showPhotoInput = activityType !== "pavilion_visit";
   const notesLength = memo.length;
   const filteredPavilions = searchPavilions(pavilions, deferredPavilionSearch);
   const hasPavilionSearch = deferredPavilionSearch.trim().length > 0;
@@ -194,7 +197,8 @@ export function ActivityLogForm({
             occurredAt ||
             price ||
             activityType !== "pavilion_visit" ||
-            selectedPavilionId,
+            selectedPavilionId ||
+            hasSelectedPhoto,
         )
       : activityType !== initialActivityType ||
         selectedPavilionId !== normalizedInitialPavilionId ||
@@ -202,7 +206,8 @@ export function ActivityLogForm({
         memo !== initialMemo ||
         occurredAt !== normalizedInitialTime ||
         price !== normalizedInitialPrice ||
-        acquisitionMethod !== normalizedInitialMethod;
+        acquisitionMethod !== normalizedInitialMethod ||
+        hasSelectedPhoto;
 
   function clearFieldState(field: keyof ActivityLogFormState["fieldErrors"]) {
     setState((current) => ({
@@ -227,6 +232,7 @@ export function ActivityLogForm({
         title: undefined,
         price: undefined,
         acquisitionMethod: undefined,
+        photo: undefined,
       },
     }));
   }
@@ -257,6 +263,7 @@ export function ActivityLogForm({
       setAcquisitionMethod("");
       setPavilionSearch("");
       setSelectedPavilionId("");
+      setHasSelectedPhoto(false);
       setState((current) => ({
         ...current,
         status: "idle",
@@ -270,6 +277,7 @@ export function ActivityLogForm({
           occurredAt: undefined,
           price: undefined,
           acquisitionMethod: undefined,
+          photo: undefined,
         },
       }));
       return;
@@ -303,6 +311,10 @@ export function ActivityLogForm({
     setAcquisitionMethod("");
     setPavilionSearch("");
     setSelectedPavilionId("");
+    setHasSelectedPhoto(false);
+    if (photoInputRef.current) {
+      photoInputRef.current.value = "";
+    }
     setState(initialActivityLogFormState);
   }
 
@@ -340,7 +352,11 @@ export function ActivityLogForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6"
+      encType="multipart/form-data"
+    >
       <input type="hidden" name="sessionId" value={sessionId} />
       {mode === "edit" && logId ? (
         <input type="hidden" name="logId" value={logId} />
@@ -652,6 +668,34 @@ export function ActivityLogForm({
                 {state.fieldErrors.acquisitionMethod ? (
                   <p className="mt-2 text-sm text-rose-600">
                     {state.fieldErrors.acquisitionMethod}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {showPhotoInput ? (
+              <div>
+                <label
+                  htmlFor="photo"
+                  className="mb-2 block text-sm font-medium text-slate-700"
+                >
+                  写真
+                </label>
+                <input
+                  ref={photoInputRef}
+                  id="photo"
+                  name="photo"
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => {
+                    setHasSelectedPhoto(Boolean(event.target.files?.length));
+                    clearFieldState("photo");
+                  }}
+                  className={fieldClass(Boolean(state.fieldErrors.photo))}
+                />
+                {state.fieldErrors.photo ? (
+                  <p className="mt-2 text-sm text-rose-600">
+                    {state.fieldErrors.photo}
                   </p>
                 ) : null}
               </div>

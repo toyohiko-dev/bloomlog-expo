@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasDisplayName } from "@/lib/profiles";
-import { createRouteHandlerSupabaseClient } from "@/lib/supabase";
+import { createRouteHandlerSupabaseClient } from "@/lib/supabase/server";
 
 function createRedirect(origin: string, path: string) {
   return NextResponse.redirect(new URL(path, origin));

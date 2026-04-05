@@ -11,7 +11,11 @@ import {
 import { getActivityLogTitle, type ActivityLog } from "@/lib/session-shared";
 
 type CollectionFiltersProps = {
-  logs: ActivityLog[];
+  logs: CollectionActivityLog[];
+};
+
+type CollectionActivityLog = ActivityLog & {
+  photoUrl: string | null;
 };
 
 type FilterValue = "all" | ActivityType;
@@ -61,11 +65,11 @@ function normalizeMemoPreview(value: string | null) {
   return `${normalized.slice(0, 48)}…`;
 }
 
-function getSortTimestamp(log: ActivityLog) {
+function getSortTimestamp(log: CollectionActivityLog) {
   return new Date(log.occurred_at ?? log.created_at).getTime();
 }
 
-function buildPavilionCollection(logs: ActivityLog[]) {
+function buildPavilionCollection(logs: CollectionActivityLog[]) {
   const groups = new Map<string, PavilionCollectionItem>();
 
   for (const log of logs) {
@@ -380,6 +384,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
                   .sort((left, right) => getSortTimestamp(right) - getSortTimestamp(left))
                   .map((log) => {
                     const preview = normalizeMemoPreview(log.memo);
+    const photoUrl = log.photoUrl;
 
                     return (
                       <Link
@@ -387,6 +392,23 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
                         href={`/sessions/${log.session_id}`}
                         className="rounded-[1.75rem] bg-white p-5 shadow-sm ring-1 ring-slate-200 transition hover:ring-slate-300"
                       >
+                        <div className="mb-4 overflow-hidden rounded-[1.25rem] border border-slate-200 bg-slate-100">
+                          {photoUrl ? (
+                            <>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={photoUrl}
+                                alt=""
+                                className="h-40 w-full object-cover"
+                              />
+                            </>
+                          ) : (
+                            <div className="flex h-40 items-center justify-center bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 text-sm font-medium text-slate-400">
+                              No Photo
+                            </div>
+                          )}
+                        </div>
+
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <span

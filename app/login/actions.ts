@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { getAuthCallbackURL, getSafeRedirectPath } from "@/lib/auth";
 import type { LoginFormState } from "@/app/login/form-state";
-import { createServerSupabaseClient } from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 function createLoginErrorRedirect(errorCode: string, nextPath = "/") {
   const safeNextPath = getSafeRedirectPath(nextPath);

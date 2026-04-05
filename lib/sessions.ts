@@ -10,10 +10,8 @@ import {
   type PavilionOption,
   type VisitSession,
 } from "@/lib/session-shared";
-import {
-  createPublicSupabaseClient,
-  createServerSupabaseClient,
-} from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createPublicSupabaseClient } from "@/lib/supabase/shared";
 
 export { getActivityLogTitle } from "@/lib/session-shared";
 
@@ -80,6 +78,7 @@ const activityLogSelect = `
   activity_type,
   price,
   acquisition_method,
+  photo_path,
   pavilion_id,
   pavilion:pavilions (
     id,

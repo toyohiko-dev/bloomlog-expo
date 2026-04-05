@@ -15,10 +15,8 @@ import {
   normalizeAcquisitionMethod,
   type ActivityType,
 } from "@/lib/activity-types";
-import {
-  createPublicSupabaseClient,
-  createServerSupabaseClient,
-} from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createPublicSupabaseClient } from "@/lib/supabase/shared";
 import {
   getActivityLog,
   getDefaultEventId,
@@ -29,6 +27,12 @@ import {
 } from "@/lib/sessions";
 
 const FIXED_EVENT_KEY = "GREENEXPO2027";
+const ACTIVITY_PHOTO_BUCKET = "activity-photos";
+const ACTIVITY_PHOTO_EXTENSIONS: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
 const publicSupabase = createPublicSupabaseClient();
 
 function readText(formData: FormData, key: string) {
@@ -43,6 +47,78 @@ function parseOptionalPrice(value: string) {
 
   const price = Number(value);
   return Number.isFinite(price) ? price : Number.NaN;
+}
+
+function readPhotoFile(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return value instanceof File && value.size > 0 ? value : null;
+}
+
+function getPhotoExtension(file: File) {
+  const mimeExtension = ACTIVITY_PHOTO_EXTENSIONS[file.type];
+
+  if (mimeExtension) {
+    return mimeExtension;
+  }
+
+  const fileName = file.name.toLowerCase();
+
+  if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+    return "jpg";
+  }
+
+  if (fileName.endsWith(".png")) {
+    return "png";
+  }
+
+  if (fileName.endsWith(".webp")) {
+    return "webp";
+  }
+
+  return null;
+}
+
+function buildActivityPhotoPath(
+  userId: string,
+  sessionId: string,
+  activityId: string,
+  extension: string,
+) {
+  return `${userId}/${sessionId}/${activityId}-${crypto.randomUUID()}.${extension}`;
+}
+
+async function uploadActivityPhoto(
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  userId: string,
+  sessionId: string,
+  activityId: string,
+  file: File,
+) {
+  const extension = getPhotoExtension(file);
+
+  if (!extension) {
+    throw new Error("Unsupported photo file type.");
+  }
+
+  const photoPath = buildActivityPhotoPath(
+    userId,
+    sessionId,
+    activityId,
+    extension,
+  );
+
+  const { error } = await supabase.storage
+    .from(ACTIVITY_PHOTO_BUCKET)
+    .upload(photoPath, file, {
+      upsert: false,
+      contentType: file.type || undefined,
+    });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return photoPath;
 }
 
 function activityErrorState(
@@ -98,6 +174,7 @@ async function validateActivityLog(formData: FormData) {
   const priceInput = readText(formData, "price");
   const acquisitionMethodInput = readText(formData, "acquisitionMethod");
   const acquisitionMethod = normalizeAcquisitionMethod(acquisitionMethodInput);
+  const photo = readPhotoFile(formData, "photo");
   const fieldErrors: ActivityLogFieldErrors = {};
 
   const allowedActivityTypes = new Set<ActivityType>([
@@ -109,12 +186,12 @@ async function validateActivityLog(formData: FormData) {
 
   if (!sessionId) {
     return {
-      error: activityErrorState("訪問IDが見つかりません。"),
+      error: activityErrorState("\u30bb\u30c3\u30b7\u30e7\u30f3ID\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002"),
     };
   }
 
   if (!allowedActivityTypes.has(activityType)) {
-    fieldErrors.activityType = "体験の種類を選んでください。";
+    fieldErrors.activityType = "\u4f53\u9a13\u306e\u7a2e\u985e\u3092\u9078\u3093\u3067\u304f\u3060\u3055\u3044\u3002";
   }
 
   let pavilion = null;
@@ -122,22 +199,22 @@ async function validateActivityLog(formData: FormData) {
 
   if (activityType === "pavilion_visit") {
     if (!pavilionId) {
-      fieldErrors.pavilionId = "パビリオンを選んでください。";
+      fieldErrors.pavilionId = "\u30d1\u30d3\u30ea\u30aa\u30f3\u3092\u9078\u3093\u3067\u304f\u3060\u3055\u3044\u3002";
     } else {
       pavilion = await getPavilion(pavilionId);
 
       if (!pavilion || !pavilion.is_active) {
-        fieldErrors.pavilionId = "選択したパビリオンが見つかりません。";
+        fieldErrors.pavilionId = "\u9078\u629e\u3057\u305f\u30d1\u30d3\u30ea\u30aa\u30f3\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002";
       } else {
         title = pavilion.name;
       }
     }
   } else if (!title) {
-    fieldErrors.title = "名前を入力してください。";
+    fieldErrors.title = "\u540d\u524d\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002";
   }
 
   if (memo.length > 1000) {
-    fieldErrors.memo = "メモは1000文字以内で入力してください。";
+    fieldErrors.memo = "\u30e1\u30e2\u306f1000\u6587\u5b57\u4ee5\u5185\u3067\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002";
   }
 
   const price = parseOptionalPrice(priceInput);
@@ -147,30 +224,38 @@ async function validateActivityLog(formData: FormData) {
     priceInput &&
     Number.isNaN(price)
   ) {
-    fieldErrors.price = "価格は数字で入力してください。";
+    fieldErrors.price = "\u4fa1\u683c\u306f\u6570\u5b57\u3067\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002";
   }
 
   if (activityType === "pin" && !acquisitionMethod) {
-    fieldErrors.acquisitionMethod = "入手方法を選んでください。";
+    fieldErrors.acquisitionMethod = "\u5165\u624b\u65b9\u6cd5\u3092\u9078\u3093\u3067\u304f\u3060\u3055\u3044\u3002";
+  }
+
+  if (activityType === "pavilion_visit" && photo) {
+    fieldErrors.photo = "\u3053\u306e\u7a2e\u985e\u3067\u306f\u5199\u771f\u3092\u8ffd\u52a0\u3067\u304d\u307e\u305b\u3093\u3002";
+  }
+
+  if (photo && !getPhotoExtension(photo)) {
+    fieldErrors.photo = "jpg / png / webp \u306e\u753b\u50cf\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044\u3002";
   }
 
   const session = await getSession(sessionId);
 
   if (!session) {
     return {
-      error: activityErrorState("訪問が見つかりません。"),
+      error: activityErrorState("\u30bb\u30c3\u30b7\u30e7\u30f3\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002"),
     };
   }
 
   const occurredAt = buildOccurredAt(session.visit_date, occurredTime);
 
   if (occurredAt === undefined) {
-    fieldErrors.occurredAt = "正しい時刻を入力してください。";
+    fieldErrors.occurredAt = "\u6b63\u3057\u3044\u6642\u523b\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002";
   }
 
   if (Object.keys(fieldErrors).length > 0) {
     return {
-      error: activityErrorState("入力内容を確認してください。", fieldErrors),
+      error: activityErrorState("\u5165\u529b\u5185\u5bb9\u3092\u78ba\u8a8d\u3057\u3066\u304f\u3060\u3055\u3044\u3002", fieldErrors),
     };
   }
 
@@ -185,6 +270,7 @@ async function validateActivityLog(formData: FormData) {
       occurredAt,
       price,
       acquisitionMethod,
+      photo,
     },
   };
 }
@@ -229,17 +315,17 @@ export async function createSessionAction(
   const fieldErrors: SessionFieldErrors = {};
 
   if (!visitDate) {
-    fieldErrors.visitDate = "日付を入力してください。";
+    fieldErrors.visitDate = "\u65e5\u4ed8\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002";
   }
 
   if (notes.length > 1000) {
-    fieldErrors.notes = "メモは1000文字以内で入力してください。";
+    fieldErrors.notes = "\u30e1\u30e2\u306f1000\u6587\u5b57\u4ee5\u5185\u3067\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002";
   }
 
   if (Object.keys(fieldErrors).length > 0) {
     return {
       status: "error",
-      message: "入力内容を確認してください。",
+      message: "\u5165\u529b\u5185\u5bb9\u3092\u78ba\u8a8d\u3057\u3066\u304f\u3060\u3055\u3044\u3002",
       fieldErrors,
     };
   }
@@ -267,7 +353,7 @@ export async function createSessionAction(
   if (error) {
     return {
       status: "error",
-      message: `訪問の作成に失敗しました: ${error.message}`,
+      message: `髫ｪ・ｪ陜荳翫・闖ｴ諛医・邵ｺ・ｫ陞滂ｽｱ隰ｨ蜉ｱ・邵ｺ・ｾ邵ｺ蜉ｱ笳・ ${error.message}`,
       fieldErrors,
     };
   }
@@ -294,17 +380,17 @@ export async function updateSessionAction(
     if (!sessionId) {
       return {
         status: "error",
-        message: "訪問IDが見つかりません。",
+        message: "\u30bb\u30c3\u30b7\u30e7\u30f3ID\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002",
         fieldErrors,
       };
     }
 
     if (!visitDate) {
-      fieldErrors.visitDate = "日付を入力してください。";
+      fieldErrors.visitDate = "\u65e5\u4ed8\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002";
     }
 
     if (notes.length > 1000) {
-      fieldErrors.notes = "メモは1000文字以内で入力してください。";
+      fieldErrors.notes = "\u30e1\u30e2\u306f1000\u6587\u5b57\u4ee5\u5185\u3067\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002";
     }
 
     if (visitDate) {
@@ -312,14 +398,14 @@ export async function updateSessionAction(
 
       if (existingSession && String(existingSession.id) !== sessionId) {
         fieldErrors.visitDate =
-          "同じ日の訪問がすでにあります。既存の訪問を使ってください。";
+          "\u540c\u3058\u65e5\u306e\u30bb\u30c3\u30b7\u30e7\u30f3\u304c\u3059\u3067\u306b\u3042\u308a\u307e\u3059\u3002\u65e2\u5b58\u306e\u30bb\u30c3\u30b7\u30e7\u30f3\u3092\u4f7f\u3063\u3066\u304f\u3060\u3055\u3044\u3002";
       }
     }
 
     if (Object.keys(fieldErrors).length > 0) {
       return {
         status: "error",
-        message: "入力内容を確認してください。",
+        message: "\u5165\u529b\u5185\u5bb9\u3092\u78ba\u8a8d\u3057\u3066\u304f\u3060\u3055\u3044\u3002",
         fieldErrors,
       };
     }
@@ -341,7 +427,7 @@ export async function updateSessionAction(
     if (error) {
       return {
         status: "error",
-        message: `訪問の更新に失敗しました: ${error.message}`,
+        message: `髫ｪ・ｪ陜荳翫・隴厄ｽｴ隴・ｽｰ邵ｺ・ｫ陞滂ｽｱ隰ｨ蜉ｱ・邵ｺ・ｾ邵ｺ蜉ｱ笳・ ${error.message}`,
         fieldErrors,
       };
     }
@@ -352,7 +438,7 @@ export async function updateSessionAction(
 
     return {
       status: "success",
-      message: "訪問を保存しました。",
+      message: "\u30bb\u30c3\u30b7\u30e7\u30f3\u3092\u4fdd\u5b58\u3057\u307e\u3057\u305f\u3002",
       fieldErrors: {},
     };
   } catch (error) {
@@ -360,8 +446,8 @@ export async function updateSessionAction(
       status: "error",
       message:
         error instanceof Error
-          ? `エラーが発生しました: ${error.message}`
-          : "訪問の更新に失敗しました。",
+          ? `\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f: ${error.message}`
+          : "\u30bb\u30c3\u30b7\u30e7\u30f3\u306e\u66f4\u65b0\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002",
       fieldErrors: {},
     };
   }
@@ -375,7 +461,7 @@ export async function deleteSessionAction(formData: FormData) {
   const sessionId = String(formData.get("id") ?? "");
 
   if (!sessionId) {
-    throw new Error("削除対象の訪問IDが見つかりません。");
+    throw new Error("\u524a\u9664\u5bfe\u8c61\u306e\u30bb\u30c3\u30b7\u30e7\u30f3ID\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002");
   }
 
   const { error: logsError } = await supabase
@@ -385,7 +471,7 @@ export async function deleteSessionAction(formData: FormData) {
     .eq("user_id", user.id);
 
   if (logsError) {
-    throw new Error(`体験の削除に失敗しました: ${logsError.message}`);
+    throw new Error(`闖ｴ鬥ｴ・ｨ阮吶・陷台ｼ∝求邵ｺ・ｫ陞滂ｽｱ隰ｨ蜉ｱ・邵ｺ・ｾ邵ｺ蜉ｱ笳・ ${logsError.message}`);
   }
 
   const { error: sessionError } = await supabase
@@ -395,7 +481,7 @@ export async function deleteSessionAction(formData: FormData) {
     .eq("user_id", user.id);
 
   if (sessionError) {
-    throw new Error(`訪問の削除に失敗しました: ${sessionError.message}`);
+    throw new Error(`髫ｪ・ｪ陜荳翫・陷台ｼ∝求邵ｺ・ｫ陞滂ｽｱ隰ｨ蜉ｱ・邵ｺ・ｾ邵ｺ蜉ｱ笳・ ${sessionError.message}`);
   }
 
   revalidatePath("/sessions");
@@ -411,7 +497,7 @@ export async function deleteActivityLogAction(formData: FormData) {
   const logId = String(formData.get("logId") ?? "");
 
   if (!sessionId || !logId) {
-    throw new Error("削除対象の体験IDが見つかりません。");
+    throw new Error("\u524a\u9664\u5bfe\u8c61\u306e\u4f53\u9a13ID\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002");
   }
 
   const { error } = await supabase
@@ -421,7 +507,7 @@ export async function deleteActivityLogAction(formData: FormData) {
     .eq("user_id", user.id);
 
   if (error) {
-    throw new Error(`体験の削除に失敗しました: ${error.message}`);
+    throw new Error(`闖ｴ鬥ｴ・ｨ阮吶・陷台ｼ∝求邵ｺ・ｫ陞滂ｽｱ隰ｨ蜉ｱ・邵ｺ・ｾ邵ｺ蜉ｱ笳・ ${error.message}`);
   }
 
   revalidatePath(`/sessions/${sessionId}`);
@@ -452,9 +538,17 @@ export async function submitActivityLogAction(
       occurredAt,
       price,
       acquisitionMethod,
+      photo,
     } = validation.values;
 
+    const logId = crypto.randomUUID();
+    const photoPath =
+      photo && activityType !== "pavilion_visit"
+        ? await uploadActivityPhoto(supabase, user.id, sessionId, logId, photo)
+        : null;
+
     const { error } = await supabase.from("activity_logs").insert({
+      id: logId,
       user_id: user.id,
       session_id: sessionId,
       activity_type: activityType,
@@ -466,10 +560,11 @@ export async function submitActivityLogAction(
       price:
         activityType === "food" || activityType === "pin" ? price : null,
       acquisition_method: activityType === "pin" ? acquisitionMethod : null,
+      photo_path: photoPath,
     });
 
     if (error) {
-      return activityErrorState(`体験の記録に失敗しました: ${error.message}`);
+      return activityErrorState(`闖ｴ鬥ｴ・ｨ阮吶・髫ｪ蛟ｬ鮖ｸ邵ｺ・ｫ陞滂ｽｱ隰ｨ蜉ｱ・邵ｺ・ｾ邵ｺ蜉ｱ笳・ ${error.message}`);
     }
 
     revalidatePath(`/sessions/${sessionId}`);
@@ -477,14 +572,14 @@ export async function submitActivityLogAction(
 
     return {
       status: "success",
-      message: "体験を記録しました。",
+      message: "\u4f53\u9a13\u3092\u8a18\u9332\u3057\u307e\u3057\u305f\u3002",
       fieldErrors: {},
     };
   } catch (error) {
     return activityErrorState(
       error instanceof Error
-        ? `エラーが発生しました: ${error.message}`
-        : "体験の記録に失敗しました。",
+        ? `\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f: ${error.message}`
+        : "\u4f53\u9a13\u306e\u8a18\u9332\u306b\u5931\u6557\u3057\u307e\u3057"
     );
   }
 }
@@ -501,7 +596,7 @@ export async function updateActivityLogAction(
     const validation = await validateActivityLog(formData);
 
     if (!logId) {
-      return activityErrorState("体験IDが見つかりません。");
+      return activityErrorState("\u4f53\u9a13ID\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002");
     }
 
     if (validation.error) {
@@ -518,13 +613,21 @@ export async function updateActivityLogAction(
       occurredAt,
       price,
       acquisitionMethod,
+      photo,
     } = validation.values;
 
     const existingLog = await getActivityLog(logId);
 
     if (!existingLog || String(existingLog.session_id) !== sessionId) {
-      return activityErrorState("編集対象の体験が見つかりません。");
+      return activityErrorState("\u7de8\u96c6\u5bfe\u8c61\u306e\u4f53\u9a13\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002");
     }
+
+    const photoPath =
+      activityType === "pavilion_visit"
+        ? null
+        : photo
+          ? await uploadActivityPhoto(supabase, user.id, sessionId, logId, photo)
+          : existingLog.photo_path;
 
     const { error } = await supabase
       .from("activity_logs")
@@ -539,12 +642,13 @@ export async function updateActivityLogAction(
         price:
           activityType === "food" || activityType === "pin" ? price : null,
         acquisition_method: activityType === "pin" ? acquisitionMethod : null,
+        photo_path: photoPath,
       })
       .eq("id", logId)
       .eq("user_id", user.id);
 
     if (error) {
-      return activityErrorState(`体験の更新に失敗しました: ${error.message}`);
+      return activityErrorState(`闖ｴ鬥ｴ・ｨ阮吶・隴厄ｽｴ隴・ｽｰ邵ｺ・ｫ陞滂ｽｱ隰ｨ蜉ｱ・邵ｺ・ｾ邵ｺ蜉ｱ笳・ ${error.message}`);
     }
 
     revalidatePath(`/sessions/${sessionId}`);
@@ -553,14 +657,14 @@ export async function updateActivityLogAction(
 
     return {
       status: "success",
-      message: "体験を更新しました。",
+      message: "\u4f53\u9a13\u3092\u66f4\u65b0\u3057\u307e\u3057\u305f\u3002",
       fieldErrors: {},
     };
   } catch (error) {
     return activityErrorState(
       error instanceof Error
-        ? `エラーが発生しました: ${error.message}`
-        : "体験の更新に失敗しました。",
+        ? `\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f: ${error.message}`
+        : "\u4f53\u9a13\u306e\u66f4\u65b0\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002"
     );
   }
 }

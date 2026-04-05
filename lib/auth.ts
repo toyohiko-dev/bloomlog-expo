@@ -3,7 +3,7 @@ import "server-only";
 import type { User } from "@supabase/supabase-js";
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "@/lib/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 function normalizeRedirectPath(path?: string | null) {
   if (!path || !path.startsWith("/")) {

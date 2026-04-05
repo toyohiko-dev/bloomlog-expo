@@ -74,6 +74,7 @@ export type ActivityLog = {
   activity_type: string | null;
   price: number | null;
   acquisition_method: string | null;
+  photo_path: string | null;
   pavilion_id: string | null;
   pavilion: ActivityLogPavilion | null;
 };

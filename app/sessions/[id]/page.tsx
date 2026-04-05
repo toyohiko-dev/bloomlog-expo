@@ -14,6 +14,7 @@ import {
   listActivityLogs,
   listPavilions,
 } from "@/lib/sessions";
+import { getActivityPhotoUrl } from "@/lib/supabase/shared";
 
 function formatVisitDate(value: string) {
   return new Intl.DateTimeFormat("ja-JP", {
@@ -354,6 +355,9 @@ export default async function SessionDetailPage({
                 const meta = getActivityTypeMeta(log.activity_type);
                 const isEditing = validEditingLog?.id === log.id;
                 const visual = getActivityTypeVisual(log.activity_type);
+                const photoUrl = log.photo_path
+                  ? getActivityPhotoUrl(log.photo_path)
+                  : null;
 
                 return (
                   <article
@@ -404,6 +408,16 @@ export default async function SessionDetailPage({
                         </div>
 
                         <div className="mt-4 space-y-2">
+                          {photoUrl ? (
+                            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={photoUrl}
+                                alt=""
+                                className="h-48 w-full object-cover"
+                              />
+                            </div>
+                          ) : null}
                           {log.price !== null ? (
                             <p className="text-sm text-slate-600">
                               <span className="font-medium text-slate-500">
