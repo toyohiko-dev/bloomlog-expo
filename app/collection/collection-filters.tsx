@@ -8,7 +8,7 @@ import {
   neutralSummaryTone,
   type ActivityType,
 } from "@/lib/activity-types";
-import { getActivityLogTitle, type ActivityLog } from "@/lib/sessions";
+import { getActivityLogTitle, type ActivityLog } from "@/lib/session-shared";
 
 type CollectionFiltersProps = {
   logs: ActivityLog[];

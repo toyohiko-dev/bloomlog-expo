@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireUser } from "@/lib/auth";
 import type {
   ActivityLogFieldErrors,
   ActivityLogFormState,
@@ -14,7 +15,10 @@ import {
   normalizeAcquisitionMethod,
   type ActivityType,
 } from "@/lib/activity-types";
-import { supabase } from "@/lib/supabase";
+import {
+  createPublicSupabaseClient,
+  createServerSupabaseClient,
+} from "@/lib/supabase";
 import {
   getActivityLog,
   getDefaultEventId,
@@ -25,6 +29,7 @@ import {
 } from "@/lib/sessions";
 
 const FIXED_EVENT_KEY = "GREENEXPO2027";
+const publicSupabase = createPublicSupabaseClient();
 
 function readText(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -55,7 +60,7 @@ async function getFixedEventId() {
   const candidates = [FIXED_EVENT_KEY, "GREENxEXPO 2027"];
 
   for (const candidate of candidates) {
-    const { data, error } = await supabase
+    const { data, error } = await publicSupabase
       .from("events")
       .select("id")
       .or(`id.eq.${candidate},name.eq.${candidate}`)
@@ -214,6 +219,10 @@ export async function startSessionForDateAction(formData: FormData) {
 export async function createSessionAction(
   formData?: FormData,
 ): Promise<SessionFormState | never> {
+  const [supabase, user] = await Promise.all([
+    createServerSupabaseClient(),
+    requireUser(),
+  ]);
   const visitDate = formData ? readText(formData, "visitDate") : todayDateString();
   const title = formData ? readText(formData, "title") : "";
   const notes = formData ? readText(formData, "notes") : "";
@@ -246,6 +255,7 @@ export async function createSessionAction(
   const { data, error } = await supabase
     .from("visit_sessions")
     .insert({
+      user_id: user.id,
       visit_date: visitDate,
       title: title || null,
       memo: notes,
@@ -271,6 +281,10 @@ export async function updateSessionAction(
   formData: FormData,
 ): Promise<SessionFormState> {
   try {
+    const [supabase, user] = await Promise.all([
+      createServerSupabaseClient(),
+      requireUser(),
+    ]);
     const sessionId = String(formData.get("id") ?? "");
     const title = readText(formData, "title");
     const visitDate = readText(formData, "visitDate");
@@ -315,12 +329,14 @@ export async function updateSessionAction(
     const { error } = await supabase
       .from("visit_sessions")
       .update({
+        user_id: user.id,
         title: title || null,
         visit_date: visitDate,
         memo: notes,
         event_id: fixedEventId ?? null,
       })
-      .eq("id", sessionId);
+      .eq("id", sessionId)
+      .eq("user_id", user.id);
 
     if (error) {
       return {
@@ -352,6 +368,10 @@ export async function updateSessionAction(
 }
 
 export async function deleteSessionAction(formData: FormData) {
+  const [supabase, user] = await Promise.all([
+    createServerSupabaseClient(),
+    requireUser(),
+  ]);
   const sessionId = String(formData.get("id") ?? "");
 
   if (!sessionId) {
@@ -361,7 +381,8 @@ export async function deleteSessionAction(formData: FormData) {
   const { error: logsError } = await supabase
     .from("activity_logs")
     .delete()
-    .eq("session_id", sessionId);
+    .eq("session_id", sessionId)
+    .eq("user_id", user.id);
 
   if (logsError) {
     throw new Error(`体験の削除に失敗しました: ${logsError.message}`);
@@ -370,7 +391,8 @@ export async function deleteSessionAction(formData: FormData) {
   const { error: sessionError } = await supabase
     .from("visit_sessions")
     .delete()
-    .eq("id", sessionId);
+    .eq("id", sessionId)
+    .eq("user_id", user.id);
 
   if (sessionError) {
     throw new Error(`訪問の削除に失敗しました: ${sessionError.message}`);
@@ -381,6 +403,10 @@ export async function deleteSessionAction(formData: FormData) {
 }
 
 export async function deleteActivityLogAction(formData: FormData) {
+  const [supabase, user] = await Promise.all([
+    createServerSupabaseClient(),
+    requireUser(),
+  ]);
   const sessionId = String(formData.get("sessionId") ?? "");
   const logId = String(formData.get("logId") ?? "");
 
@@ -391,7 +417,8 @@ export async function deleteActivityLogAction(formData: FormData) {
   const { error } = await supabase
     .from("activity_logs")
     .delete()
-    .eq("id", logId);
+    .eq("id", logId)
+    .eq("user_id", user.id);
 
   if (error) {
     throw new Error(`体験の削除に失敗しました: ${error.message}`);
@@ -405,6 +432,10 @@ export async function submitActivityLogAction(
   formData: FormData,
 ): Promise<ActivityLogFormState> {
   try {
+    const [supabase, user] = await Promise.all([
+      createServerSupabaseClient(),
+      requireUser(),
+    ]);
     const validation = await validateActivityLog(formData);
 
     if (validation.error) {
@@ -424,6 +455,7 @@ export async function submitActivityLogAction(
     } = validation.values;
 
     const { error } = await supabase.from("activity_logs").insert({
+      user_id: user.id,
       session_id: sessionId,
       activity_type: activityType,
       pavilion_id: activityType === "pavilion_visit" ? pavilionId : null,
@@ -461,6 +493,10 @@ export async function updateActivityLogAction(
   formData: FormData,
 ): Promise<ActivityLogFormState> {
   try {
+    const [supabase, user] = await Promise.all([
+      createServerSupabaseClient(),
+      requireUser(),
+    ]);
     const logId = readText(formData, "logId");
     const validation = await validateActivityLog(formData);
 
@@ -493,6 +529,7 @@ export async function updateActivityLogAction(
     const { error } = await supabase
       .from("activity_logs")
       .update({
+        user_id: user.id,
         activity_type: activityType,
         pavilion_id: activityType === "pavilion_visit" ? pavilionId : null,
         title,
@@ -503,7 +540,8 @@ export async function updateActivityLogAction(
           activityType === "food" || activityType === "pin" ? price : null,
         acquisition_method: activityType === "pin" ? acquisitionMethod : null,
       })
-      .eq("id", logId);
+      .eq("id", logId)
+      .eq("user_id", user.id);
 
     if (error) {
       return activityErrorState(`体験の更新に失敗しました: ${error.message}`);

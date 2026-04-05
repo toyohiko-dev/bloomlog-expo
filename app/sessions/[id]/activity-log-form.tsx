@@ -14,7 +14,7 @@ import {
   normalizeAcquisitionMethod,
   type ActivityType,
 } from "@/lib/activity-types";
-import { searchPavilions, type PavilionOption } from "@/lib/sessions";
+import { searchPavilions, type PavilionOption } from "@/lib/session-shared";
 import {
   submitActivityLogAction,
   updateActivityLogAction,

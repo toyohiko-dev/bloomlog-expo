@@ -1,82 +1,21 @@
-import { supabase } from "@/lib/supabase";
+import { requireUser } from "@/lib/auth";
+import {
+  type ActivityLog,
+  type ActivityLogPavilion,
+  type Area,
+  type EventOption,
+  getActivityLogTitle,
+  type Pavilion,
+  type PavilionAlias,
+  type PavilionOption,
+  type VisitSession,
+} from "@/lib/session-shared";
+import {
+  createPublicSupabaseClient,
+  createServerSupabaseClient,
+} from "@/lib/supabase";
 
-export type VisitSession = {
-  id: string;
-  created_at: string;
-  visit_date: string;
-  title: string | null;
-  memo: string | null;
-  event_id: string | null;
-};
-
-export type EventOption = {
-  id: string;
-  name: string;
-};
-
-export type Area = {
-  id: string;
-  name: string;
-  sort_order: number | null;
-};
-
-export type Pavilion = {
-  id: string;
-  name: string;
-  official_name: string | null;
-  country_id: string | null;
-  image_path: string | null;
-  area_id: string | null;
-  spot_id: string | null;
-  is_active: boolean;
-  sort_order: number;
-  created_at: string;
-  updated_at: string;
-};
-
-export type PavilionAlias = {
-  alias: string;
-};
-
-export type PavilionOption = Pick<
-  Pavilion,
-  | "id"
-  | "name"
-  | "official_name"
-  | "country_id"
-  | "image_path"
-  | "area_id"
-  | "spot_id"
-  | "sort_order"
-> & {
-  aliases: string[];
-};
-
-export type ActivityLogPavilion = Pick<
-  Pavilion,
-  | "id"
-  | "name"
-  | "official_name"
-  | "country_id"
-  | "image_path"
-  | "area_id"
-  | "spot_id"
->;
-
-export type ActivityLog = {
-  id: string;
-  created_at: string;
-  occurred_at: string | null;
-  session_id: string;
-  event_id: string | null;
-  title: string | null;
-  memo: string | null;
-  activity_type: string | null;
-  price: number | null;
-  acquisition_method: string | null;
-  pavilion_id: string | null;
-  pavilion: ActivityLogPavilion | null;
-};
+export { getActivityLogTitle } from "@/lib/session-shared";
 
 export type PavilionProgressSummary = {
   totalPavilions: number;
@@ -132,6 +71,7 @@ export type PavilionAlbumLayout = {
 const activityLogSelect = `
   id,
   created_at,
+  user_id,
   occurred_at,
   session_id,
   event_id,
@@ -152,6 +92,17 @@ const activityLogSelect = `
   )
 `;
 
+const publicSupabase = createPublicSupabaseClient();
+
+async function getUserScopedSupabase() {
+  const [supabase, user] = await Promise.all([
+    createServerSupabaseClient(),
+    requireUser(),
+  ]);
+
+  return { supabase, user };
+}
+
 function normalizeActivityLog(
   log: Omit<ActivityLog, "pavilion"> & {
     pavilion: ActivityLogPavilion | ActivityLogPavilion[] | null;
@@ -164,9 +115,11 @@ function normalizeActivityLog(
 }
 
 export async function listSessions() {
+  const { supabase, user } = await getUserScopedSupabase();
   const { data, error } = await supabase
     .from("visit_sessions")
-    .select("id, created_at, visit_date, title, memo, event_id")
+    .select("id, created_at, user_id, visit_date, title, memo, event_id")
+    .eq("user_id", user.id)
     .order("visit_date", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -178,9 +131,11 @@ export async function listSessions() {
 }
 
 export async function getSession(sessionId: string) {
+  const { supabase, user } = await getUserScopedSupabase();
   const { data, error } = await supabase
     .from("visit_sessions")
-    .select("id, created_at, visit_date, title, memo, event_id")
+    .select("id, created_at, user_id, visit_date, title, memo, event_id")
+    .eq("user_id", user.id)
     .eq("id", sessionId)
     .maybeSingle();
 
@@ -192,9 +147,11 @@ export async function getSession(sessionId: string) {
 }
 
 export async function getSessionByVisitDate(visitDate: string) {
+  const { supabase, user } = await getUserScopedSupabase();
   const { data, error } = await supabase
     .from("visit_sessions")
-    .select("id, created_at, visit_date, title, memo, event_id")
+    .select("id, created_at, user_id, visit_date, title, memo, event_id")
+    .eq("user_id", user.id)
     .eq("visit_date", visitDate)
     .order("created_at", { ascending: true })
     .limit(1)
@@ -211,9 +168,11 @@ export async function getAnotherSessionByVisitDate(
   visitDate: string,
   currentSessionId: string,
 ) {
+  const { supabase, user } = await getUserScopedSupabase();
   const { data, error } = await supabase
     .from("visit_sessions")
-    .select("id, created_at, visit_date, title, memo, event_id")
+    .select("id, created_at, user_id, visit_date, title, memo, event_id")
+    .eq("user_id", user.id)
     .eq("visit_date", visitDate)
     .neq("id", currentSessionId)
     .order("created_at", { ascending: true })
@@ -228,9 +187,11 @@ export async function getAnotherSessionByVisitDate(
 }
 
 export async function listActivityLogs(sessionId: string) {
+  const { supabase, user } = await getUserScopedSupabase();
   const { data, error } = await supabase
     .from("activity_logs")
     .select(activityLogSelect)
+    .eq("user_id", user.id)
     .eq("session_id", sessionId)
     .order("created_at", { ascending: true });
 
@@ -265,9 +226,11 @@ export async function listActivityLogs(sessionId: string) {
 }
 
 export async function getActivityLog(logId: string) {
+  const { supabase, user } = await getUserScopedSupabase();
   const { data, error } = await supabase
     .from("activity_logs")
     .select(activityLogSelect)
+    .eq("user_id", user.id)
     .eq("id", logId)
     .maybeSingle();
 
@@ -285,9 +248,11 @@ export async function getActivityLog(logId: string) {
 }
 
 export async function listCollectionActivityLogs() {
+  const { supabase, user } = await getUserScopedSupabase();
   const { data, error } = await supabase
     .from("activity_logs")
     .select(activityLogSelect)
+    .eq("user_id", user.id)
     .order("occurred_at", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -303,7 +268,7 @@ export async function listCollectionActivityLogs() {
 }
 
 export async function listPavilions() {
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from("pavilions")
     .select(
       "id, name, official_name, country_id, image_path, area_id, spot_id, is_active, sort_order, created_at, updated_at, pavilion_aliases(alias)",
@@ -336,7 +301,7 @@ export async function listPavilions() {
 }
 
 export async function listAreas() {
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from("areas")
     .select("id, name, sort_order")
     .order("sort_order", { ascending: true, nullsFirst: false })
@@ -357,7 +322,7 @@ export async function listAreas() {
 }
 
 export async function getPavilion(pavilionId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from("pavilions")
     .select(
       "id, name, official_name, country_id, image_path, area_id, spot_id, is_active, sort_order, created_at, updated_at",
@@ -394,7 +359,7 @@ export async function getPavilionProgressSummary() {
 }
 
 export async function getDefaultEventId() {
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from("events")
     .select("id")
     .limit(1)
@@ -408,7 +373,7 @@ export async function getDefaultEventId() {
 }
 
 export async function listEvents() {
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from("events")
     .select("id, name")
     .order("name", { ascending: true });
@@ -418,10 +383,6 @@ export async function listEvents() {
   }
 
   return (data ?? []) as EventOption[];
-}
-
-export function getActivityLogTitle(log: Pick<ActivityLog, "title" | "pavilion">) {
-  return log.pavilion?.name ?? log.title ?? null;
 }
 
 function getVisitedTimestamp(log: Pick<ActivityLog, "occurred_at" | "created_at">) {
@@ -693,78 +654,6 @@ export function buildPavilionAlbumLayout(
     })),
     collectionTiles: items.slice(8),
   };
-}
-
-function normalizeSearchText(value: string) {
-  return value.trim().toLocaleLowerCase("ja-JP");
-}
-
-export function getPavilionSearchTerms(pavilion: PavilionOption) {
-  return Array.from(
-    new Set(
-      [pavilion.name, pavilion.official_name, ...pavilion.aliases]
-        .filter((value): value is string => Boolean(value))
-        .map((value) => value.trim())
-        .filter(Boolean),
-    ),
-  );
-}
-
-export function searchPavilions(
-  pavilions: PavilionOption[],
-  keyword: string,
-  limit = 8,
-) {
-  const normalizedKeyword = normalizeSearchText(keyword);
-
-  if (!normalizedKeyword) {
-    return [];
-  }
-
-  return pavilions
-    .map((pavilion) => {
-      const terms = getPavilionSearchTerms(pavilion);
-      const normalizedName = normalizeSearchText(pavilion.name);
-      const normalizedTerms = terms.map(normalizeSearchText);
-      let score = Number.POSITIVE_INFINITY;
-
-      if (normalizedName === normalizedKeyword) {
-        score = 0;
-      } else if (normalizedTerms.some((term) => term === normalizedKeyword)) {
-        score = 1;
-      } else if (normalizedName.startsWith(normalizedKeyword)) {
-        score = 2;
-      } else if (
-        normalizedTerms.some(
-          (term) => term !== normalizedName && term.startsWith(normalizedKeyword),
-        )
-      ) {
-        score = 3;
-      } else if (normalizedName.includes(normalizedKeyword)) {
-        score = 4;
-      } else if (normalizedTerms.some((term) => term.includes(normalizedKeyword))) {
-        score = 5;
-      }
-
-      return {
-        pavilion,
-        score,
-      };
-    })
-    .filter((entry) => Number.isFinite(entry.score))
-    .sort((left, right) => {
-      if (left.score !== right.score) {
-        return left.score - right.score;
-      }
-
-      if (left.pavilion.sort_order !== right.pavilion.sort_order) {
-        return left.pavilion.sort_order - right.pavilion.sort_order;
-      }
-
-      return left.pavilion.name.localeCompare(right.pavilion.name, "ja-JP");
-    })
-    .slice(0, limit)
-    .map((entry) => entry.pavilion);
 }
 
 export function todayDateString() {
