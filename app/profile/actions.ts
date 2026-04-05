@@ -36,7 +36,7 @@ export async function saveProfileAction(
   if (error) {
     return {
       status: "error",
-      message: `表示名は1文字以上、${MAX_DISPLAY_NAME_LENGTH}文字以内で入力してください。`,
+      message: `ニックネームは1文字以上、${MAX_DISPLAY_NAME_LENGTH}文字以内で入力してください。`,
       displayName,
       fieldErrors: {
         displayName: error,
@@ -69,8 +69,8 @@ export async function saveProfileAction(
   return {
     status: "success",
     message: existingProfile
-      ? "表示名を更新しました。"
-      : "表示名を設定しました。",
+      ? "ニックネームを更新しました。"
+      : "ニックネームを設定しました。",
     displayName,
     fieldErrors: {},
   };

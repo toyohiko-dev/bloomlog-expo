@@ -15,17 +15,17 @@ export default async function ProfilePage() {
           <div className="space-y-2">
             <p className="text-sm font-medium text-emerald-700">プロフィール</p>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              表示名の設定
+              ニックネームの設定
             </h1>
             <p className="text-sm leading-6 text-slate-600">
-              BloomLog で表示する名前を設定できます。ログインIDではなく、表示用の名前です。
+              BloomLog 内で表示される名前を設定できます。ログインIDではなく、ニックネームとして使われます。
             </p>
           </div>
 
           <div className="mt-8">
             <ProfileForm
               initialDisplayName={profile?.display_name ?? ""}
-              submitLabel="保存する"
+              submitLabel="更新する"
             />
           </div>
 
@@ -34,7 +34,7 @@ export default async function ProfilePage() {
               href="/"
               className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
             >
-              ホームへ戻る
+              ホームに戻る
             </Link>
           </div>
         </section>

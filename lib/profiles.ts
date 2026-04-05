@@ -29,14 +29,14 @@ export function validateDisplayName(value: string) {
   if (!displayName) {
     return {
       displayName,
-      error: "表示名を入力してください。",
+      error: "ニックネームを入力してください。",
     };
   }
 
   if (displayName.length > MAX_DISPLAY_NAME_LENGTH) {
     return {
       displayName,
-      error: `表示名は${MAX_DISPLAY_NAME_LENGTH}文字以内で入力してください。`,
+      error: `ニックネームは${MAX_DISPLAY_NAME_LENGTH}文字以内で入力してください。`,
     };
   }
 

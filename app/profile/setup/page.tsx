@@ -32,7 +32,7 @@ export default async function ProfileSetupPage({
         <section className="w-full rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
           <p className="text-sm font-medium text-emerald-700">BloomLog</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
-            表示名を設定
+            ニックネームを設定
           </h1>
           <div className="mt-8">
             <ProfileForm
@@ -40,7 +40,7 @@ export default async function ProfileSetupPage({
               submitLabel="設定する"
               nextPath={nextPath}
               mode="setup"
-              description="初回ログインありがとうございます。まずは表示名を設定してください。"
+              description="初回ログインありがとうございます。まずはニックネームを設定してください。"
             />
           </div>
         </section>

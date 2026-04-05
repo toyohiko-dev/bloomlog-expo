@@ -78,7 +78,7 @@ export function ProfileForm({
           htmlFor="displayName"
           className="mb-2 block text-sm font-medium text-slate-700"
         >
-          表示名
+          ニックネーム
         </label>
         <input
           id="displayName"
@@ -92,7 +92,7 @@ export function ProfileForm({
           className={fieldClass(Boolean(state.fieldErrors.displayName))}
         />
         <p className="mt-2 text-xs text-slate-500">
-          表示名として使います。20文字以内で設定してください。
+          BloomLog 内で表示される名前です。20文字以内で設定してください。
         </p>
         {state.fieldErrors.displayName ? (
           <p className="mt-2 text-sm text-rose-600">{state.fieldErrors.displayName}</p>
