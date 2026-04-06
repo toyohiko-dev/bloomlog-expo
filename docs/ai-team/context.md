@@ -248,6 +248,14 @@ Activityの種類は以下に統一する。
 
 この分離を崩してはならない。
 
+### 10-1. Pavilion
+
+- ユーザー写真の対象としない
+- Pavilion は固定画像を使用する
+- 現在の `pavilions.image_path` には、`/pavilions/...` のようなアプリの public 配下パスが入る場合がある
+- `/collection` では、その場合は Supabase Storage URL に変換せず、そのまま表示に使う
+- 一部の Pavilion にはすでに画像が登録済みである
+- 画像未登録の Pavilion はプレースホルダまたは従来表示で扱う
 ---
 
 ## 11. Treemapの扱い

@@ -28,3 +28,22 @@ export function getActivityPhotoUrl(photoPath: string) {
   const { url } = getSupabaseEnv();
   return `${url}/storage/v1/object/public/${ACTIVITY_PHOTO_BUCKET}/${photoPath}`;
 }
+
+export function getPavilionImageUrl(imagePath: string) {
+  if (/^https?:\/\//.test(imagePath)) {
+    return imagePath;
+  }
+
+  if (imagePath.startsWith("/")) {
+    return imagePath;
+  }
+
+  const { url } = getSupabaseEnv();
+  const normalizedPath = imagePath.replace(/^\/+/, "");
+
+  if (normalizedPath.startsWith("storage/v1/object/public/")) {
+    return `${url}/${normalizedPath}`;
+  }
+
+  return `/${normalizedPath}`;
+}

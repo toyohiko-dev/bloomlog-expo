@@ -14,7 +14,7 @@ import {
   listActivityLogs,
   listPavilions,
 } from "@/lib/sessions";
-import { getActivityPhotoUrl } from "@/lib/supabase/shared";
+import { getActivityPhotoUrl, getPavilionImageUrl } from "@/lib/supabase/shared";
 
 function formatVisitDate(value: string) {
   return new Intl.DateTimeFormat("ja-JP", {
@@ -142,6 +142,13 @@ export default async function SessionDetailPage({
     editingLog && String(editingLog.session_id) === String(sessionId)
       ? editingLog
       : null;
+  const timelineLogs = logs.map((log) => ({
+    ...log,
+    thumbnailUrl: log.photo_path ? getActivityPhotoUrl(log.photo_path) : null,
+    pavilionThumbnailUrl: log.pavilion?.image_path
+      ? getPavilionImageUrl(log.pavilion.image_path)
+      : null,
+  }));
   const resetEditorHref = `/sessions/${sessionId}#experience-recorder`;
   const pavilionTone = getActivityTypeMeta("pavilion_visit");
   const foodTone = getActivityTypeMeta("food");
@@ -152,35 +159,37 @@ export default async function SessionDetailPage({
     {
       key: "total",
       label: "思い出",
-      value: logs.length,
+      value: timelineLogs.length,
       cardClassName: neutralSummaryTone.cardClassName,
       labelClassName: neutralSummaryTone.labelClassName,
     },
     {
       key: "pavilion",
       label: "パビリオン",
-      value: logs.filter((log) => log.activity_type === "pavilion_visit").length,
+      value: timelineLogs.filter((log) => log.activity_type === "pavilion_visit").length,
       cardClassName: pavilionTone.summaryCardClassName,
       labelClassName: pavilionTone.summaryLabelClassName,
     },
     {
       key: "food",
       label: "フード",
-      value: logs.filter((log) => log.activity_type === "food").length,
+      value: timelineLogs.filter((log) => log.activity_type === "food").length,
       cardClassName: foodTone.summaryCardClassName,
       labelClassName: foodTone.summaryLabelClassName,
     },
     {
       key: "pin",
       label: "ピンバッジ",
-      value: logs.filter((log) => log.activity_type === "pin").length,
+      value: timelineLogs.filter((log) => log.activity_type === "pin").length,
       cardClassName: pinTone.summaryCardClassName,
       labelClassName: pinTone.summaryLabelClassName,
     },
     {
       key: "event",
       label: "イベント",
-      value: logs.filter((log) => log.activity_type === "event_participation").length,
+      value: timelineLogs.filter(
+        (log) => log.activity_type === "event_participation",
+      ).length,
       cardClassName: eventTone.summaryCardClassName,
       labelClassName: eventTone.summaryLabelClassName,
     },
@@ -345,19 +354,21 @@ export default async function SessionDetailPage({
             </p>
           </div>
 
-          {logs.length === 0 ? (
+          {timelineLogs.length === 0 ? (
             <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-5 py-6 text-sm leading-7 text-slate-600">
               まだ思い出はありません。上の入力エリアから、その日の思い出を記録できます。
             </div>
           ) : (
             <div className="mt-6 space-y-3">
-              {logs.map((log) => {
+              {timelineLogs.map((log) => {
                 const meta = getActivityTypeMeta(log.activity_type);
                 const isEditing = validEditingLog?.id === log.id;
                 const visual = getActivityTypeVisual(log.activity_type);
-                const photoUrl = log.photo_path
-                  ? getActivityPhotoUrl(log.photo_path)
-                  : null;
+                const thumbnailUrl =
+                  log.thumbnailUrl ??
+                  (log.activity_type === "pavilion_visit"
+                    ? log.pavilionThumbnailUrl
+                    : null);
 
                 return (
                   <article
@@ -408,12 +419,12 @@ export default async function SessionDetailPage({
                         </div>
 
                         <div className="mt-4 space-y-2">
-                          {photoUrl ? (
+                          {thumbnailUrl ? (
                             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={photoUrl}
-                                alt=""
+                                src={thumbnailUrl}
+                                alt={getActivityLogTitle(log) || meta.label}
                                 className="h-48 w-full object-cover"
                               />
                             </div>

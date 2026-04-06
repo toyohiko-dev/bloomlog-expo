@@ -15,7 +15,8 @@ type CollectionFiltersProps = {
 };
 
 type CollectionActivityLog = ActivityLog & {
-  photoUrl: string | null;
+  thumbnailUrl: string | null;
+  pavilionThumbnailUrl: string | null;
 };
 
 type FilterValue = "all" | ActivityType;
@@ -27,6 +28,7 @@ type PavilionCollectionItem = {
   firstVisitedAt: string | null;
   latestVisitedAt: string | null;
   latestSessionId: string;
+  thumbnailUrl: string | null;
 };
 
 const filterOptions: { value: FilterValue; label: string }[] = [
@@ -89,6 +91,7 @@ function buildPavilionCollection(logs: CollectionActivityLog[]) {
         firstVisitedAt: timestamp,
         latestVisitedAt: timestamp,
         latestSessionId: log.session_id,
+        thumbnailUrl: log.pavilionThumbnailUrl,
       });
       continue;
     }
@@ -109,6 +112,10 @@ function buildPavilionCollection(logs: CollectionActivityLog[]) {
       current.latestVisitedAt = timestamp;
       current.latestSessionId = log.session_id;
     }
+
+    if (!current.thumbnailUrl && log.pavilionThumbnailUrl) {
+      current.thumbnailUrl = log.pavilionThumbnailUrl;
+    }
   }
 
   return Array.from(groups.values()).sort((left, right) => {
@@ -124,9 +131,38 @@ function buildPavilionCollection(logs: CollectionActivityLog[]) {
 
 function DetailLine({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-600">
+    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs leading-5 text-slate-600 sm:text-sm sm:leading-6">
       <span className="font-medium text-slate-500">{label}</span>
       <span>{value}</span>
+    </div>
+  );
+}
+
+function AlbumThumbnail({
+  thumbnailUrl,
+  title,
+}: {
+  thumbnailUrl: string | null;
+  title: string;
+}) {
+  return (
+    <div className="mb-3 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 sm:mb-4">
+      <div className="aspect-square w-full sm:aspect-[4/3]">
+        {thumbnailUrl ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={thumbnailUrl}
+              alt={title}
+              className="h-full w-full object-cover"
+            />
+          </>
+        ) : (
+          <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 text-sm font-medium text-slate-400">
+            写真なし
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -226,8 +262,8 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
   ];
 
   return (
-    <section className="space-y-6">
-      <div className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+    <section className="mx-auto w-full max-w-[68rem] space-y-5 lg:space-y-6">
+      <div className="rounded-[1.75rem] bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
             思い出アルバム
@@ -237,17 +273,17 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
           </p>
         </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
           {summaryItems.map((item) => (
             <div
               key={item.label}
-              className={`rounded-3xl px-5 py-4 ring-1 ${item.cardClassName}`}
+              className={`rounded-[1.5rem] px-4 py-3 ring-1 sm:px-5 sm:py-4 ${item.cardClassName}`}
             >
-              <p className="text-2xl font-semibold text-slate-900">
+              <p className="text-xl font-semibold text-slate-900 sm:text-2xl">
                 {item.value}
               </p>
               <p
-                className={`mt-2 text-xs font-medium tracking-wide ${item.labelClassName}`}
+                className={`mt-1.5 text-[11px] font-medium tracking-wide sm:mt-2 sm:text-xs ${item.labelClassName}`}
               >
                 {item.label}
               </p>
@@ -256,7 +292,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
         </div>
       </div>
 
-      <div className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
+      <div className="rounded-[1.75rem] bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div className="space-y-2">
             <label
@@ -303,15 +339,15 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
         </div>
       </div>
 
-      <section className="space-y-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-semibold text-slate-900">パビリオン</h2>
-            <p className="mt-1 text-sm text-slate-600">
+      <section className="space-y-3 lg:space-y-4">
+        <div className="flex items-end justify-between gap-3">
+          <div className="max-w-2xl">
+            <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">パビリオン</h2>
+            <p className="mt-1 hidden text-sm text-slate-600 sm:block">
               来場日ごとに、訪れたパビリオンをまとめて見返せます。
             </p>
           </div>
-          <p className="text-sm font-medium text-slate-500">
+          <p className="pb-0.5 text-sm font-medium text-slate-500">
             {pavilionCollection.length}件
           </p>
         </div>
@@ -321,29 +357,31 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
             まだ思い出はありません。来場日でパビリオンの思い出を記録すると、ここに並びます。
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
             {pavilionCollection.map((item) => (
               <Link
                 key={item.key}
                 href={`/sessions/${item.latestSessionId}`}
-                className="rounded-[1.75rem] bg-white p-5 shadow-sm ring-1 ring-slate-200 transition hover:ring-slate-300"
+                className="flex h-full flex-col rounded-[1.5rem] bg-white p-3 shadow-sm ring-1 ring-slate-200 transition hover:ring-slate-300 sm:p-4"
               >
+                <AlbumThumbnail thumbnailUrl={item.thumbnailUrl} title={item.title} />
+
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${pavilionTone.badgeClassName}`}
+                      className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium sm:px-3 sm:text-xs ${pavilionTone.badgeClassName}`}
                     >
                       パビリオン
                     </span>
-                    <h3 className="mt-3 text-base font-semibold text-slate-900">
+                    <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-slate-900 sm:mt-3 sm:text-base sm:leading-6">
                       {item.title}
                     </h3>
                   </div>
-                  <span className="shrink-0 text-sm font-medium text-slate-700">
+                  <span className="hidden shrink-0 text-sm font-medium text-slate-700 sm:inline">
                     来場日を見る
                   </span>
                 </div>
-                <div className="mt-4 space-y-2">
+                <div className="mt-3 space-y-1.5 sm:mt-4 sm:space-y-2">
                   <DetailLine label="回数" value={`${item.count}回`} />
                   <DetailLine label="初回" value={formatDateTime(item.firstVisitedAt)} />
                   <DetailLine label="最近" value={formatDateTime(item.latestVisitedAt)} />
@@ -358,17 +396,17 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
         const meta = getActivityTypeMeta(section.activityType);
 
         return (
-          <section key={section.activityType} className="space-y-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-900">
+          <section key={section.activityType} className="space-y-3 lg:space-y-4">
+            <div className="flex items-end justify-between gap-3">
+              <div className="max-w-2xl">
+                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
                   {meta.label}
                 </h2>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 hidden text-sm text-slate-600 sm:block">
                   記録した思い出をそのまま一覧で見返せます。
                 </p>
               </div>
-              <p className="text-sm font-medium text-slate-500">
+              <p className="pb-0.5 text-sm font-medium text-slate-500">
                 {section.logs.length}件
               </p>
             </div>
@@ -378,54 +416,43 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
                 まだ思い出はありません。来場日で{meta.label}の思い出を記録すると、ここに並びます。
               </div>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
                 {section.logs
                   .slice()
                   .sort((left, right) => getSortTimestamp(right) - getSortTimestamp(left))
                   .map((log) => {
                     const preview = normalizeMemoPreview(log.memo);
-    const photoUrl = log.photoUrl;
+                    const thumbnailTitle =
+                      getActivityLogTitle(log) || "蜷榊燕譛ｪ險ｭ螳・";
 
                     return (
                       <Link
                         key={log.id}
                         href={`/sessions/${log.session_id}`}
-                        className="rounded-[1.75rem] bg-white p-5 shadow-sm ring-1 ring-slate-200 transition hover:ring-slate-300"
+                        className="flex h-full flex-col rounded-[1.5rem] bg-white p-3 shadow-sm ring-1 ring-slate-200 transition hover:ring-slate-300 sm:p-4"
                       >
-                        <div className="mb-4 overflow-hidden rounded-[1.25rem] border border-slate-200 bg-slate-100">
-                          {photoUrl ? (
-                            <>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={photoUrl}
-                                alt=""
-                                className="h-40 w-full object-cover"
-                              />
-                            </>
-                          ) : (
-                            <div className="flex h-40 items-center justify-center bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 text-sm font-medium text-slate-400">
-                              No Photo
-                            </div>
-                          )}
-                        </div>
+                        <AlbumThumbnail
+                          thumbnailUrl={log.thumbnailUrl}
+                          title={thumbnailTitle}
+                        />
 
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <span
-                              className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${meta.badgeClassName}`}
+                              className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium sm:px-3 sm:text-xs ${meta.badgeClassName}`}
                             >
                               {meta.label}
                             </span>
-                            <h3 className="mt-3 line-clamp-2 text-base font-semibold text-slate-900">
+                            <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-slate-900 sm:mt-3 sm:text-base sm:leading-6">
                               {getActivityLogTitle(log) || "名前未設定"}
                             </h3>
                           </div>
-                          <span className="shrink-0 text-sm font-medium text-slate-700">
+                          <span className="hidden shrink-0 text-sm font-medium text-slate-700 sm:inline">
                             来場日を見る
                           </span>
                         </div>
 
-                        <div className="mt-4 space-y-2">
+                        <div className="mt-3 flex flex-1 flex-col gap-1.5 sm:mt-4 sm:gap-2">
                           <DetailLine
                             label="日時"
                             value={formatDateTime(log.occurred_at ?? log.created_at)}
@@ -443,7 +470,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
                             />
                           ) : null}
                           {preview ? (
-                            <p className="pt-1 text-sm leading-6 text-slate-600">
+                            <p className="hidden pt-1 text-sm leading-6 text-slate-600 sm:line-clamp-2 md:block xl:line-clamp-3">
                               {preview}
                             </p>
                           ) : null}
