@@ -322,7 +322,7 @@ export default async function SessionDetailPage({
             </p>
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-3">
             {summaryItems.map((item) => (
               <div
                 key={item.key}
@@ -425,7 +425,7 @@ export default async function SessionDetailPage({
                               <img
                                 src={thumbnailUrl}
                                 alt={getActivityLogTitle(log) || meta.label}
-                                className="h-48 w-full object-cover"
+                                className="mx-auto max-h-[22rem] w-full object-contain bg-slate-50 sm:max-h-[26rem]"
                               />
                             </div>
                           ) : null}
