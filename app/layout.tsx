@@ -1,20 +1,13 @@
-﻿import type { Metadata } from "next";
-import { Geist_Mono, Noto_Sans_JP } from "next/font/google";
+import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import "./globals.css";
 
-const notoSansJp = Noto_Sans_JP({
-  variable: "--font-noto-sans-jp",
-  subsets: ["latin"],
-  display: "swap",
-  fallback: ["Hiragino Sans", "Yu Gothic", "Meiryo", "system-ui", "sans-serif"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-  fallback: ["ui-monospace", "SFMono-Regular", "monospace"],
-});
+const fontVariables = {
+  "--font-noto-sans-jp":
+    '"Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif',
+  "--font-geist-mono":
+    '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+} as CSSProperties;
 
 export const metadata: Metadata = {
   title: "BloomLog",
@@ -27,10 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="ja"
-      className={`${notoSansJp.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="ja" className="h-full antialiased" style={fontVariables}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
