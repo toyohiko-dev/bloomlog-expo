@@ -19,6 +19,8 @@ type CollectionActivityLog = ActivityLog & {
   pavilionThumbnailUrl: string | null;
 };
 
+type SortableActivityLog = Pick<ActivityLog, "occurred_at" | "created_at">;
+
 type FilterValue = "all" | ActivityType;
 
 type PavilionCollectionItem = {
@@ -67,7 +69,7 @@ function normalizeMemoPreview(value: string | null) {
   return `${normalized.slice(0, 48)}…`;
 }
 
-function getSortTimestamp(log: CollectionActivityLog) {
+function getSortTimestamp(log: SortableActivityLog) {
   return new Date(log.occurred_at ?? log.created_at).getTime();
 }
 
@@ -251,7 +253,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
 
   const listSections: {
     activityType: ActivityType;
-    logs: ActivityLog[];
+    logs: CollectionActivityLog[];
   }[] = [
     { activityType: "food", logs: groupedLogs.food },
     { activityType: "pin", logs: groupedLogs.pin },
