@@ -268,7 +268,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
             思い出アルバム
           </h1>
-          <p className="max-w-3xl text-sm leading-7 text-slate-600">
+          <p className="max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
             記録した思い出をカテゴリごとに見返せます。パビリオンはまとめて振り返り、フードやピンバッジ、イベントはひとつずつ一覧にしています。
           </p>
         </div>

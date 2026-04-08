@@ -67,7 +67,7 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-8">
+      <div className="mx-auto flex w-full max-w-[68rem] flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
         <AppPrimaryNav currentPath="/" />
 
         <section className="w-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-white to-sky-50 shadow-sm ring-1 ring-slate-200">
@@ -75,7 +75,7 @@ export default async function HomePage() {
             <div className="space-y-6">
               <div className="space-y-3">
                 <p className="text-sm font-medium text-emerald-700">BloomLog</p>
-                <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+                <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
                   来場日の思い出を、あとから振り返りやすい形に。
                 </h1>
                 <p className="max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AppPrimaryNav } from "@/app/_components/app-primary-nav";
 import { DeleteActivityLogButton, DeleteSessionButton } from "./delete-buttons";
 import { ActivityLogForm } from "./activity-log-form";
 import {
@@ -197,27 +198,8 @@ export default async function SessionDetailPage({
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6">
-        <div className="flex flex-wrap items-center gap-3">
-          <Link
-            href="/"
-            className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
-          >
-            ホームへ
-          </Link>
-          <Link
-            href="/sessions"
-            className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
-          >
-            来場日一覧へ
-          </Link>
-          <Link
-            href="/collection"
-            className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
-          >
-            思い出アルバム
-          </Link>
-        </div>
+      <div className="mx-auto flex w-full max-w-[68rem] flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+        <AppPrimaryNav currentPath="/sessions" />
 
         <section className="w-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-white to-sky-50 shadow-sm ring-1 ring-slate-200">
           <div className="px-6 py-8 sm:px-6 lg:px-10 lg:py-10">
@@ -228,7 +210,7 @@ export default async function SessionDetailPage({
                 </p>
                 <div className="space-y-2">
                   {session.title ? (
-                    <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+                    <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
                       {session.title}
                     </h1>
                   ) : null}
@@ -373,7 +355,7 @@ export default async function SessionDetailPage({
                 return (
                   <article
                     key={log.id}
-                    className={`rounded-[1.5rem] bg-white p-5 ring-1 transition ${
+                    className={`rounded-[1.5rem] bg-white p-4 ring-1 transition sm:p-5 ${
                       isEditing ? "ring-sky-200 bg-sky-50/40" : "ring-slate-200"
                     }`}
                   >
@@ -418,14 +400,14 @@ export default async function SessionDetailPage({
                           </div>
                         </div>
 
-                        <div className="mt-4 space-y-2">
+                        <div className="mt-3 space-y-2 sm:mt-4">
                           {thumbnailUrl ? (
-                            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                            <div className="mx-auto w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 sm:max-w-xl">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={thumbnailUrl}
                                 alt={getActivityLogTitle(log) || meta.label}
-                                className="mx-auto max-h-[22rem] w-full object-contain bg-slate-50 sm:max-h-[26rem]"
+                                className="mx-auto h-auto max-h-72 w-full object-contain bg-slate-50 sm:max-h-80"
                               />
                             </div>
                           ) : null}
