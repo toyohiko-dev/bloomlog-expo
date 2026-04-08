@@ -6,7 +6,8 @@ export type ActivityLogFieldErrors = Partial<
     | "occurredAt"
     | "memo"
     | "price"
-    | "acquisitionMethod",
+    | "acquisitionMethod"
+    | "photo",
     string
   >
 >;
