@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { ProfileForm } from "@/app/profile/profile-form";
-import { getSafeRedirectPath, requireUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { getCurrentProfile, hasCompletedProfile } from "@/lib/profiles";
+import { getSafeRedirectPath } from "@/lib/redirect";
 
 type ProfileSetupPageProps = {
   searchParams?:

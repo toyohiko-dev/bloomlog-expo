@@ -3,37 +3,46 @@ import "server-only";
 import type { User } from "@supabase/supabase-js";
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { normalizeRedirectPath } from "@/lib/redirect";
 
-function normalizeRedirectPath(path?: string | null) {
-  if (!path || !path.startsWith("/")) {
-    return "/";
-  }
-
-  if (path.startsWith("//")) {
-    return "/";
-  }
-
-  return path;
-}
-
-export function getURL(path = "/") {
+function getConfiguredBaseUrl() {
   const envUrl =
     process.env.NEXT_PUBLIC_SITE_URL ??
     process.env.NEXT_PUBLIC_APP_URL ??
     process.env.VERCEL_URL;
 
-  const baseUrl = envUrl
-    ? envUrl.startsWith("http")
-      ? envUrl
-      : `https://${envUrl}`
-    : "http://localhost:3000";
+  if (!envUrl) {
+    return null;
+  }
 
-  return new URL(normalizeRedirectPath(path), `${baseUrl.replace(/\/$/, "")}/`).toString();
+  return envUrl.startsWith("http") ? envUrl : `https://${envUrl}`;
 }
 
-export function getAuthCallbackURL(nextPath = "/") {
-  const callbackURL = new URL(getURL("/auth/callback"));
+export async function getURL(path = "/") {
+  const configuredBaseUrl = getConfiguredBaseUrl();
+
+  if (configuredBaseUrl) {
+    return new URL(normalizeRedirectPath(path), `${configuredBaseUrl.replace(/\/$/, "")}/`).toString();
+  }
+
+  const requestHeaders = await headers();
+  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+
+  if (!host) {
+    throw new Error("Site URL is not configured.");
+  }
+
+  const protocol =
+    requestHeaders.get("x-forwarded-proto") ??
+    (host.startsWith("localhost") || host.startsWith("127.0.0.1") ? "http" : "https");
+
+  return new URL(normalizeRedirectPath(path), `${protocol}://${host}/`).toString();
+}
+
+export async function getAuthCallbackURL(nextPath = "/") {
+  const callbackURL = new URL(await getURL("/auth/callback"));
   callbackURL.searchParams.set("next", normalizeRedirectPath(nextPath));
   return callbackURL.toString();
 }
@@ -61,7 +70,3 @@ export const requireUser = cache(async (): Promise<User> => {
 
   return user;
 });
-
-export function getSafeRedirectPath(path?: string | null) {
-  return normalizeRedirectPath(path);
-}

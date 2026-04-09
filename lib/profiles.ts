@@ -2,8 +2,9 @@ import "server-only";
 
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { getSafeRedirectPath, requireUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import type { Profile } from "@/lib/profile-shared";
+import { getSafeRedirectPath } from "@/lib/redirect";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const PROFILE_SELECT = "id, display_name, created_at, updated_at";

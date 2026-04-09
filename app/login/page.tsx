@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/app/login/login-form";
-import { getCurrentUser, getSafeRedirectPath } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { getCurrentProfile, hasCompletedProfile } from "@/lib/profiles";
+import { getSafeRedirectPath } from "@/lib/redirect";
 
 type LoginPageProps = {
   searchParams?:

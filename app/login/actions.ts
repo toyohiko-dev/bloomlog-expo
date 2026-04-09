@@ -1,8 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { getAuthCallbackURL, getSafeRedirectPath } from "@/lib/auth";
 import type { LoginFormState } from "@/app/login/form-state";
+import { getAuthCallbackURL } from "@/lib/auth";
+import { getSafeRedirectPath } from "@/lib/redirect";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 function createLoginErrorRedirect(errorCode: string, nextPath = "/") {
@@ -40,7 +41,7 @@ export async function requestMagicLinkAction(
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: getAuthCallbackURL(nextPath),
+      emailRedirectTo: await getAuthCallbackURL(nextPath),
     },
   });
 
@@ -52,29 +53,6 @@ export async function requestMagicLinkAction(
     status: "success",
     message: "Magic Link を送信しました。",
   };
-}
-
-export async function signInWithGoogleAction(formData: FormData) {
-  const nextPath = getSafeRedirectPath(readText(formData, "next"));
-  const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: getAuthCallbackURL(nextPath),
-      skipBrowserRedirect: true,
-    },
-  });
-
-  if (error || !data.url) {
-    const errorCode =
-      error?.message.includes("provider is not enabled")
-        ? "google_not_enabled"
-        : "unexpected";
-
-    redirect(createLoginErrorRedirect(errorCode, nextPath));
-  }
-
-  redirect(data.url);
 }
 
 export async function signOutAction() {
