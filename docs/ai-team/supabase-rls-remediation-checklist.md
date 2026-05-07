@@ -154,3 +154,23 @@ repository 上の現在の実装では、次の server action が `user_id` を�
 - 本番 DB への直接 SQL 実行は、人間が明示的に実施する
 - dashboard 変更ではなく migration 適用を正とし、実 DB 状態を repository に揃える
 - `pavilions` / `pavilion_aliases` は public read master として別途整理する
+
+## 今回の実施結果
+
+- `visit_sessions` と `activity_logs` に対する RLS 修正 SQL は個別適用済み
+- `supabase db push` は未実行
+- remote migration 履歴が空である問題は別課題として切り分けた
+- `visit_sessions` の RLS ON を確認済み
+- `activity_logs` の RLS ON を確認済み
+- `visit_sessions_insert_dev` の削除を確認済み
+- `activity_logs_insert_dev` の削除を確認済み
+- `visit_sessions_insert_own` / `activity_logs_insert_own` の insert policy 是正を確認済み
+- 来場日作成は動作確認済み
+- 思い出作成は動作確認済み
+
+## 今後の残課題
+
+- Supabase migration 運用を正常化する
+- remote migration 履歴が空である問題を調査し、repo と実 DB の履歴整合を整理する
+- AI が本番 write 直前まで read-only introspection を進め、人間承認後に実行できる運用を固める
+- `pavilions` / `pavilion_aliases` の public read 方針と、RLS / policy の整理を別課題として扱う

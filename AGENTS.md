@@ -11,10 +11,21 @@ This version has breaking changes - APIs, conventions, and file structure may al
 - Bloomlog はイベント体験記録アプリである
 - 日本語 UI を前提とする
 - `docs/product/` を正式仕様として扱う
-- `docs/ai-team/` は AI 運用、検討、レビュー、分析のための作業領域として扱う
+- `docs/ai-team/` は AI 運用、検討、レビュー、分析、引き継ぎのための作業領域として扱う
 - 実装より先に、既存の仕様、用語、運用方針との整合性を確認する
 
-## 2. 用語固定
+## 2. AI と人間の役割
+
+- AI は作業者であり、人間は承認者である
+- 人間をスクリーンショット係、目視確認係、手作業の転記係にしない
+- read-only introspection は AI が積極的に行う
+- DB / RLS / policy / trigger / function / migration 差分調査は AI の責務とする
+- migration 生成、lint、build、テスト設計、差分整理は AI が行う
+- 人間承認が必要なのは、本番 DB write、destructive SQL、secret 変更、dashboard 設定変更のみとする
+- 「安全のため」という理由だけで、AI が可能な調査作業を人間へ戻さない
+- 本番 write 直前で停止し、人間承認後に AI が実行できる構成を目指す
+
+## 3. 用語固定
 
 以下の用語は勝手に変更しない。
 
@@ -30,7 +41,7 @@ This version has breaking changes - APIs, conventions, and file structure may al
 - 既存日本語用語の独自言い換え
 - UI 文言の無断変更
 
-## 3. 実装前ルール
+## 4. 実装前ルール
 
 実装前は、次を最優先とする。
 
@@ -47,8 +58,9 @@ This version has breaking changes - APIs, conventions, and file structure may al
 - 既存ファイルの責務を優先する
 - 既存の画面構成、ルーティング、用語、データ構造に合わせる
 - 新規ファイルや新規構造の追加は、明確な必要性があるときだけ行う
+- root cause に対処する
 
-## 4. 禁止事項
+## 5. 禁止事項
 
 明示依頼なしに、次の行為を行わない。
 
@@ -70,7 +82,7 @@ This version has breaking changes - APIs, conventions, and file structure may al
 - メール本文やセキュリティ通知を DB に保存すること
 - 実運用に影響する大規模構造変更を未承認で進めること
 
-## 5. 通知レビュー運用
+## 6. 通知レビュー運用
 
 Supabase / Vercel / GitHub などの外部通知は、次の 3 層を分離して扱う。
 
@@ -91,7 +103,16 @@ Supabase / Vercel / GitHub などの外部通知は、次の 3 層を分離し�
 - 承認後にのみ、Codex へ個別の実装依頼を出す
 - 通知レビューとアプリ実装を直結しない
 
-## 6. docs 運用
+## 7. Supabase / DB 調査原則
+
+- Supabase の実 DB 状態は、可能な限り AI が read-only で確認する
+- migration と実 DB の差分は AI が整理する
+- RLS / policy / trigger / function / migration 履歴の確認は AI が主導する
+- SQL Editor の手作業確認を常態化しない
+- 本番 DB 書き込み前だけ人間承認を求める
+- `db push` や個別 SQL 適用の前には、対象、影響、想定リスク、rollback 方針有無をまとめてから止まる
+
+## 8. docs 運用
 
 各 docs の役割は次のとおり。
 
@@ -107,6 +128,7 @@ Supabase / Vercel / GitHub などの外部通知は、次の 3 層を分離し�
 - レビュー
 - AI 運用ルール
 - 承認前の判断材料
+- handoff
 
 ### `PLANS.md`
 
@@ -124,8 +146,9 @@ Supabase / Vercel / GitHub などの外部通知は、次の 3 層を分離し�
 
 - 外部通知レビューの途中経過は `docs/ai-team/` に置く
 - プロダクトの確定事項だけを `docs/product/` に反映する
+- remote migration 履歴問題のような運用上の未解決課題も `docs/ai-team/` に整理する
 
-## 7. 出力ルール
+## 9. 出力ルール
 
 - 日本語で説明する
 - 絵文字を使わない
@@ -142,7 +165,7 @@ Supabase / Vercel / GitHub などの外部通知は、次の 3 層を分離し�
 - 何を変えていないか
 - 次に人間が確認すべきこと
 
-## 8. Plan mode
+## 10. Plan mode
 
 `Plan only` の場合は、提案と実行を分離する。
 
@@ -158,7 +181,7 @@ Supabase / Vercel / GitHub などの外部通知は、次の 3 層を分離し�
 - 実行時の影響範囲を明示する
 - 実装に進む前提条件を示す
 
-## 9. 将来構想
+## 11. 将来構想
 
 Bloomlog は将来的に、次を検討している。
 
@@ -173,7 +196,7 @@ Bloomlog は将来的に、次を検討している。
 - 将来構想を理由に先回り実装しない
 - まずは最小構成で運用し、必要性が確認できた後に拡張する
 
-## 10. 実装時の判断基準
+## 12. 実装時の判断基準
 
 実装に進む場合も、次の順で判断する。
 
