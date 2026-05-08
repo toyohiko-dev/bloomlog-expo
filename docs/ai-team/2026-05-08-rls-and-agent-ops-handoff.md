@@ -28,6 +28,8 @@
 
 - Supabase CLI の `migration list` では remote 側の履歴が空に見えた
 - そのため `supabase db push` を使うと、今回の 1 本だけではなく local の全 migration が本番適用対象に見える状態だった
+- read-only 調査では `supabase_migrations` schema 自体が見当たらず、CLI が参照する migration 管理履歴が remote 側に存在しない可能性が高い
+- `auth.schema_migrations` などの内部用テーブルは存在したが、repo の migration 履歴とは一致しなかった
 
 ## 実施済み対応
 
@@ -54,6 +56,12 @@
 - remote migration 履歴が空である問題の整理
 - AI が本番 write 直前まで調査を進め、人間承認後に実行できる運用設計
 
+補足:
+
+- read-only の spot check では、主要テーブルと主要カラムは remote 側に存在していた
+- `profiles.display_name` があり `profiles.nickname` がないため、schema は repo の後半 migration に概ね追随している可能性が高い
+- そのため、主問題は schema 不一致より migration 履歴管理の欠落にある可能性が高い
+
 ## 今後の最優先方針
 
 - 人間を確認係にしない
@@ -71,3 +79,12 @@
 2. repo 側 migration と実 DB 側の履歴整合を、read-only で棚卸しする
 3. `db push` を安全に使える運用か、個別適用を標準にするかを判断する
 4. AI が本番 write 直前まで進めて、人間が承認だけ行う運用ルールをさらに明文化する
+
+## 次の判断材料
+
+- `npx supabase migration list` は remote 列が空
+- `supabase_migrations` schema は remote 側に見当たらない
+- この状態では `db push` は今回の remediation に対して過剰で危険
+- 主要テーブルと主要カラムの spot check では schema 自体は大きく崩れていない
+- 将来的な候補操作として `supabase migration repair` はあるが、これは write を伴うため別承認タスクに切り出す
+- 次の優先タスクは、本番 DB の migration 履歴管理を read-only で棚卸しし、今後の標準適用手段を決めること
