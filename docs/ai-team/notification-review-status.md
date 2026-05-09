@@ -4,6 +4,15 @@
 
 メール本文全文は保存せず、状態管理に必要な最小限の情報だけを記録する。
 
+## 現在の正本
+
+2026-05-09 以降、継続的な notification intake の状態管理は Agent Input Queue として次を正本にする。
+
+- `docs/ai-team/ops/notification-intake/README.md`
+- `docs/ai-team/ops/notification-intake/queue.md`
+
+このファイルは旧状態管理メモとして残す。新規 entry は `queue.md` に追加する。
+
 ## 状態定義
 
 - 新規

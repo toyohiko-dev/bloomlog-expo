@@ -1,54 +1,34 @@
-# 外部通知レビュー記録
+# 外部通知レビュー記録 / Agent Input Queue 入口
 
-このファイルには、外部通知のレビュー結果を日付ごとに記録する。
+作成日: 2026-05-09
 
-記録するのは要約と判断のみとし、メール本文全文は保存しない。
+このファイルは、旧来の外部通知レビュー記録の入口であり、現在は Agent Input Queue への互換ポインタとして扱う。
 
-## 記録ルール
+現在の正本:
 
-- メール本文全文は貼らない
-- URL、token、秘密情報は必要に応じて伏せる
-- 判断の根拠は簡潔に残す
-- 承認前の段階では、実装内容ではなく判断結果を中心に書く
+- 入口: `docs/ai-team/ops/notification-intake/README.md`
+- policy: `docs/ai-team/ops/notification-intake/policy.md`
+- sanitized entry template: `docs/ai-team/ops/notification-intake/template.md`
+- queue: `docs/ai-team/ops/notification-intake/queue.md`
+- run logs: `docs/ai-team/ops/notification-intake/runs/`
 
-## テンプレート
+## 運用方針
 
-```md
-## [YYYY-MM-DD] 外部通知レビュー
+- Sakura / ChatGPT は Gmail を read-only で読み、raw email body を保存せず sanitized entry を作る。
+- Codex は queue の `pending` entry を読み、Bloomlog Agent OS の Mission lifecycle に従って処理する。
+- Human は gated operation の approval / rejection のみを担当する。
+- Human をメール本文転記係、diff 確認係、dashboard 目視係にしない。
 
-### 1件目
-- 送信元:
-- 件名:
-- サービス:
-- 重要度:
-  - 高 / 中 / 低
-- 通知の要点:
-- Bloomlog への影響範囲:
-  - 認証 / デプロイ / DB / 環境変数 / 課金 / ドメイン / GitHub運用 / 不明
-- 必要な可能性がある対応:
-  - コード変更 / dashboard 設定変更 / migration の可能性 / 対応不要 / 判断保留
-- 根拠:
-- 不明点:
-- 人間承認待ち事項:
-- 次のアクション候補:
+## 保存禁止
 
-### 2件目
-- 送信元:
-- 件名:
-- サービス:
-- 重要度:
-  - 高 / 中 / 低
-- 通知の要点:
-- Bloomlog への影響範囲:
-  - 認証 / デプロイ / DB / 環境変数 / 課金 / ドメイン / GitHub運用 / 不明
-- 必要な可能性がある対応:
-  - コード変更 / dashboard 設定変更 / migration の可能性 / 対応不要 / 判断保留
-- 根拠:
-- 不明点:
-- 人間承認待ち事項:
-- 次のアクション候補:
-```
+- raw email body。
+- secret / token / API key / OAuth secret。
+- dashboard URL。
+- project ID、account ID、organization ID、内部 ID。
+- 請求詳細、個人情報。
 
-## 初期状態
+## 新規 entry の追加先
 
-まだレビュー記録はない。初回レビュー時に上記テンプレートを複製して使う。
+新規通知候補は、このファイルではなく `docs/ai-team/ops/notification-intake/queue.md` に追加する。
+
+形式は `docs/ai-team/ops/notification-intake/template.md` に従う。
