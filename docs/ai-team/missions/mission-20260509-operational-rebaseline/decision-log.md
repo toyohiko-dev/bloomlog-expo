@@ -173,3 +173,62 @@ Human approval is still required before:
 ## follow-up
 
 If a future production write is needed, start from a new bounded approval package. Do not reopen broad drift analysis.
+
+---
+
+## decision date
+
+2026-05-09
+
+## decision maker
+
+- Parent Agent
+
+## mission id
+
+`mission-20260509-operational-rebaseline`
+
+## decision
+
+The previous DB Inspector recommendation failed the Mission intent because it selected documentation-only baseline as the recommended path.
+
+Create a focused DB Inspector follow-up task and select Option 3, `activity-photos` storage insert policy remediation, as the execution candidate.
+
+## selected execution candidate
+
+- Replace `activity_photos_insert_test` with `activity_photos_insert_own`.
+- Scope future `activity-photos` inserts to authenticated users writing under their own first storage path segment.
+- Treat this as the approval-needed production write package.
+
+## rejected outcomes
+
+- documentation-only recommendation
+- additional investigation loop
+- `no execution needed`
+- `needs more research`
+- `db push`
+- migration repair
+- destructive SQL
+
+## rationale
+
+- The Mission requires an approval-ready execution package.
+- Storage policy remediation is bounded to one policy area.
+- The SQL and rollback SQL are exact.
+- Verification SQL and app behavior verification are defined.
+- The operation can proceed to Reviewer / QA without reopening drift analysis.
+
+## approval boundary
+
+Human approval is required before:
+
+- applying the storage policy SQL
+- applying rollback SQL
+- any other production SQL
+
+No Human approval is required for this docs update.
+
+## follow-up
+
+- Next agent should review `docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/db-inspector-storage-policy-remediation.md`.
+- Do not send the previous documentation-only DB Inspector recommendation to Reviewer / QA as final.

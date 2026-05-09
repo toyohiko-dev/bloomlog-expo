@@ -135,5 +135,10 @@ No Human approval is required for this docs-only Mission setup.
 ## next agent
 
 - Next agent to run: DB Inspector Agent
-- Next task file path: `docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/db-inspector.md`
+- Next task file path: `docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/db-inspector-storage-policy-remediation.md`
 
+## current correction
+
+The documentation-only DB Inspector recommendation is superseded. The current selected execution candidate is Option 3, `activity-photos` storage insert policy remediation.
+
+Do not send the superseded documentation-only package to Reviewer / QA as final.

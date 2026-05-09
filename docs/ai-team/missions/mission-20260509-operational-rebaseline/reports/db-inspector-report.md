@@ -1,5 +1,17 @@
 # DB Inspector Report: operational rebaseline
 
+## supersession notice
+
+This report is superseded for execution selection.
+
+The documentation-only recommendation failed the Mission intent because the Mission requires one approval-ready execution package. Use the focused follow-up package instead:
+
+- task: `docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/db-inspector-storage-policy-remediation.md`
+- report: `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-storage-policy-remediation.md`
+- approval draft: `docs/ai-team/missions/mission-20260509-operational-rebaseline/approval-needed.md`
+
+Selected execution candidate is Option 3, `activity-photos` storage insert policy remediation.
+
 ## mission id
 
 `mission-20260509-operational-rebaseline`

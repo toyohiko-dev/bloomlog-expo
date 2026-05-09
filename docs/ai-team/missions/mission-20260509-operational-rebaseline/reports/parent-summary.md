@@ -1,5 +1,17 @@
 # Parent Summary Report: operational rebaseline final integration
 
+## supersession notice
+
+This Parent summary is superseded for execution selection.
+
+The Option 1 documentation-only conclusion failed the Mission intent. The selected execution candidate is now Option 3, `activity-photos` storage insert policy remediation, documented in:
+
+- `docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/db-inspector-storage-policy-remediation.md`
+- `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-storage-policy-remediation.md`
+- `docs/ai-team/missions/mission-20260509-operational-rebaseline/approval-needed.md`
+
+Do not send the old Option 1 package to Reviewer / QA as final.
+
 ## mission id
 
 `mission-20260509-operational-rebaseline`

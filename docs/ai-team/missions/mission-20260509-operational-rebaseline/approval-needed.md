@@ -10,164 +10,201 @@
 
 ## status
 
-Approval-ready for the selected docs-only operational baseline.
+Approval-needed draft for production write.
 
-No production write is requested. Do not execute production writes from this file.
+Do not execute until Human approval is recorded.
 
 ## approval type
 
 - production write
-- migration repair, only if later selected
-- db push, currently rejected as default workflow
-- destructive SQL, currently forbidden
+- storage policy change
 
 ## requested action
 
-Approve the selected Option 1 execution package for this Mission:
+Approve the selected Option 3 execution package:
 
-- adopt current remote schema as the canonical operational source of truth
-- abandon perfect historical migration reconstruction as an operational blocker
-- keep `db push` out of the default workflow
-- keep migration repair out of the default workflow
-- use explicit approved SQL / migration proposals for future DB changes
-- document accepted drift and future remediation boundaries
+- replace broad `activity-photos` storage insert policy `activity_photos_insert_test`
+- create owner-scoped insert policy `activity_photos_insert_own`
+- restrict future `activity-photos` inserts to authenticated users writing under their own first path segment
 
-This is a docs-only operational baseline approval. It does not approve production SQL, storage policy changes, migration repair, `db push`, destructive SQL, dashboard changes, or secret changes.
+This approval does not approve migration repair, `db push`, destructive SQL, dashboard changes, or secret changes.
 
 ## exact command / SQL / setting
 
-Selected execution contains no write operation.
-
-Safe docs/read-only commands:
-
-```powershell
-git status --short
-git diff --name-only
-git diff --stat
-npx.cmd supabase migration list
-```
-
-Safe read-only verification SQL examples:
+Selected execution SQL:
 
 ```sql
-select table_name
-from information_schema.tables
-where table_schema = 'public'
-order by table_name;
+begin;
+
+drop policy if exists activity_photos_insert_test on storage.objects;
+drop policy if exists activity_photos_insert_own on storage.objects;
+
+create policy activity_photos_insert_own
+  on storage.objects
+  for insert
+  to authenticated
+  with check (
+    bucket_id = 'activity-photos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+commit;
 ```
 
-```sql
-select table_name, column_name, data_type, is_nullable
-from information_schema.columns
-where table_schema = 'public'
-order by table_name, ordinal_position;
-```
-
-```sql
-select schemaname, tablename, policyname, roles, cmd, qual, with_check
-from pg_policies
-where schemaname in ('public', 'storage')
-order by schemaname, tablename, policyname;
-```
-
-Write operations are not part of the selected package.
-
-Explicitly not approved in this Mission:
+Explicitly not approved:
 
 ```powershell
 npx.cmd supabase db push
 npx.cmd supabase migration repair --status applied <version>
 ```
 
+Destructive SQL, dashboard changes, and secret changes are also not approved.
+
 ## target environment
 
 - service: Supabase
 - app: Bloomlog
-- environment: production Supabase operations, but no production write is requested here
+- environment: production Supabase operations
+- target table: `storage.objects`
+- target bucket: `activity-photos`
 - secret handling: do not store project secrets, tokens, or connection strings in docs
 
 ## selected remediation package
 
-- selected option: Option 1, documentation-only operational baseline now
-- target environment: Bloomlog Supabase operations
-- operation type: docs-only operational decision
-- exact command / SQL: none for production DB
-- expected effect: future Agents use current remote schema as operational reality and stop treating historical migration reconstruction as a blocker
-- blast radius: docs / AI operations only
-- rollback: revert the docs commit or update this Mission's decision docs
-- verification: docs-only diff checks and report consistency
-- approval requested from Human: approve docs-only operational baseline direction
+- selected option: Option 3, targeted storage policy remediation
+- target environment: Bloomlog Supabase production operations
+- operation type: production SQL / storage policy change
+- exact SQL: listed above
+- expected effect: future inserts into `activity-photos` require authenticated user-owned path prefix
+- blast radius: `storage.objects` insert authorization for `activity-photos`
+- rollback: rollback SQL below
+- verification: policy SQL verification and app behavior verification
+- approval requested from Human: approve production storage policy remediation and rollback if needed
 
 ## risk
 
-- Adopting remote schema as canonical may permanently abandon some old repo expectations.
-- Leaving migration history unrepaired means `db push` remains unsafe as a default workflow.
-- Future Agents may accidentally treat future candidates as selected unless this file is read with Parent summary.
-- Future production SQL can affect auth / RLS / storage behavior, but no production SQL is selected here.
-- Future storage policy changes can affect photo upload behavior, but no storage policy change is selected here.
+- Photo uploads may fail if current object paths do not use authenticated user id as the first path segment.
+- Insert authorization becomes stricter for `activity-photos`.
+- Existing stored objects are not modified.
+- Public app tables are not modified.
+- Rollback is available and restores the current broad insert policy.
+- `db push` and migration repair remain unrelated and not approved.
+
+## blast radius
+
+| area | impact |
+| --- | --- |
+| production DB | storage policy metadata change only |
+| table | `storage.objects` |
+| bucket | `activity-photos` |
+| operation affected | future inserts |
+| existing objects | not modified |
+| public app tables | not modified |
+| RLS / policy | insert authorization becomes stricter |
+| app runtime | photo upload may fail if object paths are not user-prefixed |
+| rollback complexity | medium; simple SQL rollback but production authorization behavior changes |
+| data loss risk | none expected |
 
 ## rollback
 
-No DB rollback is needed for docs-only baseline creation.
+Rollback type: simple SQL rollback.
 
-Selected Option 1 rollback:
+Rollback SQL:
 
-```text
-rollback type: docs revert
-target: docs/ai-team/missions/mission-20260509-operational-rebaseline/
-exact rollback: revert the commit that introduced the final integration, or edit approval-needed.md / decision-log.md / parent-summary.md to remove the Option 1 selection
-data loss risk: none
-verification: git diff --name-only; git diff --stat
+```sql
+begin;
+
+drop policy if exists activity_photos_insert_own on storage.objects;
+drop policy if exists activity_photos_insert_test on storage.objects;
+
+create policy activity_photos_insert_test
+  on storage.objects
+  for insert
+  to authenticated
+  with check (
+    bucket_id = 'activity-photos'
+  );
+
+commit;
 ```
 
-For future write candidates, rollback must be operation-specific:
+Rollback trigger:
 
-- migration repair: reverse repair commands or support-assisted recovery, with CLI behavior reconfirmed before execution
-- policy change: recreate previous policy definition
-- function / trigger restore: `drop trigger if exists ...` and `drop function if exists ...`
-- index creation: `drop index if exists ...`, with lock behavior considered
-- baseline documentation: revert docs commit
+- upload fails with storage authorization after apply
+- app behavior verification fails
+- Human requests revert
+
+Data loss risk: none expected.
 
 ## verification
 
-Selected Option 1 verification:
+Verification SQL:
 
-```powershell
-git status --short
-git diff --name-only
-git diff --stat
-git diff --cached --name-only
-git diff --cached --stat
+```sql
+select schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
+from pg_policies
+where schemaname = 'storage'
+  and tablename = 'objects'
+  and policyname in (
+    'activity_photos_insert_test',
+    'activity_photos_insert_own',
+    'activity_photos_update_own',
+    'activity_photos_delete_own'
+  )
+order by policyname;
 ```
 
-Expected result:
+Expected after apply:
 
-- changed / staged files are only under `docs/ai-team/missions/mission-20260509-operational-rebaseline/`
-- no `app/`, `lib/`, `supabase/`, `supabase/migrations/`, `package.json`, or `.env*` changes
-- no production SQL, `migration repair`, `db push`, destructive SQL, dashboard change, or secret change
+- `activity_photos_insert_own` exists.
+- `activity_photos_insert_test` does not exist.
+- `activity_photos_insert_own` applies to `insert`.
+- `roles` includes `authenticated`.
+- `with_check` requires `bucket_id = 'activity-photos'`.
+- `with_check` requires `(storage.foldername(name))[1] = auth.uid()::text`.
 
-Future write verification must include:
+App behavior verification:
 
-- `npx.cmd supabase migration list`
-- public table / column read-only SQL
-- RLS / policy read-only SQL
-- trigger / function read-only SQL
-- index / constraint read-only SQL
-- storage bucket / storage policy read-only SQL
-- app-specific smoke checks if any production behavior is changed
+1. Sign in as a normal authenticated user.
+2. Create or update one test 思い出 through the normal app flow.
+3. Attach one photo through the normal activity photo upload UI.
+4. Confirm upload succeeds.
+5. Confirm the uploaded photo displays in the 思い出 detail or relevant timeline / record view.
+6. Confirm the storage object path uses the authenticated user id as the first path segment.
+7. If upload fails with storage authorization, execute approved rollback SQL and rerun this verification.
+
+Expected after rollback:
+
+- `activity_photos_insert_test` exists.
+- `activity_photos_insert_own` does not exist.
+- App photo upload behavior returns to previous authorization behavior.
+
+## execution order
+
+1. Parent confirms Option 3 is the selected execution candidate.
+2. Reviewer reviews this package only.
+3. QA validates exact SQL, rollback SQL, verification SQL, app behavior verification, blast radius, and approval boundaries.
+4. Parent finalizes this approval draft after Reviewer / QA.
+5. Human approves or rejects the production write.
+6. If approved, execute the exact SQL in `exact command / SQL / setting`.
+7. Run verification SQL.
+8. Run app behavior verification.
+9. If app behavior verification fails, execute the approved rollback SQL.
+10. Run verification SQL again.
+11. Rerun app behavior verification.
+12. Update decision log and execution report.
 
 ## approval options
 
 Human may choose:
 
-- approve selected docs-only operational baseline
-- reject selected docs-only operational baseline
-- request narrower remediation
-- request a future production-write approval package
+- approve storage policy remediation
+- reject storage policy remediation
+- request changes to SQL / rollback / verification
 
 ## approval result
 
 - selected option: pending
 - decided by: pending
 - decided at: pending
-- notes: approval-ready for docs-only operational baseline; no production operation is approved
+- notes: production SQL is not approved until Human records approval
