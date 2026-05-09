@@ -8,39 +8,7 @@ Sakura / ChatGPT は Gmail read-only intake から raw body を保存しない s
 
 ## Pending
 
-### NTF-20260509-01
-
-- status: pending
-- source_role: Sakura / ChatGPT
-- intake_date: 2026-05-09
-- provider: Supabase
-- notification_type: security / db
-- sanitized_subject: RLS disabled and sensitive columns exposure warning
-- sanitized_summary:
-  - Supabase から、RLS が無効な状態または sensitive columns が露出している可能性に関する security alert が確認された。
-  - raw body、dashboard URL、project ID、対象 URL、内部 ID は保存していない。
-- severity: high
-- confidence: medium
-- affected_area: DB
-- action_class: DB対応候補 / Human approval needed
-- approval_gate_candidate: DB / production write / dashboard / migration repair
-- repo_check_targets:
-  - `docs/ai-team/supabase-db-introspection.md`
-  - `docs/ai-team/supabase-migration-ops.md`
-  - `docs/ai-team/supabase-rls-remediation-checklist.md`
-  - `supabase/migrations/`
-- codex_next_action:
-  - current state を read-only DB Inspector Mission で確認する。
-  - RLS / policy / sensitive columns の現状を read-only で照合する。
-  - write、db push、migration repair、dashboard 変更が必要なら approval-needed.md を作成して停止する。
-- human_action: approval-rejection-only
-- redaction_check:
-  - raw_body_saved: no
-  - secret_or_token_saved: no
-  - dashboard_url_saved: no
-  - project_id_saved: no
-- notes:
-  - この queue entry だけで DB write へ進まない。
+なし。
 
 ## Triaged
 
@@ -61,6 +29,16 @@ Sakura / ChatGPT は Gmail read-only intake から raw body を保存しない s
 - affected_area: deploy / security hygiene
 - action_class: docs記録
 - approval_gate_candidate: none
+- dispatch:
+  - recommended_flow: docs-record
+  - execution_mode: docs-only
+  - mission_required: no
+  - approval_gate_expected: no
+  - human_role: trigger-only
+  - codex_autonomy:
+    - Keep as triaged docs record unless new account compromise evidence appears.
+  - stop_condition:
+    - Account compromise, credential rotation, dashboard change, or production setting change becomes necessary.
 - repo_check_targets:
   - `docs/ai-team/ops/notification-intake/runs/`
   - `docs/product/dev.md`
@@ -69,7 +47,7 @@ Sakura / ChatGPT は Gmail read-only intake から raw body を保存しない s
 - human_action: none
 - redaction_check:
   - raw_body_saved: no
-  - secret_or_token_saved: no
+  - credentials_saved: no
   - dashboard_url_saved: no
   - project_id_saved: no
 - codex_status: triaged
@@ -93,6 +71,17 @@ Sakura / ChatGPT は Gmail read-only intake から raw body を保存しない s
 - affected_area: DB / operations
 - action_class: docs記録 / 対応不要
 - approval_gate_candidate: none
+- dispatch:
+  - recommended_flow: docs-record
+  - execution_mode: docs-only
+  - mission_required: no
+  - approval_gate_expected: no
+  - human_role: trigger-only
+  - codex_autonomy:
+    - Keep as triaged unless current operations impact is found.
+    - Move to completed if no current impact is confirmed.
+  - stop_condition:
+    - Current DB availability or production operations impact is found.
 - repo_check_targets:
   - `docs/ai-team/ops/notification-intake/runs/`
   - `docs/product/dev.md`
@@ -101,7 +90,7 @@ Sakura / ChatGPT は Gmail read-only intake から raw body を保存しない s
 - human_action: none
 - redaction_check:
   - raw_body_saved: no
-  - secret_or_token_saved: no
+  - credentials_saved: no
   - dashboard_url_saved: no
   - project_id_saved: no
 - codex_status: triaged
@@ -128,6 +117,16 @@ Sakura / ChatGPT は Gmail read-only intake から raw body を保存しない s
 - affected_area: deploy
 - action_class: 対応不要
 - approval_gate_candidate: none
+- dispatch:
+  - recommended_flow: queue-only
+  - execution_mode: docs-only
+  - mission_required: no
+  - approval_gate_expected: no
+  - human_role: trigger-only
+  - codex_autonomy:
+    - Keep completed as historical resolved.
+  - stop_condition:
+    - A current production deployment failure is confirmed.
 - repo_check_targets:
   - `docs/ai-team/ops/notification-intake/runs/`
 - codex_next_action:
@@ -135,7 +134,7 @@ Sakura / ChatGPT は Gmail read-only intake から raw body を保存しない s
 - human_action: none
 - redaction_check:
   - raw_body_saved: no
-  - secret_or_token_saved: no
+  - credentials_saved: no
   - dashboard_url_saved: no
   - project_id_saved: no
 - codex_status: completed
@@ -145,7 +144,65 @@ Sakura / ChatGPT は Gmail read-only intake から raw body を保存しない s
 
 ## Follow-up Created
 
-まだなし。
+### NTF-20260509-01
+
+- status: follow-up-created
+- source_role: Sakura / ChatGPT
+- intake_date: 2026-05-09
+- provider: Supabase
+- notification_type: security / db
+- sanitized_subject: RLS disabled and sensitive columns exposure warning
+- sanitized_summary:
+  - Supabase から、RLS が無効な状態または sensitive columns が露出している可能性に関する security alert が確認された。
+  - raw body、dashboard URL、project ID、対象 URL、内部 ID は保存していない。
+- severity: high
+- confidence: medium
+- affected_area: DB
+- action_class: DB対応候補 / Human approval needed
+- approval_gate_candidate: DB / production write / dashboard / migration repair
+- dispatch:
+  - recommended_flow: db-inspector-followup
+  - execution_mode: read-only-introspection
+  - mission_required: yes
+  - approval_gate_expected: unknown
+  - human_role: approval-rejection-only
+  - codex_autonomy:
+    - Move queue entry to follow-up-created.
+    - Create or update canonical read-only DB Inspector Mission.
+    - Stop before DB write, dashboard change, `db push`, migration repair, or credential change.
+  - stop_condition:
+    - Any gated operation becomes necessary.
+    - Remote DB current state cannot be verified read-only.
+- repo_check_targets:
+  - `docs/ai-team/supabase-db-introspection.md`
+  - `docs/ai-team/supabase-migration-ops.md`
+  - `docs/ai-team/supabase-rls-remediation-checklist.md`
+  - `supabase/migrations/`
+- codex_next_action:
+  - current state を read-only DB Inspector Mission で確認する。
+  - RLS / policy / sensitive columns の現状を read-only で照合する。
+  - write、db push、migration repair、dashboard 変更が必要なら approval-needed.md を作成して停止する。
+- human_action: approval-rejection-only
+- redaction_check:
+  - raw_body_saved: no
+  - credentials_saved: no
+  - dashboard_url_saved: no
+  - project_id_saved: no
+- codex_status: follow-up-created
+- codex_repo_check:
+  - Existing docs record prior RLS remediation for `visit_sessions` and `activity_logs`.
+  - Existing docs record remote migration history visibility risk; `db push` is not a standard safe path.
+  - Repo contains RLS remediation migration `20260508100000_fix_visit_sessions_and_activity_logs_rls.sql`.
+- codex_decision:
+  - Queue 内では完了しない。
+  - read-only DB Inspector follow-up Mission に切り出した。
+- follow_up:
+  - mission: `docs/ai-team/missions/mission-20260509-notification-rls-check/`
+  - approval_needed: none yet
+- run_log: `docs/ai-team/ops/notification-intake/runs/20260509-codex-process-pending-ntf-20260509-01.md`
+- notes:
+  - この queue entry だけで DB write へ進まない。
+  - Codex local draft `mission-20260509-supabase-security-alert-readonly` is replaced by canonical `mission-20260509-notification-rls-check`.
 
 ## Approval Needed Candidates
 
