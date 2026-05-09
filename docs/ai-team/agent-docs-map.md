@@ -6,7 +6,7 @@
 
 このドキュメントは、Bloomlog の docs 配置、寿命、更新責任、archive 条件を定義する。
 
-AI Agent は、状態共有や引き継ぎをチャットに閉じず、repo files、GitHub branch、PR、issue に残す。特に恒久ルールは `docs/ai-team/agent-operating-model.md` を正とし、この docs map は各ドキュメントの置き場所と寿命を補完する。
+AI Team / Agent OS 作業の入口は `AGENTS.md` である。Mission state の正本は `docs/ai-team/mission-lifecycle.md` である。この docs map は、入口ではなく docs 配置と寿命を補助する。
 
 ## 基本方針
 
@@ -15,6 +15,8 @@ AI Agent は、状態共有や引き継ぎをチャットに閉じず、repo fil
 - `docs/archive/` は退役資料の置き場である。
 - チャットは作業中の補助に留め、最終状態は docs、branch、PR、issue に残す。
 - docs は増やす前に、既存 docs の責務で扱えるか確認する。
+- 新規 docs 作成より既存 docs / mission / decision log / report への追記を優先する。
+- Mission artifacts は恒久ルールではない。恒久ルールは `AGENTS.md`、`docs/ai-team/mission-lifecycle.md`、必要最小限の運用 docs に集約する。
 - Bloomlog 固定用語である「来場日」「思い出」「思い出アルバム」「タイムライン」「記録」は変更しない。
 
 ## 配置ルール
@@ -116,40 +118,19 @@ AI 運用、調査、handoff、decision log、承認前判断材料の置き場�
 | notification review | 短命から中期 | `docs/ai-team/` | 通知レビューごとに更新 | 対応不要、対応済み、または正式タスク化されたとき |
 | PR report | 短命 | PR または `docs/ai-team/` | PR ごとに作成 | PR merge 後、必要情報が docs に反映済みのとき |
 
-## 作業開始前に読む docs
+## 作業開始時の入口
 
-すべての作業で読む:
+すべての作業で最初に読む入口は `AGENTS.md` とする。
 
-- `AGENTS.md`
-- `docs/product/overview.md`
-- `docs/product/current-status.md`
-- `docs/product/dev.md`
-- `docs/ai-team/agent-operating-model.md`
-- `docs/ai-team/agent-docs-map.md`
+追加で読む docs は、作業対象に直接関係するものだけに限定する。
 
-docs-only 作業で追加確認する:
+- Mission state を更新する場合: `docs/ai-team/mission-lifecycle.md`。
+- docs 配置や archive 判断を行う場合: `docs/ai-team/agent-docs-map.md`。
+- product 仕様に触れる場合: 関連する `docs/product/`。
+- DB / Supabase 作業の場合: 関連する mission、report、`docs/ai-team/supabase-db-introspection.md`、対象 migration。
+- Next.js 変更時: `node_modules/next/dist/docs/` の関連 guide。
 
-- 対象 docs の既存ファイル。
-- 関連する `docs/ai-team/` の handoff、decision log、introspection log。
-
-アプリコード作業で追加確認する:
-
-- 変更対象に関係する `docs/product/`。
-- 関連する `docs/ai-team/` の調査メモや decision log。
-- Next.js 変更時は `node_modules/next/dist/docs/` の関連 guide。
-
-DB / Supabase 作業で追加確認する:
-
-- `docs/ai-team/supabase-db-introspection.md`
-- 関連 migration。
-- 関連する RLS / policy / trigger / function 調査 docs。
-- `docs/ai-team/agent-operating-model.md` の migration / DB approval gate。
-
-外部通知レビューで追加確認する:
-
-- 通知レビュー関連 docs。
-- `docs/ai-team/agent-operating-model.md` の通知レビューの扱い。
-- 対象サービスに関係する product docs または current status。
+「すべての作業で多数の docs を読む」ことを標準にしない。必要な docs を絞り、既存 Mission が `completed` / `superseded` の場合は再開しない。
 
 ## PR 前に更新すべき docs
 
@@ -194,6 +175,7 @@ git diff --stat
 - 今後も参照される明確な運用単位がある。
 - Mission / Task / Report / Decision Log のどれに当たるか説明できる。
 - archive 条件を定義できる。
+- Parent Agent が、既存 docs 更新では足りない理由を Report または decision log に残せる。
 
 新規 docs を作らない条件:
 
@@ -312,7 +294,7 @@ decision log は中長期で残す。
 | `docs/ai-team/agent-operating-model.md` | operating model | 恒久 | 正本として残す |
 | `docs/ai-team/agent-docs-map.md` | docs map | 恒久 | 正本として残す |
 | `docs/ai-team/mission-lifecycle.md` | mission lifecycle | 恒久 | 正本として残す |
-| `docs/ai-team/agent-ops-inventory.md` | inventory | 中期 | 新設計移行が終わったら archive 候補 |
+| `docs/ai-team/agent-ops-inventory.md` | inventory | 履歴 | 棚卸し完了済み。現行入口ではない |
 | `docs/ai-team/supabase-db-introspection.md` | introspection log / 手順 | 更新型 | DB 調査の入口として残す |
 | `docs/ai-team/2026-05-08-rls-and-agent-ops-handoff.md` | handoff | 短命 | 内容反映後に archive 候補 |
 | `docs/ai-team/supabase-rls-remediation-checklist.md` | checklist | 短命から中期 | 完了状態整理後に archive 候補 |

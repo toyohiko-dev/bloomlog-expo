@@ -2,6 +2,14 @@
 
 作成日: 2026-05-09
 
+## 現行扱い
+
+この棚卸しは完了済みであり、現行入口ではない。
+
+AI Team / Agent OS 作業の入口は `AGENTS.md` である。Mission state の正本は `docs/ai-team/mission-lifecycle.md`、docs 配置と寿命の補助正本は `docs/ai-team/agent-docs-map.md` である。
+
+このファイルは過去の棚卸し結果として残す。新しい設計 MD の作成リストや現行作業開始手順として使わない。
+
 ## 目的
 
 新しい AI 開発組織設計を入れる前に、`AGENTS.md` と `docs/ai-team/` 配下の現状を棚卸しする。
@@ -171,25 +179,24 @@ docs/ai-team/supabase-db-introspection.md
 7. DB 運用は `supabase-db-introspection.md` を土台に、`db push` / `migration repair` / 個別 SQL 適用の承認手順を別設計に切り出す。
 8. 過去ブリーフや handoff は archive へ寄せ、現行作業入口から外す。
 
-## 次に作るべき設計 MD 一覧
+## superseded: 次に作るべき設計 MD 一覧
 
-- `docs/ai-team/agent-operating-model.md`
-  - AI と人間の役割、承認境界、AI が自律実行すべき read-only 作業を定義する。
+この一覧は superseded である。以下の設計 MD は作成済み、統合済み、または現行入口から外れた。
 
+現行の正本:
+
+- `AGENTS.md`
+- `docs/ai-team/mission-lifecycle.md`
 - `docs/ai-team/agent-docs-map.md`
-  - `docs/product/`、`docs/ai-team/`、`PLANS.md`、`tech-debt`、handoff、archive の置き場所と寿命を定義する。
 
-- `docs/ai-team/agent-review-workflow.md`
-  - 通知レビュー、コードレビュー、DB 調査、実装依頼をどう分離し、どこで承認するかを定義する。
+superseded items:
 
-- `docs/ai-team/supabase-migration-ops.md`
-  - remote migration 履歴空問題、`migration repair`、`db push`、個別 SQL 適用の判断基準と承認手順を定義する。
-
-- `docs/ai-team/agent-handoff-template.md`
-  - 時点依存の引き継ぎを残すテンプレート。恒久ルールと混ぜないために使う。
-
-- `docs/ai-team/notification-review-workflow.md`
-  - 取得、分析、承認、記録の実運用を、AI 主導かつ本文全文保存なしで定義する。
+- `docs/ai-team/agent-operating-model.md`: 作成済み。現行入口ではなく補助運用 docs。
+- `docs/ai-team/agent-docs-map.md`: 作成済み。docs 配置と寿命の補助正本。
+- `docs/ai-team/agent-review-workflow.md`: 作成済み。review / approval flow の補助 docs。
+- `docs/ai-team/supabase-migration-ops.md`: 既存。DB 作業時の関連 docs として必要時のみ読む。
+- `docs/ai-team/agent-handoff-template.md`: 作成しない。新規 MD より既存 mission / task / report / decision log を優先する。
+- `docs/ai-team/notification-review-workflow.md`: 作成しない。既存 notification review docs の更新を優先する。
 
 ## 今回変えていないこと
 

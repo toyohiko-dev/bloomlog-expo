@@ -14,6 +14,16 @@ This version has breaking changes - APIs, conventions, and file structure may al
 - `docs/ai-team/` は AI 運用、検討、レビュー、分析、引き継ぎのための作業領域として扱う
 - 実装より先に、既存の仕様、用語、運用方針との整合性を確認する
 
+## 1.1. AI Team / Agent OS 作業の唯一の入口
+
+- AI Team / Agent OS 作業では、まずこの `AGENTS.md` を読む。
+- Mission state は `docs/ai-team/mission-lifecycle.md` に従う。
+- 新規 MD を作る前に、既存 mission / docs / decision log / report に追記できないか確認する。
+- `completed` / `superseded` の Mission は再開しない。必要な場合は、新しい Mission または follow-up task として切り出す。
+- Parent Agent は docs-only safe path の条件を満たす場合、差分確認後に commit / push まで行う。
+- Human は approval / rejection のみを行う。Human を mission state 更新係、転記係、diff 確認係にしない。
+- 現行の補助正本は、状態管理が `docs/ai-team/mission-lifecycle.md`、docs 配置が `docs/ai-team/agent-docs-map.md` である。
+
 ## 2. AI と人間の役割
 
 - AI は作業者であり、人間は承認者である
