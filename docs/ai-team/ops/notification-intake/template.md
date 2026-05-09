@@ -4,7 +4,7 @@
 
 Sakura / ChatGPT は Gmail read-only intake 後、この形式で sanitized entry を作る。
 
-raw email body、secret、token、dashboard URL、project ID、内部 ID は保存しない。
+raw email body、認証情報、dashboard URL、project ID、内部 ID は保存しない。
 
 ```md
 ### NTF-YYYYMMDD-NN
@@ -21,7 +21,17 @@ raw email body、secret、token、dashboard URL、project ID、内部 ID は保�
 - confidence: high / medium / low
 - affected_area: auth / deploy / DB / env / billing / domain / GitHub運用 / docs / unknown
 - action_class: 対応不要 / docs記録 / code変更候補 / DB対応候補 / dashboard変更候補 / Human approval needed
-- approval_gate_candidate: none / DB / dashboard / secret / production write / db push / migration repair / main merge
+- approval_gate_candidate: none / DB / dashboard / credential / production write / db push / migration repair / main merge
+- dispatch:
+  - recommended_flow: queue-only / docs-record / db-inspector-followup / code-followup / security-hygiene-followup / approval-package
+  - execution_mode: docs-only / read-only-introspection / approval-gated-write
+  - mission_required: yes / no
+  - approval_gate_expected: yes / no / unknown
+  - human_role: trigger-only / approval-rejection-only
+  - codex_autonomy:
+    -
+  - stop_condition:
+    -
 - repo_check_targets:
   -
 - codex_next_action:
@@ -29,7 +39,7 @@ raw email body、secret、token、dashboard URL、project ID、内部 ID は保�
 - human_action: none / approval-rejection-only
 - redaction_check:
   - raw_body_saved: no
-  - secret_or_token_saved: no
+  - credentials_saved: no
   - dashboard_url_saved: no
   - project_id_saved: no
 - notes:
