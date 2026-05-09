@@ -467,3 +467,66 @@ The approved Option 3 SQL execution completed and verification SQL passed. Runti
 
 - A real authenticated app smoke test passes or fails.
 - A storage authorization regression is observed.
+
+---
+
+## decision date
+
+2026-05-09
+
+## decision maker
+
+- Parent Agent
+
+## mission id
+
+`mission-20260509-operational-rebaseline`
+
+## decision
+
+Finalize Mission lifecycle status as `completed`.
+
+Option 3 execution completed, SQL verification passed, and the remaining authenticated app smoke verification risk is separated as follow-up outside this Mission.
+
+## state transition
+
+- from: `verification-partial`
+- to: `completed`
+- changed by: Parent Agent
+- reason: core execution succeeded, verification SQL passed, and the residual app smoke test risk is documented and separated from this Mission.
+- blocker: none
+- unblock condition: not applicable
+
+## alternatives considered
+
+- Keep `verification-partial`: rejected because the residual risk has been documented and separated as follow-up.
+- Mark `blocked`: rejected because there is no exact blocker preventing Mission finalization.
+
+## rationale
+
+- `reports/execution-report.md` records successful approved SQL execution.
+- SQL verification observed the expected post-apply storage policy state.
+- Rollback remains documented if a later authenticated app smoke test finds a storage authorization regression.
+- No `db push`, migration repair, destructive SQL, migration file edit, or app code change was needed for finalization.
+
+## impact
+
+- affected docs:
+  - `docs/ai-team/missions/mission-20260509-operational-rebaseline/mission.md`
+  - `docs/ai-team/missions/mission-20260509-operational-rebaseline/decision-log.md`
+- affected code: none
+- affected DB / migration: none from this lifecycle update
+- affected secret / dashboard: none
+- affected operations:
+  - Mission is closed as completed.
+  - Authenticated app smoke verification remains a separate follow-up, not a blocker for this Mission.
+
+## follow-up
+
+- Track authenticated app photo upload smoke verification outside this completed Mission.
+- If that follow-up observes storage authorization failure, use the documented rollback path.
+
+## revisit condition
+
+- A later authenticated app smoke verification fails.
+- A new storage authorization issue is observed.

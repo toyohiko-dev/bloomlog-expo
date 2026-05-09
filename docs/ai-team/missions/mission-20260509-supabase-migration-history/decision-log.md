@@ -74,6 +74,69 @@ remote migration 履歴空問題は、DB / migration path の Mission として�
 
 ## decision
 
+Finalize Mission lifecycle status as `superseded`.
+
+This Mission's read-only shelf inventory and drift classification were used as input to `mission-20260509-operational-rebaseline`. The newer operational rebaseline replaces this Mission as the current operational baseline.
+
+## state transition
+
+- from: `completed`
+- to: `superseded`
+- changed by: Parent Agent
+- reason: `mission-20260509-operational-rebaseline` intentionally abandoned historical migration purity pursuit and adopted forward operational consistency as the current baseline.
+- blocker: none
+- unblock condition: not applicable
+
+## alternatives considered
+
+- Keep this Mission as `completed`: rejected because the current operational source of truth is now the operational rebaseline Mission.
+- Reopen migration repair or `db push`: rejected because the operational rebaseline explicitly does not require migration repair or `db push`.
+
+## rationale
+
+- The read-only investigation classified the situation as `migration history drift + partial schema drift`.
+- Later operational rebaseline work accepted current remote schema as primary operational reality.
+- Historical migration history reconstruction is no longer a goal.
+- `migration repair` and `db push` are not needed for this Mission's final state.
+
+## impact
+
+- affected docs:
+  - `docs/ai-team/missions/mission-20260509-supabase-migration-history/mission.md`
+  - `docs/ai-team/missions/mission-20260509-supabase-migration-history/decision-log.md`
+- affected code: none
+- affected DB / migration: none
+- affected secret / dashboard: none
+- affected operations:
+  - Future Supabase operational decisions should use `mission-20260509-operational-rebaseline`.
+  - This Mission remains historical evidence and is not an active approval path.
+
+## follow-up
+
+- None in this Mission.
+- Any future DB operation must start from the operational rebaseline or a new Mission with exact SQL / rollback / verification.
+
+## revisit condition
+
+- A new Mission explicitly reopens historical migration reconstruction.
+- Human explicitly requests a new migration repair / history reconstruction package.
+
+---
+
+## decision date
+
+2026-05-09
+
+## decision maker
+
+- Parent Agent
+
+## mission id
+
+`mission-20260509-supabase-migration-history`
+
+## decision
+
 DB Inspector が decision-ready remediation candidates を追加し、Reviewer / QA がそれを確認した。Parent Agent はこの Mission の最終判断として Option 1、つまり `do nothing / defer migration repair` を採用する。
 
 この Mission では `migration repair`、`db push`、個別 production SQL を実行しない。`approval-needed.md` は pending gate のまま維持し、Human に executable approval request は出さない。

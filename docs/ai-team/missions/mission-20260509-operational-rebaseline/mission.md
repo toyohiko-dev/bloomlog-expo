@@ -11,16 +11,16 @@ Bloomlog Supabase operations の operational rebaseline
 ## mission state
 
 ```yaml
-status: verification-partial
+status: completed
 owner_role: Parent Agent
-current_phase: verification
+current_phase: finalization
 selected_option: Option 3 storage policy remediation
 approval_required: yes
 approval_status: approved
 execution_status: completed
-verification_status: partial
-residual_risk: authenticated app photo upload smoke test is still pending because browser/auth verification was unavailable in the execution environment
-next_action: separate authenticated app smoke verification into follow-up and finalize residual risk
+verification_status: passed
+residual_risk: authenticated app photo upload smoke test was unavailable in the execution environment and is separated as follow-up outside this Mission
+next_action: none; follow-up app smoke verification is tracked separately from this completed Mission
 last_updated: 2026-05-09
 ```
 

@@ -8,6 +8,22 @@
 
 remote migration 履歴空問題の read-only 棚卸し
 
+## mission state
+
+```yaml
+status: superseded
+owner_role: Parent Agent
+current_phase: finalization
+selected_option: superseded by mission-20260509-operational-rebaseline
+approval_required: no
+approval_status: not-required
+execution_status: not-required
+verification_status: passed
+residual_risk: none; historical purity pursuit was intentionally abandoned by the operational rebaseline
+next_action: none; use mission-20260509-operational-rebaseline as the current operational baseline
+last_updated: 2026-05-09
+```
+
 ## background
 
 Bloomlog の Supabase remote migration history が空または欠落しているため、`npx supabase db push` が repo 側の全 migration を未適用として扱う可能性がある。
