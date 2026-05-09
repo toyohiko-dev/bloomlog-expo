@@ -74,6 +74,76 @@ remote migration 履歴空問題は、DB / migration path の Mission として�
 
 ## decision
 
+DB Inspector が decision-ready remediation candidates を追加し、Reviewer / QA がそれを確認した。Parent Agent はこの Mission の最終判断として Option 1、つまり `do nothing / defer migration repair` を採用する。
+
+この Mission では `migration repair`、`db push`、個別 production SQL を実行しない。`approval-needed.md` は pending gate のまま維持し、Human に executable approval request は出さない。
+
+## alternatives considered
+
+- Option 1: do nothing / defer migration repair。
+- Option 2: repair migration history only, accepting current schema drift。
+- `npx.cmd supabase db push`。
+- 欠落 function / trigger / index / storage policy を個別 SQL で直ちに適用する。
+
+## rationale
+
+- Option 1 は DB write を伴わず、現時点の known risk を増やさない。
+- remote migration history は空または unreadable だが、remote schema は repo migrations と clean match していない。
+- Option 2 は exact repair commands を用意できるが、schema drift を残したまま migration history だけを整えるため、現時点では推奨しない。
+- `db push` は local 10 migrations を pending と扱う可能性があり、known schema drift と衝突するリスクがある。
+- 個別 production SQL は候補が残るが、今回の Mission では対象を 1 つに絞っていない。
+
+## impact
+
+- affected docs:
+  - `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/parent-summary.md`
+  - `docs/ai-team/missions/mission-20260509-supabase-migration-history/decision-log.md`
+  - `docs/ai-team/missions/mission-20260509-supabase-migration-history/approval-needed.md`
+- affected code: none
+- affected DB / migration: none
+- affected secret / dashboard: none
+- affected operations:
+  - Supabase CLI migration workflow remains unsafe for normal `db push`.
+  - Future DB changes stay on individual approval path.
+  - Option 2 repair commands remain candidate documentation only.
+
+## follow-up
+
+- Future remediation must start from a new task or approval update that selects one concrete action.
+- If Option 2 is later selected, `approval-needed.md` must be updated with exact commands, target environment confirmation, risk, rollback, and verification before Human approval.
+- If individual SQL is later selected, it must include exact SQL and operation-specific rollback.
+- `db push` remains rejected until migration history and schema drift are intentionally resolved.
+
+## revisit condition
+
+- Human explicitly chooses Option 2 despite known schema drift.
+- DB Inspector provides evidence that schema drift has been resolved or intentionally accepted.
+- A future production DB change needs a concrete approval request.
+- Supabase migration history becomes readable and consistent with repo migrations.
+
+## prohibited content
+
+- secret / token を保存しない。
+- メール本文全文を保存しない。
+- Human を Agent 間通信路にしない。
+- Sakura を Agent 間通信路にしない。
+
+---
+
+## decision date
+
+2026-05-09
+
+## decision maker
+
+- Parent Agent
+
+## mission id
+
+`mission-20260509-supabase-migration-history`
+
+## decision
+
 更新済みの Reviewer / QA reports を含めて再統合した。結論は変更しない。Mission result は docs-only safe path のままであり、read-only 棚卸しは完了扱いにできるが、remediation 実行には進まない。
 
 `approval-needed.md` は引き続き pending gate とし、Human approval を求める executable request にはしない。

@@ -20,6 +20,192 @@ Supabase remote migration history と remote schema / RLS / policy / trigger / f
 
 remote schema は repo migration の多くを反映しているが、`public.assign_visit_session_user_id` / `public.sync_activity_log_user_id` と対応 trigger が存在しない、repo にない table / column / policy が remote に存在する、storage policy が repo migration と一致しない、という schema drift も確認した。したがって現時点の分類は `history-only drift` ではなく、`migration history drift + partial schema drift` とする。
 
+## decision-ready remediation candidates
+
+This section narrows the remediation choices to realistic options. This is not a new open-ended investigation.
+
+### Recommendation
+
+Recommended option: Option 1, do nothing / defer migration repair.
+
+Reason:
+
+- The remote migration history is empty or unreadable, but the remote schema is not a clean match to repo migrations.
+- The mismatch is not only history drift. It includes missing repo-defined functions / triggers / indexes and remote-only schema / policy.
+- A repair now would make migration history look cleaner while leaving schema drift unresolved.
+- `db push` remains inappropriate because it may treat all 10 local migrations as pending.
+
+### Option 1: do nothing / defer
+
+Decision:
+
+- Do not run `migration repair`.
+- Do not run `db push`.
+- Do not apply individual SQL in this mission.
+- Keep future production DB changes on the individual-SQL approval path until schema drift is intentionally resolved.
+
+Exact command / SQL:
+
+```text
+none
+```
+
+Human approval required:
+
+- No approval required to choose deferral.
+- Future DB write still requires Human approval per operation.
+
+Risk:
+
+- Supabase CLI migration workflow remains unavailable or unsafe for normal `db push`.
+- Future DB changes require more manual approval preparation.
+- Migration history remains misleading, so another Agent might accidentally propose `db push` unless this report is respected.
+
+Rollback:
+
+- No rollback needed because no DB change is made.
+
+Verification:
+
+```powershell
+npx.cmd supabase migration list
+```
+
+Expected verification result:
+
+- Local migration versions are listed.
+- Remote column remains empty.
+- This confirms the risk remains known and intentionally deferred.
+
+Missing evidence that blocks decision:
+
+- None. This option is decision-ready now.
+
+### Option 2: repair migration history only, accepting current schema drift
+
+Decision:
+
+- Mark all current repo migrations as applied in remote migration history.
+- Do not change schema as part of this option.
+- Accept that known schema drift remains and must be tracked separately.
+
+This option is only realistic if Human explicitly accepts that migration history will be normalized before schema drift is fixed. It is not the recommended option.
+
+Exact command:
+
+```powershell
+npx.cmd supabase migration repair --status applied 20260322163000
+npx.cmd supabase migration repair --status applied 20260322193000
+npx.cmd supabase migration repair --status applied 20260324120000
+npx.cmd supabase migration repair --status applied 20260328120000
+npx.cmd supabase migration repair --status applied 20260404235000
+npx.cmd supabase migration repair --status applied 20260405001000
+npx.cmd supabase migration repair --status applied 20260405003000
+npx.cmd supabase migration repair --status applied 20260405012000
+npx.cmd supabase migration repair --status applied 20260405190000
+npx.cmd supabase migration repair --status applied 20260508100000
+```
+
+Human approval required:
+
+- Yes.
+- Approval type: migration repair / production write.
+- Reason: `migration repair` writes to remote migration history.
+
+Risk:
+
+- High risk of hiding real schema drift behind a clean migration history.
+- Future `db push` may become available but still operate against a remote schema that does not fully match repo migrations.
+- Missing repo-defined trigger/function/index objects would remain missing.
+- Remote-only schema (`events`, `areas`, `countries`, `spots`, `pavilions.image_path`) would remain outside repo migration history.
+- If the linked project is not the intended production project, repair would write incorrect migration history to the wrong target.
+
+Rollback:
+
+If repair is approved and later judged wrong, the candidate rollback is another Human-approved migration repair operation:
+
+```powershell
+npx.cmd supabase migration repair --status reverted 20260508100000
+npx.cmd supabase migration repair --status reverted 20260405190000
+npx.cmd supabase migration repair --status reverted 20260405012000
+npx.cmd supabase migration repair --status reverted 20260405003000
+npx.cmd supabase migration repair --status reverted 20260405001000
+npx.cmd supabase migration repair --status reverted 20260404235000
+npx.cmd supabase migration repair --status reverted 20260328120000
+npx.cmd supabase migration repair --status reverted 20260324120000
+npx.cmd supabase migration repair --status reverted 20260322193000
+npx.cmd supabase migration repair --status reverted 20260322163000
+```
+
+Rollback risk:
+
+- This rollback also writes migration history and requires Human approval.
+- It does not revert schema, because Option 2 does not change schema.
+- If other migrations are applied after the repair, rollback order and target versions must be recalculated before execution.
+
+Verification:
+
+```powershell
+npx.cmd supabase migration list
+```
+
+Expected verification result:
+
+- The 10 migration versions above appear as applied on remote.
+
+Read-only schema verification after repair:
+
+```sql
+select schema_name
+from information_schema.schemata
+where schema_name in ('supabase_migrations', 'auth', 'realtime', 'storage')
+order by schema_name;
+```
+
+```sql
+select table_schema, table_name
+from information_schema.tables
+where table_name ilike '%migration%'
+order by table_schema, table_name;
+```
+
+```sql
+select event_object_schema, event_object_table, trigger_name, action_timing, event_manipulation, action_statement
+from information_schema.triggers
+where event_object_schema = 'public'
+order by event_object_table, trigger_name;
+```
+
+```sql
+select schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
+from pg_policies
+where schemaname = 'public'
+order by tablename, policyname;
+```
+
+Missing evidence that blocks decision:
+
+- Human must confirm the linked Supabase project is the intended production target.
+- Human must explicitly accept that schema drift remains unresolved after repair.
+
+### Explicitly rejected for this round: db push
+
+Decision:
+
+- Do not run `npx.cmd supabase db push`.
+
+Exact command not to run:
+
+```powershell
+npx.cmd supabase db push
+```
+
+Reason:
+
+- Remote migration history is empty or unreadable.
+- CLI may treat all local migrations as pending.
+- Known schema drift makes broad migration application unsafe.
+
 ## input files read
 
 - `AGENTS.md`

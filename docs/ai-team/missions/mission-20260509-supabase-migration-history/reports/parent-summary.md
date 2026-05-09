@@ -281,3 +281,55 @@ Next action remains:
 - Next agent to run: DB Inspector Agent
 - Next task file path: `docs/ai-team/missions/mission-20260509-supabase-migration-history/tasks/db-inspector.md`
 - Next task purpose: narrow drift causes and remediation candidates before any executable approval request is written.
+
+---
+
+## final option integration
+
+Date: 2026-05-09
+
+Parent Agent reread all reports after `db-inspector-report.md` gained decision-ready remediation candidates and Reviewer / QA reviewed that update.
+
+Reports read:
+
+- `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/db-inspector-report.md`
+- `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/reviewer-report.md`
+- `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/qa-report.md`
+- `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/parent-summary.md`
+
+New DB Inspector decision-ready options:
+
+- Option 1: do nothing / defer migration repair.
+- Option 2: repair migration history only, accepting current schema drift.
+- Explicitly rejected for this round: `npx.cmd supabase db push`.
+
+Parent final judgment for this mission:
+
+- Adopt Option 1 for this mission.
+- Do not run `migration repair`.
+- Do not run `db push`.
+- Do not apply individual production SQL.
+- Keep future production DB changes on an individual approval path until schema drift is intentionally resolved.
+- Treat Option 2 commands in `db-inspector-report.md` as candidate documentation only. They are not approved, not recommended, and not requested in `approval-needed.md`.
+
+Why Option 1 is adopted:
+
+- Remote migration history remains empty or unreadable.
+- Remote schema is not a clean match to repo migrations.
+- Known drift includes missing repo-defined functions / triggers / indexes and remote-only schema / policy.
+- A repair now could hide unresolved schema drift behind clean-looking migration history.
+- `db push` may treat all 10 local migrations as pending and remains unsafe.
+
+Approval status:
+
+- Human approval needed for Option 1: no.
+- Human approval needed for Option 2: yes, if ever selected later.
+- Human approval needed for `db push`: yes, but `db push` is explicitly rejected for this round.
+- Human approval needed for individual production SQL: yes, but no individual SQL is selected in this mission.
+
+Final mission result:
+
+- Mission result is docs-only safe path.
+- Read-only inventory and remediation option framing are complete.
+- The operational decision is defer / do nothing for now.
+- `approval-needed.md` remains pending and non-executable.

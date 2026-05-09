@@ -49,9 +49,9 @@ Get-ChildItem -LiteralPath docs/ai-team/missions/mission-20260509-supabase-migra
 
 Current pre-update state observed for this rerun:
 
-- `git status --short`: no output
-- `git diff --name-only`: no output
-- `git diff --stat`: no output
+- `git status --short`: ` M docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/db-inspector-report.md`
+- `git diff --name-only`: `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/db-inspector-report.md`
+- `git diff --stat`: `1 file changed, 186 insertions(+)`
 - `git diff --cached --name-only`: no output
 - `git diff --cached --stat`: no output
 
@@ -62,7 +62,7 @@ Reports currently present:
 - `parent-summary.md`
 - `reviewer-report.md`
 
-This rerun updates only `reviewer-report.md`.
+This rerun reviews the current `db-inspector-report.md` docs-only change and updates `reviewer-report.md`.
 
 ## findings
 
@@ -70,6 +70,10 @@ No blocking findings for the docs-only review path.
 
 Reviewer findings:
 
+- The current changed file is limited to `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/db-inspector-report.md`.
+- The DB Inspector addition narrows remediation options and recommends Option 1, do nothing / defer migration repair.
+- The DB Inspector addition includes exact `migration repair` commands only under a non-recommended Option 2 that explicitly requires Human approval. They are documentation candidates, not executed actions.
+- The DB Inspector addition explicitly rejects `npx.cmd supabase db push` for this round.
 - DB Inspector, QA, and Parent reports consistently classify the issue as `migration history drift + partial schema drift`, not pure `history-only drift`.
 - Current reports consistently stop before `db push`, `migration repair`, individual production SQL, destructive SQL, dashboard changes, and secret changes.
 - `approval-needed.md` is correctly kept as a pending gate, not an executable approval request.
@@ -82,8 +86,8 @@ Status: pass.
 
 Evidence:
 
-- Current `git status --short` and `git diff` were clean before this rerun update.
-- The only file changed by this rerun is under `docs/`.
+- Current `git status --short` and `git diff --name-only` show only `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/db-inspector-report.md` before this rerun update.
+- The only file changed by this reviewer rerun is also under `docs/`.
 - Mission report files are located under `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/`.
 - No current evidence shows changes under `app/`, `lib/`, `supabase/`, `supabase/migrations/`, `package.json`, or `.env*`.
 - No staged files were observed.
@@ -127,6 +131,7 @@ Current gate status:
 - Do not proceed to `migration repair`.
 - Do not apply individual SQL.
 - Treat `approval-needed.md` as pending only. It does not approve execution.
+- Treat DB Inspector Option 2 repair commands as candidate documentation only; they are not approved and were not executed.
 
 ## push judgment
 
@@ -141,13 +146,14 @@ Push should be stopped if any of the following are true:
 - `approval-needed.md` becomes an executable DB write request without Human approval
 - any DB write, `migration repair`, `db push`, destructive SQL, dashboard change, or secret change is included
 
-Current review judgment: no push blocker from the reviewed docs-only content itself. Production/DB execution remains blocked.
+Current review judgment: no push blocker from the reviewed docs-only content itself after final staging verification. Production/DB execution remains blocked.
 
 ## risks
 
 - DB risk: high if `db push` is run now, because remote migration history is blank while schema drift remains.
 - Migration repair risk: high for drifted migrations, especially missing functions / triggers / indexes and storage policy drift.
 - Individual SQL risk: medium to high until the current app responsibility, storage policy intent, linked project, and operation-specific rollback are narrowed.
+- Documentation risk: DB Inspector now contains exact repair command candidates. This is acceptable only because they are clearly marked as Human-approval-required and not recommended; future summaries should preserve that framing.
 - Process risk: `approval-needed.md` could be misread as approval if separated from Parent / QA context; it must remain pending.
 - Docs risk: low. The current action is a reviewer report update only.
 
@@ -168,12 +174,13 @@ If this reviewer report update must be reverted, revert only this docs report ch
 - Remote-only schema origin remains unresolved.
 - Missing function / trigger / index intent remains unresolved.
 - `activity_photos_insert_test` intent remains unresolved.
-- Exact future SQL / repair command candidates are intentionally not finalized in this review.
+- Exact future executable approval request remains intentionally not finalized in this review.
 
 ## next action
 
+- Prefer the DB Inspector recommended Option 1 for this mission: defer migration repair and do not run `db push`.
+- If Option 2 is ever considered, move it through `approval-needed.md` with Human approval and preserve the warning that schema drift remains unresolved.
 - Continue with DB Inspector follow-up described in `parent-summary.md`.
-- Narrow one remediation candidate before updating `approval-needed.md` into an executable approval request.
 - Keep `db push`, `migration repair`, production SQL, destructive SQL, dashboard changes, and secret changes blocked until Human approval gate is prepared and approved.
 
 ## human approval required?

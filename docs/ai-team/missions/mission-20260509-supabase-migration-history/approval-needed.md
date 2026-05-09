@@ -126,3 +126,50 @@ Do not execute:
 Next requirement before approval:
 
 - DB Inspector Agent must narrow one remediation candidate and provide exact command / SQL, target environment, risk, rollback, and verification.
+
+## final mission approval status
+
+Updated at: 2026-05-09
+
+Parent Agent integrated the DB Inspector decision-ready remediation candidates and the updated Reviewer / QA reports.
+
+Selected mission option:
+
+- Option 1: do nothing / defer migration repair.
+
+Approval required for selected option:
+
+- no
+
+Reason:
+
+- Option 1 performs no DB write.
+- Option 1 does not run `migration repair`.
+- Option 1 does not run `db push`.
+- Option 1 does not apply individual production SQL.
+- Option 1 leaves known drift documented and deferred.
+
+Non-selected option:
+
+- Option 2: repair migration history only, accepting current schema drift.
+
+Approval status for non-selected option:
+
+- not requested
+- not approved
+- Human approval would be required before execution
+
+Candidate commands documented in `db-inspector-report.md` for Option 2 are not executable from this file. They must not be run unless `approval-needed.md` is updated into a specific approval request and Human approves it.
+
+Final requested action for this Mission:
+
+```text
+none
+```
+
+Final approval result for this Mission:
+
+- selected option: no approval requested
+- decided by: Parent Agent
+- decided at: 2026-05-09
+- notes: Mission outcome is defer / do nothing. Future DB write, migration repair, db push, destructive SQL, dashboard change, or secret change still requires a separate Human approval gate.
