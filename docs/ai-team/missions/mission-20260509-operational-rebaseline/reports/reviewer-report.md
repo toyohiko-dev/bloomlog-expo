@@ -12,17 +12,21 @@
 
 Reviewer Agent
 
+## branch
+
+`chore/ai-team-state`
+
 ## mission phase
 
 execution-readiness review only
 
 ## outcome
 
-ready with small wording fixes
+ready
 
-The proposal is execution-ready for the selected path: **Option 1: documentation-only operational baseline now**.
+The selected execution candidate is **Option 3: `activity-photos` storage insert policy remediation**.
 
-No additional investigation is requested. No drift analysis is reopened.
+No additional investigation is requested. No unknowns are expanded. Drift analysis is not reopened.
 
 ## input files read
 
@@ -30,7 +34,9 @@ No additional investigation is requested. No drift analysis is reopened.
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/parent.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/db-inspector.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/reviewer.md`
+- `docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/db-inspector-storage-policy-remediation.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-report.md`
+- `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-storage-policy-remediation.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/approval-needed.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/decision-log.md`
 
@@ -41,6 +47,7 @@ No additional investigation is requested. No drift analysis is reopened.
 ## commands run
 
 ```powershell
+git branch --show-current
 git status --short
 git diff --name-only
 git diff --stat
@@ -50,7 +57,9 @@ Get-ChildItem -LiteralPath docs/ai-team/missions/mission-20260509-operational-re
 Get-Content -LiteralPath docs/ai-team/missions/mission-20260509-operational-rebaseline/mission.md
 Get-Content -LiteralPath docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/parent.md
 Get-Content -LiteralPath docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/db-inspector.md
+Get-Content -LiteralPath docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/db-inspector-storage-policy-remediation.md
 Get-Content -LiteralPath docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-report.md
+Get-Content -LiteralPath docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-storage-policy-remediation.md
 Get-Content -LiteralPath docs/ai-team/missions/mission-20260509-operational-rebaseline/approval-needed.md
 Get-Content -LiteralPath docs/ai-team/missions/mission-20260509-operational-rebaseline/decision-log.md
 ```
@@ -59,58 +68,78 @@ Get-Content -LiteralPath docs/ai-team/missions/mission-20260509-operational-reba
 
 Before writing this report:
 
-- `git status --short`: `?? docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-report.md`
+- branch: `chore/ai-team-state`
+- `git status --short`: no output
 - `git diff --name-only`: no output
 - `git diff --stat`: no output
+- `git diff --cached --name-only`: no output
+- `git diff --cached --stat`: no output
 
-Reason: the DB Inspector report was untracked, so it did not appear in `git diff`.
+## selected package reviewed
+
+Selected package:
+
+- Option 3, targeted SQL remediation for `activity-photos` storage insert policy.
+
+Operation:
+
+- Drop broad insert policy `activity_photos_insert_test`.
+- Drop pre-existing `activity_photos_insert_own` if present.
+- Create owner-scoped insert policy `activity_photos_insert_own`.
+- Scope future inserts into `activity-photos` to authenticated users whose first storage path segment equals `auth.uid()::text`.
+
+Explicitly not included:
+
+- `db push`
+- `migration repair`
+- destructive SQL
+- dashboard changes
+- secret / environment variable changes
+- broad schema rebuild
 
 ## execution clarity
 
 Status: pass.
 
-The selected execution path is clear:
+The execution package is clear:
 
-- Recommended path is Option 1, documentation-only operational baseline now.
-- Production write for Option 1 is explicitly `none`.
-- Exact docs/read-only commands are listed.
-- Parent integration is the next execution step.
-- `db push`, `migration repair`, production SQL, destructive SQL, and `supabase/migrations/` edits are explicitly forbidden for this task.
-
-Small wording fix:
-
-- Parent summary should preserve the phrase "Option 1 only for this mission" so future readers do not mistake Option 2 or Option 3 as approved execution paths.
+- Exact apply SQL is present in `approval-needed.md`, `tasks/db-inspector-storage-policy-remediation.md`, and `reports/db-inspector-storage-policy-remediation.md`.
+- The target table is `storage.objects`.
+- The target bucket is `activity-photos`.
+- The affected operation is future inserts only.
+- The execution order is explicit: Parent confirmation, Reviewer, QA, Parent finalization, Human approval, apply SQL, verification SQL, app behavior verification, rollback if needed, final reporting.
+- The package explicitly says not to execute before Human approval.
 
 ## rollback clarity
 
 Status: pass.
 
-Rollback is operation-specific enough for the selected path:
+Rollback is clear and operation-specific:
 
-- Option 1 rollback is docs revert.
-- Option 2 future snapshot rollback is docs revert.
-- Option 3 future storage policy rollback includes exact rollback SQL.
-- `db push` is correctly marked not safely reversible and rejected.
-- `migration repair` is not selected and is kept behind a future approval path.
-
-Small wording fix:
-
-- If Parent mentions Option 3, keep the rollback SQL attached to Option 3 only and avoid moving it into the selected execution path.
+- Rollback SQL is present.
+- Rollback restores `activity_photos_insert_test`.
+- Rollback removes `activity_photos_insert_own`.
+- Rollback trigger is explicit: storage authorization failure, unexpected upload failure, or Human request.
+- Rollback verification is specified through the same storage policy query and app behavior verification.
+- Data loss risk is stated as none expected because existing objects are not modified.
 
 ## verification clarity
 
 Status: pass.
 
-Verification is clear for the selected path and future write paths:
+Verification is clear:
 
-- Option 1 verification uses `git diff --name-only` and `git diff --stat`.
-- Pre-approval read-only verification commands are listed.
-- SQL verification covers migration history, tables / columns, RLS / policies, triggers / functions, indexes / constraints, and storage bucket / policies.
-- Option 3 includes both SQL verification and app upload smoke check.
-
-Small wording fix:
-
-- Parent should label app upload smoke check as required only if Option 3 is selected later.
+- Verification SQL is exact.
+- Expected post-apply policy state is listed.
+- Expected post-rollback policy state is listed.
+- App behavior verification is concrete:
+  - sign in as normal authenticated user
+  - create or update one test 思い出 through normal app flow
+  - attach one photo through normal activity photo upload UI
+  - confirm upload succeeds
+  - confirm photo displays in detail / timeline / record view
+  - confirm storage object path uses authenticated user id as first path segment
+- The verification scope matches the blast radius.
 
 ## approval boundaries
 
@@ -118,21 +147,14 @@ Status: pass.
 
 Approval boundaries are clear:
 
-- Docs-only work does not require Human approval.
-- Read-only commands are separated from writes.
-- Human approval is required for production SQL, storage policy changes, migration repair, `db push`, migration files intended for production application, dashboard changes, and secret / environment variable changes.
+- Docs edits, package review, and QA of package text do not require Human approval.
+- Apply SQL requires Human approval.
+- Rollback SQL requires Human approval and is included in the same approval package.
+- Any production SQL requires Human approval.
+- Dashboard changes and secret / environment variable changes remain outside this approval.
+- `db push`, `migration repair`, destructive SQL, and broad rebuild are explicitly forbidden.
 - Worker / Reviewer / QA do not push.
 - Parent remains the push actor after integration.
-
-Approval-needed judgment:
-
-- `approval-needed.md` is a non-executable draft for future write candidates.
-- For the selected Option 1 docs-only path, this is acceptable and does not block execution.
-- It must not be treated as approval to run production writes.
-
-Small wording fix:
-
-- Parent should explicitly state that `approval-needed.md` stays non-executable unless a future write option is selected.
 
 ## blast radius explanation
 
@@ -140,28 +162,25 @@ Status: pass.
 
 Blast radius is concrete:
 
-- Option 1 and Option 2 are docs-only and have no app runtime, auth / RLS, storage upload, or production DB blast radius.
-- Option 3 identifies possible upload breakage, storage authorization behavior change, and medium rollback complexity.
-- Future migration workflow impact is called out: `db push` remains out of the default workflow.
-- Production DB risk is separated by option.
+- Production DB impact is limited to storage policy metadata.
+- Target table is `storage.objects`.
+- Target bucket is `activity-photos`.
+- Existing files are not modified.
+- Public app tables are not modified.
+- RLS / policy impact is stricter insert authorization.
+- App runtime risk is photo upload failure if object paths are not user-prefixed.
+- Rollback complexity is medium but bounded to simple SQL rollback plus verification.
+- Data loss risk is stated as none expected.
 
 ## findings
 
 No blocking findings.
 
-### low
+No high findings.
 
-- file: `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-report.md`
-- section: `recommended path`
-- issue: Option 2 and Option 3 are useful future paths, but Parent integration should not phrase them as part of the current selected execution.
-- required fix: In Parent summary, keep the selected current action as "Option 1 docs-only baseline"; list Option 2 / Option 3 only as future candidates.
+No medium findings.
 
-### low
-
-- file: `docs/ai-team/missions/mission-20260509-operational-rebaseline/approval-needed.md`
-- section: `status` / `exact command / SQL / setting`
-- issue: The approval draft is intentionally non-executable while the selected Option 1 is docs-only.
-- required fix: In Parent summary, state that `approval-needed.md` remains non-executable for this mission unless Parent later selects a production write package.
+No low findings.
 
 ## checklist result
 
@@ -172,7 +191,7 @@ No blocking findings.
 | does not require full schema parity before action | pass |
 | does not make `db push` default workflow | pass |
 | does not hide production writes inside docs language | pass |
-| exact operations present for write candidate | pass for Option 3 future candidate |
+| exact operations present for write candidate | pass |
 | rollback operation-specific | pass |
 | verification operation-specific | pass |
 | blast radius concrete | pass |
@@ -182,24 +201,28 @@ No blocking findings.
 
 ## approval judgment
 
-For the selected Option 1 docs-only path:
+`approval-needed.md` classification:
 
-- ready.
+- executable approval draft, pending Human approval
 
-For `approval-needed.md` as a future production-write approval file:
+Reason:
 
-- non-executable draft, intentionally not used for current execution.
-
-This is acceptable because the current selected path does not require a production write.
+- The selected operation is exact.
+- Rollback SQL is exact.
+- Verification SQL and app behavior verification are exact enough for execution readiness.
+- Blast radius and approval boundaries are explicit.
+- The document clearly says production SQL is not approved until Human records approval.
 
 ## final judgment
 
-ready with small wording fixes
+ready
 
-Parent may integrate and prepare push after QA, provided Parent keeps the selected execution path as Option 1 docs-only baseline and does not convert Option 2 / Option 3 into approved execution without a separate approval gate.
+Parent may integrate and prepare push after QA.
+
+Production execution remains blocked until Human approval is recorded for this exact storage policy remediation package.
 
 ## human approval required?
 
-No for this reviewer report and the selected docs-only Option 1 path.
+No for this reviewer report.
 
-Yes before any future production SQL, storage policy change, migration repair, `db push`, destructive SQL, dashboard setting change, or secret / environment variable change.
+Yes before applying the storage policy SQL, applying rollback SQL, or running any other production SQL / dashboard / secret operation.

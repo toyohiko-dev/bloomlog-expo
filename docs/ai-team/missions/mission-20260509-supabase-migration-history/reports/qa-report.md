@@ -14,7 +14,7 @@ QA Agent
 
 ## rerun context
 
-This QA task was rerun after `db-inspector-report.md` gained decision-ready remediation candidates and `reviewer-report.md` reviewed that update. The current QA pass validates the updated report set, especially that documented repair commands are treated as Human-approval-required candidates and not as executed or approved operations.
+This QA task was rerun after Parent integrated the final option decision for this mission. The current QA pass validates that the final selected outcome is Option 1, do nothing / defer migration repair, and that documented repair commands remain non-selected, non-approved candidate documentation only.
 
 ## input files read
 
@@ -67,8 +67,8 @@ npx.cmd supabase migration list
 | command | result |
 | --- | --- |
 | `git status --short` | before this QA update, `db-inspector-report.md` and `reviewer-report.md` were modified |
-| `git diff --name-only` | before this QA update, only the two docs report files above were listed |
-| `git diff --stat` | before this QA update, `db-inspector-report.md` had 186 insertions and `reviewer-report.md` had docs-only changes |
+| `git diff --name-only` | before this QA update, only `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/reviewer-report.md` was listed |
+| `git diff --stat` | before this QA update, only the operational-rebaseline reviewer report had a tracked docs-only diff |
 | `git diff --cached --name-only` | no output |
 | `git diff --cached --stat` | no output |
 | `Get-ChildItem supabase\migrations \| Sort-Object Name \| Select-Object Name` | 10 migration files observed |
@@ -84,8 +84,8 @@ npx.cmd supabase migration list
 - docs-only diff validation: pass with current caveat. Observed changes are under `docs/ai-team/missions/mission-20260509-supabase-migration-history/`. No `app/`, `lib/`, `supabase/`, `supabase/migrations/`, `package.json`, or `.env*` changes were observed.
 - read-only CLI validation: pass with caveat. `npx` through PowerShell fails due local execution policy, but `npx.cmd` succeeds with escalation and confirms Supabase CLI `2.98.2`.
 - migration-list validation: pass. CLI output again shows local 10 migrations and blank remote entries.
-- report consistency validation: pass. DB Inspector and Reviewer now both frame Option 1, do nothing / defer migration repair, as the recommended path for this mission.
-- approval gate validation: pass. DB Inspector documents exact `migration repair` commands only under non-recommended Option 2, and marks them as requiring Human approval. Reviewer confirms those commands are candidate documentation, not executed or approved actions.
+- report consistency validation: pass. DB Inspector, Reviewer, QA, Parent summary, and approval-needed now consistently frame Option 1, do nothing / defer migration repair, as the selected final outcome for this mission.
+- approval gate validation: pass. DB Inspector documents exact `migration repair` commands only under non-recommended Option 2. Parent and approval-needed explicitly state Option 2 is not requested, not approved, and not executable from the current approval file.
 - prohibited-operation validation: pass. QA did not execute prohibited operations.
 
 ## DB Inspector report required fields check
@@ -108,10 +108,10 @@ npx.cmd supabase migration list
 | risks | present | includes migration, schema, storage policy, remote-only schema, and repair-hides-drift risks |
 | rollback | present | no rollback needed for read-only task; Option 2 rollback commands are candidate-only and approval-required |
 | unknowns | present | includes linked project final confirmation and drift causes |
-| approval required | present | yes if moving beyond read-only investigation or choosing Option 2 |
-| next action | present | no immediate `db push` or repair; defer or narrow future remediation |
+| approval required | present | no for selected Option 1; yes if moving beyond read-only investigation or choosing Option 2 later |
+| next action | present | selected mission outcome is defer / do nothing; no immediate `db push`, repair, or individual SQL |
 
-QA judgment: DB Inspector report satisfies required fields. The new remediation section is acceptable because it recommends deferral and clearly keeps repair commands behind Human approval. It should not be interpreted as an approval request by itself.
+QA judgment: DB Inspector report satisfies required fields. The remediation section is acceptable because it recommends deferral and clearly keeps repair commands behind Human approval. Parent has since selected Option 1, so the repair command block must remain non-executable documentation.
 
 ## approval-needed check
 
@@ -129,18 +129,20 @@ QA judgment: DB Inspector report satisfies required fields. The new remediation 
 - approval options
 - approval result
 - latest integration status
+- final mission approval status
 
 QA judgment:
 
-- As a pending approval gate document: pass.
-- As an executable approval request: not ready.
+- As a pending / final-status approval gate document: pass.
+- As an executable approval request for production write: not applicable for selected Option 1, and not ready for any future write.
 
 Reason:
 
-- `exact command / SQL / setting` is still `pending remediation candidate narrowing`.
-- Candidate operations are explicitly marked `not ready` or `not allowed now`.
-- `approval-needed.md` has not been updated to adopt DB Inspector Option 2 as a requested action.
-- Target environment confirmation, final chosen action, operation-specific rollback, and operation-specific verification remain incomplete.
+- final requested action is `none`.
+- selected option is Option 1: do nothing / defer migration repair.
+- approval required for selected option is `no`.
+- Option 2 is explicitly non-selected, not requested, not approved, and requires a future Human approval gate if ever reconsidered.
+- Target environment confirmation, operation-specific rollback, and operation-specific verification are still required before any future write option.
 
 ## skipped validation and reason
 
@@ -160,11 +162,11 @@ Reason:
 ## residual risk
 
 - The linked Supabase project still needs final target confirmation before any production write approval.
-- Exact repair commands now exist in `db-inspector-report.md` as Option 2 candidate documentation; they must not be copied into execution without updating `approval-needed.md` and receiving Human approval.
-- `approval-needed.md` remains pending and must not be treated as approval to run `migration repair`, `db push`, or individual SQL.
+- Exact repair commands exist in `db-inspector-report.md` as Option 2 candidate documentation; they must not be copied into execution without updating `approval-needed.md` and receiving Human approval.
+- `approval-needed.md` records final selected action as `none` and must not be treated as approval to run `migration repair`, `db push`, or individual SQL.
 - Schema drift remains: missing functions / triggers / indexes, storage policy difference, and remote-only schema still make `db push` unsafe.
 - The current modified file set is docs-only, but final pre-commit / pre-push verification should rerun `git status --short`, `git diff --name-only`, and staged-file checks.
-- Parent summary may need a fresh reintegration note because DB Inspector now recommends Option 1 and documents Option 2 exact commands after the previous parent summary text.
+- The operational-rebaseline mission has separate docs-only changes in the working tree; they do not affect this mission's selected Option 1 outcome.
 
 ## rollback
 
@@ -179,9 +181,9 @@ If this QA report update must be reverted, revert only this docs report change.
 
 ## next action
 
-- Parent Agent should reintegrate the updated DB Inspector / Reviewer / QA reports and decide whether `parent-summary.md` needs a new note for the Option 1 recommendation.
-- Keep `approval-needed.md` pending unless Human is being asked to choose a specific action with exact command / SQL, target environment, risk, rollback, and verification.
-- Prefer DB Inspector Option 1 for this mission: defer migration repair, do not run `db push`, and do not apply individual SQL.
+- Parent integration for this mission already selected Option 1: defer migration repair, do not run `db push`, and do not apply individual SQL.
+- Keep `approval-needed.md` non-executable unless a future mission asks Human to choose a specific write action with exact command / SQL, target environment, risk, rollback, and verification.
+- Treat this mission as docs-only complete from QA's perspective.
 - Do not run `db push`, `migration repair`, production SQL, destructive SQL, dashboard changes, or secret changes until Human approval gate is prepared and approved.
 
 ## human approval required?

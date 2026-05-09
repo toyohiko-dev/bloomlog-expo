@@ -18,23 +18,23 @@ execution-readiness QA only
 
 ## outcome
 
-consistent with small fixes
+consistent
 
-The proposal is consistent for the selected execution path: **Option 1: documentation-only operational baseline now**.
+The selected execution candidate is **Option 3: `activity-photos` storage insert policy remediation**.
 
-No additional investigation is requested. No analysis loop is reopened.
+No additional investigation was requested. No drift analysis was expanded. No SQL, `db push`, or `migration repair` command was executed.
 
 ## input files read
 
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/mission.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/db-inspector.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/qa.md`
+- `docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/db-inspector-storage-policy-remediation.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-report.md`
+- `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-storage-policy-remediation.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/reviewer-report.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/approval-needed.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/decision-log.md`
-- `docs/product/current-status.md`
-- `docs/product/dev.md`
 
 ## output files changed
 
@@ -48,98 +48,88 @@ git diff --name-only
 git diff --stat
 git diff --cached --name-only
 git diff --cached --stat
-npx.cmd supabase --version
-npx.cmd supabase migration list
 ```
 
 ## command results
 
 | command | result |
 | --- | --- |
-| `git status --short` | untracked docs reports only: `db-inspector-report.md`, `reviewer-report.md` before this QA report |
-| `git diff --name-only` | no output because current reports were untracked |
-| `git diff --stat` | no output because current reports were untracked |
+| `git status --short` | tracked docs-only changes were present before this QA update: operational-rebaseline reviewer report and previous supabase-migration-history QA report |
+| `git diff --name-only` | listed only docs report files before this QA update |
+| `git diff --stat` | docs report diff only |
 | `git diff --cached --name-only` | no output |
 | `git diff --cached --stat` | no output |
-| `npx.cmd supabase --version` | sandbox attempt timed out; escalated read-only retry succeeded with `2.98.2` |
-| `npx.cmd supabase migration list` | sandbox attempt failed on npm cache / registry access; escalated read-only retry succeeded and showed local 10 migrations with blank remote entries |
 
-No write command was executed.
+No Supabase CLI command was run in this QA pass because the user explicitly required no SQL execution, no `db push`, no `migration repair`, and no additional investigation. No commit or push was performed.
 
 ## consistency check
 
-Status: pass with small fixes.
+Status: pass.
 
 Consistent points:
 
-- Mission says this phase is operational rebaseline, not historical reconstruction.
-- DB Inspector recommends Option 1 as the current selected path.
-- Reviewer agrees Option 1 is ready and says Option 2 / Option 3 must remain future candidates only.
-- `approval-needed.md` is explicitly draft / pending and says no production operation is approved.
-- All reports keep `db push` out of the default workflow.
+- Mission was corrected away from the superseded documentation-only recommendation.
+- Current selected execution candidate is Option 3, targeted `activity-photos` storage insert policy remediation.
+- DB Inspector follow-up report, Reviewer report, approval-needed draft, and decision log all identify the same selected package.
+- The superseded DB Inspector report clearly says its documentation-only recommendation is superseded for execution selection.
+- The selected package is bounded to `storage.objects` policy metadata for `activity-photos`.
+- `db push`, `migration repair`, destructive SQL, dashboard changes, and secret changes remain out of scope.
 
-Small fixes for Parent integration:
-
-- Parent summary should state "Option 1 only for this mission".
-- Parent summary should list Option 2 and Option 3 only as future candidates, not selected execution.
-- Parent summary should explicitly state `approval-needed.md` remains non-executable for this mission.
+No concrete operational contradiction was found.
 
 ## operation order check
 
 Status: pass.
 
-The operation order is coherent:
+The execution order is coherent:
 
-1. Pre-approval read-only verification.
-2. Human approval only if a write option is selected.
-3. Approved operation.
-4. Post-operation read-only verification.
-5. Report / decision-log update.
+1. Parent confirms Option 3 as selected execution candidate.
+2. Reviewer reviews this package only.
+3. QA validates exact SQL, rollback SQL, verification SQL, app behavior verification, blast radius, and approval boundaries.
+4. Parent finalizes `approval-needed.md`.
+5. Human approves or rejects.
+6. If approved, exact SQL is executed.
+7. Verification SQL is run.
+8. App behavior verification is run.
+9. If app verification fails, approved rollback SQL is executed.
+10. Rollback verification SQL and app behavior verification are rerun.
+11. Decision log and execution report are updated.
 
-For selected Option 1:
-
-- No Human approval is required.
-- No production write occurs.
-- Execution is docs-only report / Parent integration.
-
-For future Option 3:
-
-- SQL is provided as a bounded future candidate.
-- It is not selected in this mission.
-- It must pass Human approval before execution.
-
-No concrete operation-order contradiction was found.
+The order keeps production SQL after Human approval and keeps rollback inside the approval-governed execution package.
 
 ## rollback consistency check
 
 Status: pass.
 
-Rollback is consistent by option:
+Rollback is operation-specific and consistent:
 
-- Option 1: docs revert, no data loss.
-- Option 2: future docs snapshot revert, no data loss if docs-only.
-- Option 3: exact rollback SQL is attached to the storage policy change.
-- `migration repair`: not selected; future rollback would require approval.
-- `db push`: rejected and correctly marked not safely reversible.
+- Apply SQL drops `activity_photos_insert_test` / `activity_photos_insert_own`, then creates `activity_photos_insert_own`.
+- Rollback SQL drops `activity_photos_insert_own` / `activity_photos_insert_test`, then recreates `activity_photos_insert_test`.
+- Rollback restores the broad authenticated insert policy for `activity-photos`.
+- Rollback trigger is explicit: storage authorization failure, app upload failure, or Human request.
+- Data loss risk is stated as none expected because existing stored objects are not modified.
 
-Small fix:
-
-- Parent should keep Option 3 rollback SQL attached only to Option 3 and not present it as part of selected Option 1.
+No rollback contradiction was found.
 
 ## verification consistency check
 
 Status: pass.
 
-Verification is separated correctly:
+Verification is consistent with the blast radius:
 
-- Option 1 verification uses repo diff checks.
-- Pre-approval read-only Supabase checks are listed.
-- SQL verification covers migration history, tables / columns, RLS / policies, triggers / functions, indexes / constraints, and storage policies.
-- App upload smoke check is scoped to future Option 3 only.
+- Verification SQL queries `pg_policies` for `storage.objects`.
+- Expected post-apply state is explicit:
+  - `activity_photos_insert_own` exists.
+  - `activity_photos_insert_test` does not exist.
+  - `activity_photos_insert_own` applies to `insert` for `authenticated`.
+  - `with_check` includes `bucket_id = 'activity-photos'`.
+  - `with_check` includes first path segment equals `auth.uid()::text`.
+- Expected rollback state is explicit:
+  - `activity_photos_insert_test` exists.
+  - `activity_photos_insert_own` does not exist.
+- App behavior verification matches the affected workflow: authenticated photo upload and display for one test 思い出.
 
-Small fix:
-
-- Parent should label app upload smoke check as required only if Option 3 is selected later.
+No verification contradiction was found.
 
 ## approval-boundary check
 
@@ -147,67 +137,72 @@ Status: pass.
 
 Approval boundaries are clear:
 
-- Docs-only work is safe without Human approval.
-- Read-only commands are safe without Human approval when available without secrets.
-- Production SQL, storage policy changes, migration repair, `db push`, destructive SQL, dashboard changes, and secret changes require Human approval.
-- `approval-needed.md` is a draft and explicitly says no production operation is approved.
+- Docs edits, package review, and QA of package text do not require Human approval.
+- Apply SQL requires Human approval.
+- Rollback SQL requires Human approval and is included in the same approval package.
+- Any production SQL requires Human approval.
+- Dashboard changes and secret / environment variable changes are outside this approval.
+- `db push`, `migration repair`, destructive SQL, and broad rebuild are explicitly forbidden.
+- Reviewer / QA do not push.
 
 No approval-boundary contradiction was found.
 
-## DB Inspector required sections check
+## DB Inspector report required sections check
 
 | required section | status | notes |
 | --- | --- | --- |
-| operational source of truth | present | current remote schema is primary operational reality |
-| canonical remote-only schema decisions | present | remote-only items are classified |
-| abandoned old repo expectations | present | historical reconstruction, `db push`, full replay, repair-first are abandoned as blockers |
-| concrete remediation strategy | present | Option 1, Option 2, Option 3 |
-| exact operations | present | docs/read-only operations and future Option 3 SQL |
-| rollback plan | present | operation-specific |
-| verification plan | present | repo checks, Supabase read-only SQL, future app smoke check |
-| blast radius assessment | present | separated by option |
-| execution order | present | phase order is clear |
-| approval boundaries | present | safe docs/read-only vs approval-required writes |
+| operational source of truth | present | in superseded baseline report, with supersession notice |
+| canonical remote-only schema decisions | present | in superseded baseline report, retained as context |
+| abandoned old repo expectations | present | in superseded baseline report, retained as context |
+| concrete remediation strategy | present | selected focused package is Option 3 storage policy remediation |
+| exact operations | present | exact apply SQL is present |
+| rollback plan | present | exact rollback SQL is present |
+| verification plan | present | verification SQL and app behavior verification are present |
+| blast radius assessment | present | limited to `storage.objects` / `activity-photos` future inserts |
+| execution order | present | approval-gated order is explicit |
+| approval boundaries | present | safe docs/review vs Human-approved writes are separated |
 
 ## approval-needed required sections check
 
 | required section | status | notes |
 | --- | --- | --- |
-| requested action | present | forward-only operational baseline |
-| exact command / SQL / setting | present as draft | no approved write operation yet |
-| target environment | present | production suspected, must be confirmed before write |
-| risk | present | includes operational and write risks |
-| rollback | present | docs-only and future write rollback categories |
-| verification | present | required verification categories listed |
-| approval options | present | approve / reject / narrower remediation / docs-only |
-| explicit pending Human approval | present | status says draft, not approved |
+| requested action | present | approve Option 3 storage policy remediation |
+| exact command / SQL / setting | present | exact apply SQL present |
+| target environment | present | Bloomlog Supabase production operations, `storage.objects`, `activity-photos` |
+| risk | present | stricter authorization and possible upload failure |
+| rollback | present | exact rollback SQL present |
+| verification | present | policy SQL and app behavior verification |
+| approval options | present | approve / reject / request changes |
+| explicit pending Human approval | present | status and approval result are pending; do not execute until Human approval |
 
 ## skipped validation and reason
 
 | skipped validation | reason |
 | --- | --- |
-| `db push` | prohibited and rejected as default workflow |
-| `migration repair` | prohibited without Human approval and not selected |
-| production SQL | prohibited without Human approval; Option 3 is future-only |
-| destructive SQL | prohibited |
-| dashboard setting change | prohibited without Human approval |
-| secret / token inspection | prohibited; no secrets needed for this QA |
-| app upload smoke check | only relevant if future Option 3 is selected |
+| `db push` | forbidden by task and unrelated to selected package |
+| `migration repair` | forbidden by task and unrelated to selected package |
+| production SQL | requires Human approval; QA validates text only |
+| destructive SQL | forbidden |
+| dashboard setting change | outside approval and forbidden without Human approval |
+| secret / token inspection | forbidden and unnecessary |
+| Supabase CLI / remote checks | skipped to avoid additional investigation and because user requested no SQL execution |
+| app upload smoke check | post-approval verification only; not part of pre-approval QA text review |
 
 ## residual risk
 
-- Future readers could accidentally treat Option 2 / Option 3 as selected unless Parent labels Option 1 as the only selected path.
-- `approval-needed.md` is intentionally non-executable; Parent should preserve that wording.
-- `db push` remains unsafe as default workflow and should remain explicitly rejected.
+- The selected SQL may break photo uploads if current object paths are not user-prefixed.
+- That risk is explicitly covered by app behavior verification and rollback SQL.
+- Existing objects are not modified, so data loss risk remains low / none expected.
+- Production execution remains blocked until Human approval is recorded.
 
 ## Parent integration judgment
 
-Parent may integrate after applying the small wording fixes above.
+Parent may integrate this package.
 
-No operational contradiction blocks integration.
+Production execution must remain blocked until Human approval is recorded for the exact SQL package in `approval-needed.md`.
 
 ## human approval required?
 
-No for this QA report and selected Option 1 docs-only path.
+No for this QA report.
 
-Yes before any future production SQL, storage policy change, migration repair, `db push`, destructive SQL, dashboard setting change, or secret / environment variable change.
+Yes before applying the storage policy SQL, applying rollback SQL, or running any other production SQL / dashboard / secret operation.

@@ -10,7 +10,7 @@
 
 ## status
 
-Approval-needed draft for production write.
+Executable approval-needed draft for production write.
 
 Do not execute until Human approval is recorded.
 
@@ -184,15 +184,16 @@ Expected after rollback:
 1. Parent confirms Option 3 is the selected execution candidate.
 2. Reviewer reviews this package only.
 3. QA validates exact SQL, rollback SQL, verification SQL, app behavior verification, blast radius, and approval boundaries.
-4. Parent finalizes this approval draft after Reviewer / QA.
-5. Human approves or rejects the production write.
-6. If approved, execute the exact SQL in `exact command / SQL / setting`.
-7. Run verification SQL.
-8. Run app behavior verification.
-9. If app behavior verification fails, execute the approved rollback SQL.
-10. Run verification SQL again.
-11. Rerun app behavior verification.
-12. Update decision log and execution report.
+4. Parent finalizes this approval draft, decision log, and parent summary after Reviewer / QA.
+5. Parent commits and pushes docs-only final integration.
+6. Human approves or rejects the production write.
+7. If approved, execute the exact SQL in `exact command / SQL / setting`.
+8. Run verification SQL.
+9. Run app behavior verification.
+10. If app behavior verification fails, execute the approved rollback SQL.
+11. Run verification SQL again.
+12. Rerun app behavior verification.
+13. Update decision log and execution report.
 
 ## approval options
 

@@ -1,17 +1,5 @@
 # Parent Summary Report: operational rebaseline final integration
 
-## supersession notice
-
-This Parent summary is superseded for execution selection.
-
-The Option 1 documentation-only conclusion failed the Mission intent. The selected execution candidate is now Option 3, `activity-photos` storage insert policy remediation, documented in:
-
-- `docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/db-inspector-storage-policy-remediation.md`
-- `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-storage-policy-remediation.md`
-- `docs/ai-team/missions/mission-20260509-operational-rebaseline/approval-needed.md`
-
-Do not send the old Option 1 package to Reviewer / QA as final.
-
 ## mission id
 
 `mission-20260509-operational-rebaseline`
@@ -26,60 +14,40 @@ Parent Agent
 
 ## mission phase
 
-final execution-readiness integration
+final execution-readiness integration after Reviewer / QA
 
 ## outcome
 
 approval-ready
 
-Selected execution path: **Option 1 only for this Mission: documentation-only operational baseline now**.
+Selected execution path: **Option 3: targeted `activity-photos` storage insert policy remediation**.
 
-No additional investigation is requested. No drift analysis is reopened.
+No additional investigation is requested. No drift analysis is reopened. No production SQL, `db push`, `migration repair`, destructive SQL, dashboard change, secret change, migration file change, or app code change was executed.
 
-## input files read
+## input files integrated
 
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-report.md`
+- `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-storage-policy-remediation.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/reviewer-report.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/qa-report.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/mission.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/approval-needed.md`
 - `docs/ai-team/missions/mission-20260509-operational-rebaseline/decision-log.md`
 
-## changed files
-
-- `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-report.md`
-- `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/reviewer-report.md`
-- `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/qa-report.md`
-- `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/parent-summary.md`
-- `docs/ai-team/missions/mission-20260509-operational-rebaseline/approval-needed.md`
-- `docs/ai-team/missions/mission-20260509-operational-rebaseline/decision-log.md`
-
-## recommended execution summary
-
-Approve and adopt the docs-only operational baseline:
-
-- current remote schema is the primary operational reality
-- remote-only schema listed in DB Inspector report is accepted as canonical or temporarily accepted
-- perfect historical migration reconstruction is abandoned as a blocker
-- full repo migration replay is abandoned as a recovery path
-- `db push` remains rejected as the default workflow
-- `migration repair` remains rejected as a default or purity-driven action
-- future DB changes require explicit approved SQL / migration proposal, rollback, verification, and Human approval
-
 ## selected operational source of truth
 
-Future Bloomlog Supabase operations should treat the following as canonical:
+Future Bloomlog Supabase operations should treat the following as the operational source of truth:
 
-1. current remote schema
-2. accepted drift documented in this Mission
-3. future Human-approved SQL / migration proposals
-4. this Mission's docs under `docs/ai-team/missions/mission-20260509-operational-rebaseline/`
+1. Current remote schema is the primary operational reality.
+2. Accepted drift documented in this Mission remains part of the operational baseline.
+3. Future DB changes must use explicit approved SQL / migration proposals with rollback, verification, blast radius, execution order, and approval boundaries.
+4. This Mission's docs under `docs/ai-team/missions/mission-20260509-operational-rebaseline/` are the source of truth for this rebaseline decision.
 
 Historical repo migrations remain evidence, not the complete production source of truth.
 
 ## canonical remote-only schema decision
 
-Adopt or temporarily accept the following remote-only items:
+The following remote-only items remain accepted for operations and are not removed in this Mission:
 
 - `events`: canonical
 - `areas`: canonical
@@ -89,8 +57,6 @@ Adopt or temporarily accept the following remote-only items:
 - read-all policies for `events` / `areas` / `countries` / `spots`: canonical pending later security review
 - `visit_sessions_user_id_event_id_visit_date_key`: canonical pending app behavior review
 - `visit_sessions_visit_date_key`: unknown but accepted temporarily; do not remove in this Mission
-
-No remote-only item is removed in this Mission.
 
 ## abandoned repo expectations
 
@@ -102,93 +68,202 @@ The following expectations are no longer blockers:
 - migration repair before any future DB operation
 - full parity with old repo migration expectations before action
 
-Missing old repo functions, triggers, indexes, and storage policy definitions are future separate approval items only.
+Missing old repo functions, triggers, indexes, and storage policy definitions remain future separate approval items only.
 
-## finalized execution order
+## recommended remediation option
 
-### Phase 1: docs-only baseline adoption
+Recommended remediation is Option 3:
 
-1. Integrate DB Inspector / Reviewer / QA reports.
-2. Update `approval-needed.md` to approval-ready for docs-only baseline only.
-3. Update `decision-log.md`.
-4. Verify docs-only diff.
-5. Commit and push.
+- replace broad `activity-photos` storage insert policy `activity_photos_insert_test`
+- create owner-scoped insert policy `activity_photos_insert_own`
+- restrict future inserts into `activity-photos` to authenticated users writing under their own first storage path segment
 
-### Phase 2: future write package, only if later selected
+Reviewer and QA both judged the package ready and found no blocking findings.
 
-1. Select one bounded write candidate.
-2. Confirm target environment without storing secrets.
-3. Prepare exact SQL / command.
-4. Attach operation-specific rollback.
-5. Attach operation-specific verification.
-6. Request Human approval.
-7. Execute only after approval.
-8. Run read-only verification and update reports.
+## exact operations
 
-## finalized rollback package
+Production SQL is not approved until Human approval is recorded.
 
-Selected Option 1 rollback:
+Apply SQL:
 
-```text
-rollback type: docs revert
-target: docs/ai-team/missions/mission-20260509-operational-rebaseline/
-exact rollback: revert the final integration commit or edit approval-needed.md / decision-log.md / parent-summary.md to remove the Option 1 selection
-data loss risk: none
-verification: git diff --name-only; git diff --stat
+```sql
+begin;
+
+drop policy if exists activity_photos_insert_test on storage.objects;
+drop policy if exists activity_photos_insert_own on storage.objects;
+
+create policy activity_photos_insert_own
+  on storage.objects
+  for insert
+  to authenticated
+  with check (
+    bucket_id = 'activity-photos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+commit;
 ```
 
-Future Option 3 storage policy rollback remains attached only to that future candidate. It is not part of this selected execution path.
-
-`db push` remains rejected because it is not safely reversible.
-
-## finalized verification package
-
-Selected Option 1 verification:
+Explicitly not approved:
 
 ```powershell
-git status --short
-git diff --name-only
-git diff --stat
-git diff --cached --name-only
-git diff --cached --stat
+npx.cmd supabase db push
+npx.cmd supabase migration repair --status applied <version>
 ```
 
-Expected result:
+Destructive SQL, dashboard changes, secret changes, broad schema rebuild, app code changes, and `supabase/migrations/` edits are also not approved.
 
-- docs-only changes under this Mission
-- no app code changes
-- no migration file changes
-- no production SQL
-- no `migration repair`
-- no `db push`
-- no destructive SQL
-- no dashboard or secret changes
+## rollback plan
 
-Future Supabase read-only verification remains available for future write packages, but it is not required to approve Option 1.
+Rollback type: simple SQL rollback.
+
+Rollback SQL:
+
+```sql
+begin;
+
+drop policy if exists activity_photos_insert_own on storage.objects;
+drop policy if exists activity_photos_insert_test on storage.objects;
+
+create policy activity_photos_insert_test
+  on storage.objects
+  for insert
+  to authenticated
+  with check (
+    bucket_id = 'activity-photos'
+  );
+
+commit;
+```
+
+Rollback trigger:
+
+- upload fails with storage authorization after apply
+- app behavior verification fails
+- Human requests revert
+
+Data loss risk: none expected, because existing stored objects are not modified.
+
+## verification plan
+
+Verification SQL:
+
+```sql
+select schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
+from pg_policies
+where schemaname = 'storage'
+  and tablename = 'objects'
+  and policyname in (
+    'activity_photos_insert_test',
+    'activity_photos_insert_own',
+    'activity_photos_update_own',
+    'activity_photos_delete_own'
+  )
+order by policyname;
+```
+
+Expected after apply:
+
+- `activity_photos_insert_own` exists.
+- `activity_photos_insert_test` does not exist.
+- `activity_photos_insert_own` applies to `insert`.
+- `roles` includes `authenticated`.
+- `with_check` requires `bucket_id = 'activity-photos'`.
+- `with_check` requires `(storage.foldername(name))[1] = auth.uid()::text`.
+
+App behavior verification:
+
+1. Sign in as a normal authenticated user.
+2. Create or update one test 思い出 through the normal app flow.
+3. Attach one photo through the normal activity photo upload UI.
+4. Confirm upload succeeds.
+5. Confirm the uploaded photo displays in the 思い出 detail or relevant タイムライン / 記録 view.
+6. Confirm the storage object path uses the authenticated user id as the first path segment.
+7. If upload fails with storage authorization, execute approved rollback SQL and rerun this verification.
+
+Expected after rollback:
+
+- `activity_photos_insert_test` exists.
+- `activity_photos_insert_own` does not exist.
+- App photo upload behavior returns to previous authorization behavior.
+
+## blast radius assessment
+
+| area | impact |
+| --- | --- |
+| production DB | storage policy metadata change only |
+| table | `storage.objects` |
+| bucket | `activity-photos` |
+| operation affected | future inserts |
+| existing objects | not modified |
+| public app tables | not modified |
+| RLS / policy | insert authorization becomes stricter |
+| app runtime | photo upload may fail if object paths are not user-prefixed |
+| rollback complexity | medium; simple SQL rollback but production authorization behavior changes |
+| data loss risk | none expected |
+
+## execution order
+
+1. Parent confirms Option 3 as selected execution candidate.
+2. Reviewer reviews this package only.
+3. QA validates exact SQL, rollback SQL, verification SQL, app behavior verification, blast radius, and approval boundaries.
+4. Parent finalizes `approval-needed.md`, `decision-log.md`, and this `parent-summary.md`.
+5. Parent commits and pushes docs-only integration.
+6. Human approves or rejects the production write.
+7. If approved, execute the exact apply SQL.
+8. Run verification SQL.
+9. Run app behavior verification.
+10. If app behavior verification fails, execute the approved rollback SQL.
+11. Run verification SQL again.
+12. Rerun app behavior verification.
+13. Update decision log and execution report.
+
+## approval boundaries
+
+No Human approval needed:
+
+- docs edits
+- package review
+- QA of package text
+- Parent final integration commit / push
+
+Human approval required:
+
+- apply SQL
+- rollback SQL
+- any production SQL
+- dashboard changes
+- secret / environment variable changes
+
+Forbidden:
+
+- `db push`
+- `migration repair`
+- destructive SQL
+- broad rebuild
+- additional drift investigation loop
+- documentation-only conclusion as the final Mission answer
 
 ## approval-needed status
 
-`approval-needed.md` is approval-ready for the selected docs-only operational baseline.
+`approval-needed.md` is an executable approval draft for Option 3, pending Human approval.
 
-It remains non-executable for production writes. It must not be used to run production SQL, storage policy changes, migration repair, `db push`, destructive SQL, dashboard changes, or secret changes.
+It is ready for a Human approve / reject / request-changes decision. It must not be executed until Human approval is recorded.
 
-## future candidates not selected
+## next task file path
 
-Option 2 and Option 3 are future candidates only:
+`docs/ai-team/missions/mission-20260509-operational-rebaseline/approval-needed.md`
 
-- Option 2: future docs-only remote schema baseline snapshot.
-- Option 3: future targeted storage insert policy SQL after separate approval.
-
-They are not selected for this Mission.
+This is the next Human-facing approval gate. If approved, execution must use only the exact SQL package documented there.
 
 ## human approval required?
 
-No for docs-only Option 1 execution.
+No for this docs-only final integration.
 
-Yes before any future production SQL, storage policy change, migration repair, `db push`, destructive SQL, dashboard setting change, or secret / environment variable change.
+Yes before applying the storage policy SQL, applying rollback SQL, or running any other production SQL / dashboard / secret operation.
 
 ## final judgment
 
 Approval-ready: yes.
 
-Recommended execution: adopt Option 1 docs-only operational baseline and push the docs-only integration.
+Recommended execution: present Option 3 storage policy remediation to Human for approval, then stop before production writes until approval is recorded.

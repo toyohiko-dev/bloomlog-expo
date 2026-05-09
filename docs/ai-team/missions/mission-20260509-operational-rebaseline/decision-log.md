@@ -232,3 +232,114 @@ No Human approval is required for this docs update.
 
 - Next agent should review `docs/ai-team/missions/mission-20260509-operational-rebaseline/tasks/db-inspector-storage-policy-remediation.md`.
 - Do not send the previous documentation-only DB Inspector recommendation to Reviewer / QA as final.
+
+---
+
+## decision date
+
+2026-05-09
+
+## decision maker
+
+- Parent Agent
+
+## mission id
+
+`mission-20260509-operational-rebaseline`
+
+## decision
+
+Finalize the Mission in execution-readiness integration phase with **Option 3: targeted `activity-photos` storage insert policy remediation** as the selected approval-ready package.
+
+Reviewer and QA completed review of the Option 3 package and reported it ready / consistent with no blocking findings. No additional investigation is requested.
+
+## selected execution package
+
+- Replace broad insert policy `activity_photos_insert_test`.
+- Create owner-scoped insert policy `activity_photos_insert_own`.
+- Scope future `activity-photos` inserts to authenticated users writing under their own first storage path segment.
+- Keep this as a production-write approval draft pending Human approval.
+
+## exact operation reference
+
+The exact apply SQL, rollback SQL, verification SQL, app behavior verification, blast radius, execution order, and approval boundaries are recorded in:
+
+- `docs/ai-team/missions/mission-20260509-operational-rebaseline/approval-needed.md`
+- `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/db-inspector-storage-policy-remediation.md`
+- `docs/ai-team/missions/mission-20260509-operational-rebaseline/reports/parent-summary.md`
+
+## rejected outcomes
+
+- documentation-only conclusion as final Mission answer
+- additional investigation loop
+- `no execution needed`
+- `needs more research`
+- `db push`
+- migration repair
+- destructive SQL
+- broad rebuild
+
+## rationale
+
+- The Mission requires an approval-ready execution package, not another documentation-only conclusion.
+- Option 3 is bounded to `storage.objects` policy metadata for the `activity-photos` bucket.
+- Reviewer confirmed execution clarity, rollback clarity, verification clarity, approval boundaries, and blast radius.
+- QA confirmed consistency across approval-needed, DB Inspector follow-up, Reviewer report, and QA report.
+- Production SQL remains blocked until Human approval is recorded.
+
+## rollback
+
+Selected rollback is the simple SQL rollback documented in `approval-needed.md`.
+
+Rollback restores `activity_photos_insert_test`, removes `activity_photos_insert_own`, and is executed only if approved and needed after apply failure, app verification failure, or Human request.
+
+Data loss risk: none expected.
+
+## verification
+
+Verification is the storage `pg_policies` query and app behavior verification documented in `approval-needed.md`.
+
+Docs-only integration verification remains:
+
+```powershell
+git status --short
+git diff --name-only
+git diff --stat
+git diff --cached --name-only
+git diff --cached --stat
+```
+
+## approval boundary
+
+No Human approval is required for this docs-only final integration.
+
+Human approval is required before:
+
+- applying the storage policy SQL
+- applying rollback SQL
+- any other production SQL
+- dashboard setting change
+- secret / environment variable change
+
+The following remain forbidden:
+
+- `db push`
+- migration repair
+- destructive SQL
+- broad schema rebuild
+- migration file changes in this Mission
+- app code changes in this Mission
+
+## impact
+
+- affected docs:
+  - `docs/ai-team/missions/mission-20260509-operational-rebaseline/`
+- affected code: none
+- affected DB / migration: none in this final integration
+- affected secret / dashboard: none
+
+## follow-up
+
+- Next task file path: `docs/ai-team/missions/mission-20260509-operational-rebaseline/approval-needed.md`
+- Human should approve, reject, or request changes to the exact Option 3 package.
+- Parent must stop before production writes until Human approval is recorded.
