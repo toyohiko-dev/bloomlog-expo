@@ -107,6 +107,7 @@ AI 運用、調査、handoff、decision log、承認前判断材料の置き場�
 | --- | --- | --- | --- | --- |
 | operating model | 恒久 | `docs/ai-team/` | 方針変更時だけ更新 | 新 model に置き換わり、参照先が更新されたとき |
 | docs map | 恒久 | `docs/ai-team/` | docs 構造変更時だけ更新 | 新 docs map に置き換わったとき |
+| mission lifecycle | 恒久 | `docs/ai-team/` | Mission 状態管理ルール変更時だけ更新 | 新 lifecycle model に置き換わり、参照先が更新されたとき |
 | product spec | 恒久 | `docs/product/` | 確定仕様が変わったとき更新 | 原則 archive しない。分割や統合時のみ |
 | decision log | 中長期 | `docs/ai-team/` | 重要判断ごとに追記 | 判断が product docs に反映済みで、履歴参照だけになったとき |
 | introspection log | 更新型 | `docs/ai-team/` | read-only 調査のたびに更新 | 対象課題が解決し、後続手順に統合済みのとき |
@@ -310,6 +311,7 @@ decision log は中長期で残す。
 | --- | --- | --- | --- |
 | `docs/ai-team/agent-operating-model.md` | operating model | 恒久 | 正本として残す |
 | `docs/ai-team/agent-docs-map.md` | docs map | 恒久 | 正本として残す |
+| `docs/ai-team/mission-lifecycle.md` | mission lifecycle | 恒久 | 正本として残す |
 | `docs/ai-team/agent-ops-inventory.md` | inventory | 中期 | 新設計移行が終わったら archive 候補 |
 | `docs/ai-team/supabase-db-introspection.md` | introspection log / 手順 | 更新型 | DB 調査の入口として残す |
 | `docs/ai-team/2026-05-08-rls-and-agent-ops-handoff.md` | handoff | 短命 | 内容反映後に archive 候補 |

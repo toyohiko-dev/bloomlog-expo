@@ -6,7 +6,7 @@
 
 このドキュメントは、Bloomlog Agent OS における Agent 間通信プロトコルを定義する。
 
-Parent Agent / Writer Agent / Reviewer Agent / QA Agent / DB Inspector Agent / Sakura / Human は、チャットや人間コピペではなく、repo files / branch / PR / issue を正の通信路として使う。恒久的な役割定義は `docs/ai-team/agent-operating-model.md`、review / approval flow は `docs/ai-team/agent-review-workflow.md`、docs の配置と寿命は `docs/ai-team/agent-docs-map.md` に従う。
+Parent Agent / Writer Agent / Reviewer Agent / QA Agent / DB Inspector Agent / Sakura / Human は、チャットや人間コピペではなく、repo files / branch / PR / issue を正の通信路として使う。恒久的な役割定義は `docs/ai-team/agent-operating-model.md`、review / approval flow は `docs/ai-team/agent-review-workflow.md`、Mission 状態管理は `docs/ai-team/mission-lifecycle.md`、docs の配置と寿命は `docs/ai-team/agent-docs-map.md` に従う。
 
 ## 1. 基本原則
 
@@ -52,6 +52,8 @@ docs/ai-team/missions/<mission-id>/
   decision-log.md
   approval-needed.md
 ```
+
+Mission の lifecycle state と `mission.md` 必須状態フィールドは `docs/ai-team/mission-lifecycle.md` に従う。Parent Agent が integration / execution summary 後に更新し、Reviewer / QA は状態を直接変更しない。
 
 ### `mission.md`
 

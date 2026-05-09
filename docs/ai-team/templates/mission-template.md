@@ -8,6 +8,24 @@
 
 <!-- Mission の短いタイトルを書く。 -->
 
+## mission state
+
+```yaml
+status: proposed
+owner_role: Parent Agent
+current_phase: mission
+selected_option: none
+approval_required: no
+approval_status: not-required
+execution_status: not-started
+verification_status: not-started
+residual_risk: none
+next_action: define scope and path type
+last_updated: YYYY-MM-DD
+```
+
+状態更新は `docs/ai-team/mission-lifecycle.md` に従う。Parent Agent が integration / execution summary 後に更新する。Reviewer / QA は状態を直接変更しない。
+
 ## background
 
 <!-- 背景、依頼元、関連 docs / issue / PR を書く。Human や Sakura を Agent 間通信路にしない。最終状態は repo / GitHub に残す。 -->

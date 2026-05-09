@@ -408,3 +408,62 @@ Rollback remains available if a later authenticated UI smoke test fails.
 
 - Run a real authenticated app smoke test when an authenticated browser session or test credential is available.
 - If photo upload fails with storage authorization, execute the approved rollback SQL and rerun verification SQL and app behavior verification.
+
+---
+
+## decision date
+
+2026-05-09
+
+## decision maker
+
+- Parent Agent
+
+## mission id
+
+`mission-20260509-operational-rebaseline`
+
+## decision
+
+Set mission lifecycle status to `verification-partial`.
+
+The approved Option 3 SQL execution completed and verification SQL passed. Runtime / browser / authenticated app smoke verification remains unavailable in this environment, so the Mission is not marked `completed` yet.
+
+## state transition
+
+- from: `executing`
+- to: `verification-partial`
+- changed by: Parent Agent
+- reason: core execution passed, but authenticated app smoke verification could not be completed because browser automation / authenticated session availability was blocked.
+- blocker: authenticated app photo upload smoke test was unavailable in this execution environment.
+- unblock condition: document residual risk and separate authenticated app smoke verification into follow-up, or complete that smoke test.
+
+## alternatives considered
+
+- Mark `completed`: rejected because app smoke verification remains pending.
+- Mark `blocked`: rejected because SQL execution and verification passed, rollback remains available, and the remaining check can be separated as residual risk.
+
+## rationale
+
+- `reports/execution-report.md` records successful SQL apply and passed verification SQL.
+- No `db push`, migration repair, destructive SQL, migration edit, or app code change occurred.
+- The remaining risk is specific and limited to normal authenticated photo upload smoke verification.
+
+## impact
+
+- affected docs:
+  - `docs/ai-team/missions/mission-20260509-operational-rebaseline/mission.md`
+  - `docs/ai-team/missions/mission-20260509-operational-rebaseline/decision-log.md`
+- affected code: none
+- affected DB / migration: none from this state update
+- affected secret / dashboard: none
+- affected operations: Parent finalization now has explicit lifecycle state.
+
+## follow-up
+
+- Separate authenticated app photo upload smoke verification into a follow-up task / issue / Mission before moving this Mission to `completed`.
+
+## revisit condition
+
+- A real authenticated app smoke test passes or fails.
+- A storage authorization regression is observed.

@@ -267,3 +267,30 @@ Yes before applying the storage policy SQL, applying rollback SQL, or running an
 Approval-ready: yes.
 
 Recommended execution: present Option 3 storage policy remediation to Human for approval, then stop before production writes until approval is recorded.
+
+---
+
+## lifecycle finalization addendum
+
+Update date: 2026-05-09
+
+Current lifecycle status: `verification-partial`.
+
+Reason:
+
+- Human approval for Option 3 was granted before execution.
+- Executor applied the approved SQL package only.
+- Verification SQL passed and observed the expected storage policy state.
+- No `db push`, migration repair, destructive SQL, migration file edit, or app code change occurred.
+- Authenticated app smoke verification remains unavailable in this execution environment.
+
+Parent finalization actions completed:
+
+- `mission.md` status fields updated.
+- `decision-log.md` state transition entry added.
+- `reports/execution-report.md` updated with proposed mission state.
+- residual risk documented.
+
+Next action:
+
+- Separate authenticated app photo upload smoke verification into follow-up before moving this Mission to `completed`.

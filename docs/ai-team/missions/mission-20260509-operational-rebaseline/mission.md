@@ -8,6 +8,22 @@
 
 Bloomlog Supabase operations の operational rebaseline
 
+## mission state
+
+```yaml
+status: verification-partial
+owner_role: Parent Agent
+current_phase: verification
+selected_option: Option 3 storage policy remediation
+approval_required: yes
+approval_status: approved
+execution_status: completed
+verification_status: partial
+residual_risk: authenticated app photo upload smoke test is still pending because browser/auth verification was unavailable in the execution environment
+next_action: separate authenticated app smoke verification into follow-up and finalize residual risk
+last_updated: 2026-05-09
+```
+
 ## background
 
 前回 Mission `mission-20260509-supabase-migration-history` では、remote migration history が空または unreadable に見える一方で、remote schema には repo migration の主要成果物と remote-only schema が混在していることを確認した。

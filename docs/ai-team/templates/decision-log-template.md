@@ -20,6 +20,15 @@ YYYY-MM-DD
 
 <!-- 決定内容を書く。Human / Sakura の判断を Agent が再利用できる形にする。 -->
 
+## state transition
+
+- from:
+- to:
+- changed by:
+- reason:
+- blocker:
+- unblock condition:
+
 ## alternatives considered
 
 - 

@@ -6,7 +6,7 @@
 
 このドキュメントは、Bloomlog Agent OS における review / approval flow を定義する。
 
-AI Agent がどこまで自律実行し、どこで Reviewer / QA / Parent が介入し、どこで Human approval gate に入るかを明確にする。恒久的な役割定義は `docs/ai-team/agent-operating-model.md` を正とし、docs の配置と寿命は `docs/ai-team/agent-docs-map.md` に従う。
+AI Agent がどこまで自律実行し、どこで Reviewer / QA / Parent が介入し、どこで Human approval gate に入るかを明確にする。恒久的な役割定義は `docs/ai-team/agent-operating-model.md` を正とし、Mission 状態管理は `docs/ai-team/mission-lifecycle.md`、docs の配置と寿命は `docs/ai-team/agent-docs-map.md` に従う。
 
 ## 基本原則
 
@@ -538,6 +538,8 @@ Agent は Report に次を書く。
 - migration / DB / secret / dashboard の判断材料を作らず Human に丸投げする。
 
 ## state transition
+
+Lifecycle status の正本は `docs/ai-team/mission-lifecycle.md` と `mission.md` の状態フィールドである。この章は review flow の段階説明として扱う。
 
 ### 1. Mission
 

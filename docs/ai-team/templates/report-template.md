@@ -23,6 +23,14 @@
 
 <!-- 何をしたかを短く書く。Human に別 Agent へ転記させない。 -->
 
+## proposed mission state
+
+Executor / Writer / Reviewer / QA は必要に応じて状態を提案する。`mission.md` の状態更新は Parent Agent が行う。
+
+- proposed status:
+- reason:
+- required Parent action:
+
 ## input files read
 
 - 

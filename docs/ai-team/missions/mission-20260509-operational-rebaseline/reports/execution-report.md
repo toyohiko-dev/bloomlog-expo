@@ -161,3 +161,16 @@ App behavior verification: blocked before authenticated upload step.
 Rollback: not executed.
 
 Docs update required: yes.
+
+## proposed mission state
+
+Executor proposed state: `verification-partial`.
+
+Reason:
+
+- approved SQL execution completed
+- verification SQL passed
+- app behavior verification could not complete because runtime browser automation / authenticated session availability was blocked
+- rollback remains available if later authenticated upload smoke verification fails
+
+Parent Agent must update `mission.md` and `decision-log.md` before finalizing the Mission state.
