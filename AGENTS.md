@@ -22,7 +22,7 @@ This version has breaking changes - APIs, conventions, and file structure may al
 - `completed` / `superseded` の Mission は再開しない。必要な場合は、新しい Mission または follow-up task として切り出す。
 - Parent Agent は docs-only safe path の条件を満たす場合、差分確認後に commit / push まで行う。
 - Human は approval / rejection のみを行う。Human を mission state 更新係、転記係、diff 確認係にしない。
-- 現行の補助正本は、状態管理が `docs/ai-team/mission-lifecycle.md`、docs 配置が `docs/ai-team/agent-docs-map.md` である。
+- 状態管理の正本は `docs/ai-team/mission-lifecycle.md`、docs 配置の supporting reference は `docs/ai-team/agent-docs-map.md` である。
 
 ## 2. AI と人間の役割
 

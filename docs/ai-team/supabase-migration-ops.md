@@ -4,7 +4,9 @@
 
 ## 目的
 
-このドキュメントは、Bloomlog の remote migration 履歴空問題を AI チーム運用で安全に扱うための恒久ルールを定義する。
+このドキュメントは、Bloomlog の remote migration 履歴空問題を AI チーム運用で安全に扱うための supporting reference である。
+
+AI Team / Agent OS 作業の入口は `AGENTS.md` である。このファイルは入口ではなく、DB / migration 作業で必要になった場合にだけ読む。
 
 DB / migration に関する実行ルールは `docs/ai-team/agent-operating-model.md`、review / approval flow は `docs/ai-team/agent-review-workflow.md`、Agent 間通信は `docs/ai-team/agent-communication-protocol.md`、read-only 参照手順の具体例は `docs/ai-team/supabase-db-introspection.md` に従う。
 

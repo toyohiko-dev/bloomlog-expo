@@ -6,7 +6,7 @@
 
 このドキュメントは、Bloomlog の docs 配置、寿命、更新責任、archive 条件を定義する。
 
-AI Team / Agent OS 作業の入口は `AGENTS.md` である。Mission state の正本は `docs/ai-team/mission-lifecycle.md` である。この docs map は、入口ではなく docs 配置と寿命を補助する。
+AI Team / Agent OS 作業の入口は `AGENTS.md` である。Mission state の正本は `docs/ai-team/mission-lifecycle.md` である。この docs map は、入口ではなく docs 配置と寿命を補助する supporting reference である。
 
 ## 基本方針
 
@@ -287,23 +287,28 @@ decision log は中長期で残す。
 - 個別 PR の検証結果。
 - 完了済み checklist。
 
-## 現行 docs の初期分類
+## 現行 docs の分類
 
 | ファイル | 種類 | 寿命 | 扱い |
 | --- | --- | --- | --- |
-| `docs/ai-team/agent-operating-model.md` | operating model | 恒久 | 正本として残す |
-| `docs/ai-team/agent-docs-map.md` | docs map | 恒久 | 正本として残す |
-| `docs/ai-team/mission-lifecycle.md` | mission lifecycle | 恒久 | 正本として残す |
+| `AGENTS.md` | entrypoint | 恒久 | AI Team / Agent OS 作業の唯一の入口 |
+| `docs/ai-team/mission-lifecycle.md` | mission lifecycle | 恒久 | Mission state 管理の正本 |
+| `docs/ai-team/agent-operating-model.md` | operating model | 恒久 | 役割と承認境界の参照 docs |
+| `docs/ai-team/agent-review-workflow.md` | review workflow | 恒久 | review / approval flow の参照 docs |
+| `docs/ai-team/agent-communication-protocol.md` | communication protocol | 恒久 | Agent 間通信の参照 docs |
+| `docs/ai-team/templates/` | templates | 恒久 | Mission artifacts の作成テンプレート |
+| `docs/ai-team/agent-docs-map.md` | docs map | 参照 | docs 配置と寿命の supporting reference |
 | `docs/ai-team/agent-ops-inventory.md` | inventory | 履歴 | 棚卸し完了済み。現行入口ではない |
-| `docs/ai-team/supabase-db-introspection.md` | introspection log / 手順 | 更新型 | DB 調査の入口として残す |
-| `docs/ai-team/2026-05-08-rls-and-agent-ops-handoff.md` | handoff | 短命 | 内容反映後に archive 候補 |
+| `docs/ai-team/supabase-migration-ops.md` | DB reference | 参照 | DB / migration 作業時のみ読む supporting reference |
+| `docs/ai-team/supabase-db-introspection.md` | introspection log / 手順 | 更新型 | DB 調査時の参照 docs |
 | `docs/ai-team/supabase-rls-remediation-checklist.md` | checklist | 短命から中期 | 完了状態整理後に archive 候補 |
 | `docs/ai-team/context.md` | 旧入口 docs | 中期 | operating model と product docs へ整理後に改修または archive 候補 |
 | `docs/ai-team/notification-review-*.md` | notification review | 短命から中期 | 新 workflow 作成後に改修または archive 候補 |
-| `docs/ai-team/handoff-2026-04-05.md` | handoff | 短命 | archive 候補 |
-| `docs/ai-team/00-charter.md` | 旧憲章 | 退役候補 | product docs との重複整理後に archive 候補 |
-| `docs/ai-team/01-parent-brief.md` | 旧作業ブリーフ | 退役候補 | archive 候補 |
-| `docs/ai-team/99-integration-input.md` | 空ファイル | 不明 | 削除候補。ただし削除は別承認 |
+| `docs/archive/00-charter.md` | 旧憲章 | 履歴 | archived |
+| `docs/archive/01-parent-brief.md` | 旧作業ブリーフ | 履歴 | archived |
+| `docs/archive/handoff-2026-04-05.md` | handoff | 履歴 | archived |
+| `docs/archive/2026-05-08-rls-and-agent-ops-handoff.md` | handoff | 履歴 | archived |
+| `docs/ai-team/99-integration-input.md` | 空ファイル | 退役 | deleted |
 
 ## 禁止事項
 

@@ -10,6 +10,14 @@ AI Team / Agent OS 作業の入口は `AGENTS.md` である。Mission state の�
 
 このファイルは過去の棚卸し結果として残す。新しい設計 MD の作成リストや現行作業開始手順として使わない。
 
+Archive / retirement cleanup 後の扱い:
+
+- `docs/ai-team/00-charter.md` は `docs/archive/00-charter.md` に退避済み。
+- `docs/ai-team/01-parent-brief.md` は `docs/archive/01-parent-brief.md` に退避済み。
+- `docs/ai-team/handoff-2026-04-05.md` は `docs/archive/handoff-2026-04-05.md` に退避済み。
+- `docs/ai-team/2026-05-08-rls-and-agent-ops-handoff.md` は `docs/archive/2026-05-08-rls-and-agent-ops-handoff.md` に退避済み。
+- `docs/ai-team/99-integration-input.md` は空ファイルだったため削除済み。
+
 ## 目的
 
 新しい AI 開発組織設計を入れる前に、`AGENTS.md` と `docs/ai-team/` 配下の現状を棚卸しする。

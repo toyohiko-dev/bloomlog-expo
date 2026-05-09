@@ -8,7 +8,7 @@
 
 - `ai-team/`
   - AIチーム（Codex）向けの資料
-  - 憲章、親ブリーフ、統合入力を置く
+  - AI運用ルール、Mission record、承認前判断材料を置く
 
 - `archive/`
   - 旧資料の退避先
@@ -34,15 +34,25 @@
 
 ## AIチーム向け
 
-- `docs/ai-team/00-charter.md`
-  - 開発の基本ルール・思想
+- `AGENTS.md`
+  - AI Team / Agent OS 作業の唯一の入口
 
-- `docs/ai-team/01-parent-brief.md`
-  - 現在のタスクの親ブリーフ
+- `docs/ai-team/mission-lifecycle.md`
+  - Mission state 管理の正本
 
-- `docs/ai-team/99-integration-input.md`
-  - 将来的な統合入力用のプレースホルダ
-  - 現在は未使用だが削除しない
+- `docs/ai-team/agent-operating-model.md`
+  - Agent 役割と承認境界の参照 docs
+
+- `docs/ai-team/agent-review-workflow.md`
+  - review / approval flow の参照 docs
+
+- `docs/ai-team/agent-communication-protocol.md`
+  - Agent 間通信の参照 docs
+
+- `docs/ai-team/templates/`
+  - Mission / report / decision log などのテンプレート
+
+Mission artifacts は運用記録であり、恒久ルールではない。完了済み・superseded の Mission は再開しない。
 
 ---
 
@@ -85,6 +95,7 @@
 ## 運用ルール
 
 - 正本として読む資料は `product/` と `ai-team/` に置く
+- AI Team / Agent OS 作業の入口は `AGENTS.md` に固定する
 - 迷った場合は削除せず `archive/` に移動する
 - 同じ内容を複数ファイルに書かない
 - 最新版は上書き、過去版は `archive/` に保存する
