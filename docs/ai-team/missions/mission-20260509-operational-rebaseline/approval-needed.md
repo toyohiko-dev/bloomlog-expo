@@ -10,7 +10,9 @@
 
 ## status
 
-Draft. Not approved. Do not execute production writes from this file until Human approval is recorded.
+Approval-ready for the selected docs-only operational baseline.
+
+No production write is requested. Do not execute production writes from this file.
 
 ## approval type
 
@@ -21,21 +23,22 @@ Draft. Not approved. Do not execute production writes from this file until Human
 
 ## requested action
 
-Prepare, review, and approve a forward-only operational baseline for Bloomlog Supabase operations.
+Approve the selected Option 1 execution package for this Mission:
 
-The default requested action for execution should be one bounded remediation package selected by Parent after DB Inspector / Reviewer / QA:
-
-- adopt current remote schema as canonical operational source of truth
-- abandon perfect historical migration reconstruction
+- adopt current remote schema as the canonical operational source of truth
+- abandon perfect historical migration reconstruction as an operational blocker
 - keep `db push` out of the default workflow
+- keep migration repair out of the default workflow
 - use explicit approved SQL / migration proposals for future DB changes
 - document accepted drift and future remediation boundaries
 
+This is a docs-only operational baseline approval. It does not approve production SQL, storage policy changes, migration repair, `db push`, destructive SQL, dashboard changes, or secret changes.
+
 ## exact command / SQL / setting
 
-Current draft contains no approved write operation.
+Selected execution contains no write operation.
 
-Safe read-only pre-approval commands:
+Safe docs/read-only commands:
 
 ```powershell
 git status --short
@@ -67,9 +70,9 @@ where schemaname in ('public', 'storage')
 order by schemaname, tablename, policyname;
 ```
 
-Write operations must be filled in by DB Inspector before this becomes executable.
+Write operations are not part of the selected package.
 
-Explicitly not approved:
+Explicitly not approved in this Mission:
 
 ```powershell
 npx.cmd supabase db push
@@ -80,37 +83,42 @@ npx.cmd supabase migration repair --status applied <version>
 
 - service: Supabase
 - app: Bloomlog
-- environment: production suspected; must be confirmed before any write
+- environment: production Supabase operations, but no production write is requested here
 - secret handling: do not store project secrets, tokens, or connection strings in docs
 
-## proposed remediation package template
+## selected remediation package
 
-DB Inspector must fill this before Human approval:
-
-```text
-selected option:
-target environment:
-operation type:
-exact command / SQL:
-expected effect:
-blast radius:
-rollback:
-verification:
-approval requested from Human:
-```
+- selected option: Option 1, documentation-only operational baseline now
+- target environment: Bloomlog Supabase operations
+- operation type: docs-only operational decision
+- exact command / SQL: none for production DB
+- expected effect: future Agents use current remote schema as operational reality and stop treating historical migration reconstruction as a blocker
+- blast radius: docs / AI operations only
+- rollback: revert the docs commit or update this Mission's decision docs
+- verification: docs-only diff checks and report consistency
+- approval requested from Human: approve docs-only operational baseline direction
 
 ## risk
 
 - Adopting remote schema as canonical may permanently abandon some old repo expectations.
 - Leaving migration history unrepaired means `db push` remains unsafe as a default workflow.
-- Repairing migration history without schema remediation may hide real drift.
-- Creating a new baseline without clear rollback may make future operations harder to audit.
-- Any production SQL can affect auth / RLS / storage behavior.
-- Any storage policy change can affect photo upload behavior.
+- Future Agents may accidentally treat future candidates as selected unless this file is read with Parent summary.
+- Future production SQL can affect auth / RLS / storage behavior, but no production SQL is selected here.
+- Future storage policy changes can affect photo upload behavior, but no storage policy change is selected here.
 
 ## rollback
 
-No rollback is needed for docs-only baseline creation.
+No DB rollback is needed for docs-only baseline creation.
+
+Selected Option 1 rollback:
+
+```text
+rollback type: docs revert
+target: docs/ai-team/missions/mission-20260509-operational-rebaseline/
+exact rollback: revert the commit that introduced the final integration, or edit approval-needed.md / decision-log.md / parent-summary.md to remove the Option 1 selection
+data loss risk: none
+verification: git diff --name-only; git diff --stat
+```
 
 For future write candidates, rollback must be operation-specific:
 
@@ -122,7 +130,23 @@ For future write candidates, rollback must be operation-specific:
 
 ## verification
 
-Verification must include:
+Selected Option 1 verification:
+
+```powershell
+git status --short
+git diff --name-only
+git diff --stat
+git diff --cached --name-only
+git diff --cached --stat
+```
+
+Expected result:
+
+- changed / staged files are only under `docs/ai-team/missions/mission-20260509-operational-rebaseline/`
+- no `app/`, `lib/`, `supabase/`, `supabase/migrations/`, `package.json`, or `.env*` changes
+- no production SQL, `migration repair`, `db push`, destructive SQL, dashboard change, or secret change
+
+Future write verification must include:
 
 - `npx.cmd supabase migration list`
 - public table / column read-only SQL
@@ -136,15 +160,14 @@ Verification must include:
 
 Human may choose:
 
-- approve selected remediation package
-- reject selected remediation package
+- approve selected docs-only operational baseline
+- reject selected docs-only operational baseline
 - request narrower remediation
-- request docs-only baseline only
+- request a future production-write approval package
 
 ## approval result
 
 - selected option: pending
 - decided by: pending
 - decided at: pending
-- notes: no production operation is approved yet
-
+- notes: approval-ready for docs-only operational baseline; no production operation is approved
