@@ -17,23 +17,31 @@
 
 ## requested action
 
-現時点では未承認の実行要求はない。
+現時点では未承認の実行要求はない。Parent 統合後も、このファイルは pending gate であり、executable approval request ではない。
 
-このファイルは、DB Inspector Agent の read-only 調査後に write 候補が残る場合の approval gate 入口として使う。Human には SQL 組み立てや diff 確認を依頼しない。Agent が exact command / SQL / risk / rollback / verification を整理してから approval gate に入る。
+DB Inspector / Reviewer / QA reports の統合により、問題は `history-only drift` ではなく `migration history drift + partial schema drift` と判断した。そのため、今すぐ `migration repair`、`db push`、個別 production SQL の approval は求めない。
+
+このファイルは、write 候補が 1 つに絞られ、exact command / SQL / risk / rollback / verification が揃った時点で approval gate 入口として更新する。Human には SQL 組み立てや diff 確認を依頼しない。
 
 ## exact command / SQL / setting
 
 secret / token は書かない。メール本文全文も保存しない。
 
 ```text
-pending read-only investigation
+pending remediation candidate narrowing
 ```
 
 候補になりうる操作:
 
-- `npx supabase migration repair --status applied <version>`
-- `npx supabase db push`
-- individual SQL for production DB
+- `npx supabase migration repair --status applied <version>`:
+  - not ready
+  - reason: schema drift が残っており、全 migration を applied 登録する根拠が不足している。
+- `npx supabase db push`:
+  - not allowed now
+  - reason: remote migration history が空表示で、partial schema drift があるため全 migration 再適用 / 衝突リスクが高い。
+- individual SQL for production DB:
+  - not ready
+  - reason: 欠落 function / trigger / index / storage policy の意図確認と operation-specific rollback が未完了。
 
 上記は候補であり、Human approval 前に実行しない。
 
@@ -49,12 +57,20 @@ pending read-only investigation
 - migration history が空のまま `db push` すると、repo 側の全 migration が未適用として扱われる可能性がある。
 - schema drift がある状態で `migration repair` すると、履歴だけを正しく見せて実 schema の不一致を隠す可能性がある。
 - 個別 SQL は production DB write であり、対象 SQL の影響範囲と rollback が必要。
+- remote schema には missing function / trigger / index、storage policy drift、remote-only schema が混在している。
+- `activity_photos_insert_test` の意図が未確認のまま policy を変更すると、現行アップロード動作を壊す可能性がある。
+- missing user_id sync function / trigger が意図的削除だった場合、repo migration どおり戻すと現行 app の責務分担と衝突する可能性がある。
 
 ## rollback
 
 - rollback possible: pending
-- rollback plan: DB Inspector Agent が read-only 調査後に、候補操作ごとに `simple SQL rollback` / `forward fix` / `restore from backup required` / `not safely reversible` のいずれかで整理する。
-- rollback risk: pending read-only investigation
+- rollback plan:
+  - `migration repair`: 誤 repair 時は version を `reverted` として repair する案が必要。ただし実行前に Supabase CLI current behavior を再確認する。
+  - missing functions / triggers: `drop trigger if exists ...` / `drop function if exists ...` の rollback SQL を用意する。
+  - missing indexes: `drop index if exists ...` を用意する。concurrent / lock 方針は事前確認する。
+  - storage policy: 既存 policy 定義を保存し、policy gap が出ない順序で rollback SQL を用意する。
+  - `db push`: not safely reversible。今は候補にしない。
+- rollback risk: operation-specific rollback が未完成のため、まだ approval request にできない。
 
 ## verification
 
@@ -63,6 +79,10 @@ pending read-only investigation
 - public schema の table / column / constraint / RLS / policy / trigger / function の read-only 再確認。
 - repo migration と remote schema の照合表更新。
 - repair 後または write 後に `db push` を標準手段へ戻せるかの再判定。
+- missing function / trigger / index の有無の read-only 再確認。
+- storage insert policy definition の read-only 再確認。
+- `activity_logs_acquisition_method_check` definition comparison。
+- linked project が対象 Bloomlog project であることの secret なしの確認。
 
 ## approval options
 
@@ -77,4 +97,4 @@ Human は次のいずれかを選ぶ。
 - selected option: pending
 - decided by: pending
 - decided at: pending
-- notes: pending
+- notes: Parent integration keeps this approval pending. Do not execute `migration repair`, `db push`, production SQL, destructive SQL, dashboard changes, or secret changes from this file.

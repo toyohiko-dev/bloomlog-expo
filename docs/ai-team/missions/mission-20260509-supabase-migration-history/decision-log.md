@@ -57,3 +57,76 @@ remote migration 履歴空問題は、DB / migration path の Mission として�
 - メール本文全文を保存しない。
 - Human を Agent 間通信路にしない。
 - Sakura を Agent 間通信路にしない。
+
+---
+
+## decision date
+
+2026-05-09
+
+## decision maker
+
+- Parent Agent
+
+## mission id
+
+`mission-20260509-supabase-migration-history`
+
+## decision
+
+DB Inspector / Reviewer / QA reports を統合し、現時点の分類を `migration history drift + partial schema drift` とする。read-only 棚卸しは完了扱いにできるが、`db push`、`migration repair`、個別 production SQL の実行には進まない。
+
+`approval-needed.md` は executable approval request ではなく pending gate として残す。次は drift の追加調査と remediation 候補の絞り込みを行う。
+
+## alternatives considered
+
+- remote migration history が空であることだけを理由に、全 repo migration を `applied` として repair 候補にする。
+- schema の主要部分が概ね存在することを理由に、`db push` を Human approval gate に進める。
+- 欠落 function / trigger / index / storage policy を個別 SQL としてすぐ approval request にする。
+- `approval-needed.md` に pending ではなく実行コマンドを確定で書く。
+
+## rationale
+
+- remote DB に `supabase_migrations` schema が見えず、`npx.cmd supabase migration list` の remote 列は空だった。
+- 一方で remote schema は repo migration の主要成果物を多く含むため、全 schema が未適用とは言えない。
+- `public.assign_visit_session_user_id`、`public.sync_activity_log_user_id`、対応 trigger、user_id 系 index、storage insert policy に drift がある。
+- remote-only schema (`events`、`areas`、`countries`、`spots`、`pavilions.image_path`) の由来が未確認である。
+- `db push` は全 migration 再適用や既存 schema / policy との衝突リスクが高い。
+- `migration repair` は schema drift を履歴上の整合に見せてしまうリスクがある。
+
+## impact
+
+- affected docs:
+  - `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/parent-summary.md`
+  - `docs/ai-team/missions/mission-20260509-supabase-migration-history/decision-log.md`
+  - `docs/ai-team/missions/mission-20260509-supabase-migration-history/approval-needed.md`
+- affected code: none
+- affected DB / migration: none
+- affected secret / dashboard: none
+- affected operations:
+  - `db push` は引き続き標準手段にしない。
+  - `migration repair` は現時点で実行候補にしない。
+  - 次の DB Inspector task は drift 追加調査と候補絞り込みを行う。
+
+## follow-up
+
+- linked project の最終確認方法を secret なしで整理する。
+- missing function / trigger / index が意図的な削除か drift かを app code と read-only evidence で確認する。
+- storage insert policy `activity_photos_insert_test` の意図を確認する。
+- `activity_logs_acquisition_method_check` の definition comparison を行う。
+- repair 可能な migration と repair してはいけない migration を再分類する。
+- approval request は候補を 1 つに絞れるまで pending のままにする。
+
+## revisit condition
+
+- linked project が確定したとき。
+- missing function / trigger / index / storage policy drift の意図が確認できたとき。
+- remote-only schema の扱いが決まったとき。
+- `migration repair`、`db push`、個別 SQL のいずれかについて exact command / SQL / rollback / verification が揃ったとき。
+
+## prohibited content
+
+- secret / token を保存しない。
+- メール本文全文を保存しない。
+- Human を Agent 間通信路にしない。
+- Sakura を Agent 間通信路にしない。
