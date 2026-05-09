@@ -104,7 +104,7 @@ Parent Agent は Writer、Reviewer、QA、DB Inspector の結果を統合する�
 
 ### 7. docs-only auto commit/push
 
-docs-only safe path で、許可された場合は AI が commit / push まで行う。
+docs-only safe path では、Reviewer Agent が条件を確認したら、AI は作業ブランチへ commit / push してよい。Human は docs-only commit / push の通常承認者ではなく、例外時の承認者である。
 
 条件:
 
@@ -113,7 +113,9 @@ docs-only safe path で、許可された場合は AI が commit / push まで�
 - DB write、migration repair、`db push` がない。
 - archive 移動やファイル削除がない。
 - staged file が対象 docs のみである。
-- commit / push が Human から明示的に許可されている。
+- Reviewer Agent が docs-only safe path 条件を確認している。
+
+ローカル未コミットで止める場合は、具体的なリスク理由を Report に書く。
 
 ### 8. feature branch + PR
 
@@ -215,12 +217,32 @@ docs-only safe path は、`docs/` 配下の Markdown だけを変更する経路
 
 ### 自動 commit / push 条件
 
-- Human が docs-only safe path として commit / push を許可している。
+- Reviewer Agent が docs-only safe path 条件を確認している。
 - `git status --short` で docs 以外の変更がない。
 - `git diff --cached --name-only` が対象 docs のみである。
 - `git diff --cached --stat` で docs-only と確認できる。
 - 既存 MD の大幅改修、archive 移動、ファイル削除を含まない。
 - secret、メール本文全文、token が含まれていない。
+- Human approval が必要な例外に該当しない。
+
+Human は docs-only commit / push の通常承認者ではなく、例外時の承認者である。
+
+### Human approval が必要な例外
+
+- `app/`
+- `lib/`
+- `supabase/`
+- `supabase/migrations/`
+- `package.json`
+- `.env*`
+- secret / token / メール本文全文を含む可能性がある。
+- DB write。
+- migration repair。
+- `db push`。
+- archive 移動。
+- ファイル削除。
+- `docs/product/` の正式仕様を大幅変更する場合。
+- `AGENTS.md` や `docs/ai-team/agent-operating-model.md` など上位ルールを破壊的に変更する場合。
 
 ### 禁止変更
 
@@ -251,6 +273,10 @@ docs-only safe path は、`docs/` 配下の Markdown だけを変更する経路
 - approval gate が必要な内容を含む。
 - secret、token、メール本文全文が含まれる可能性がある。
 - branch が指定と違う。
+- `docs/product/` の正式仕様を大幅変更する。
+- `AGENTS.md` や `docs/ai-team/agent-operating-model.md` など上位ルールを破壊的に変更する。
+
+ローカル未コミットで止める場合は、具体的なリスク理由を Report に書く。
 
 ## code branch + PR path
 
