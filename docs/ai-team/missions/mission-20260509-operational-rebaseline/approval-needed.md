@@ -205,7 +205,7 @@ Human may choose:
 
 ## approval result
 
-- selected option: pending
-- decided by: pending
-- decided at: pending
-- notes: production SQL is not approved until Human records approval
+- selected option: approved Option 3, targeted `activity-photos` storage insert policy remediation
+- decided by: Human
+- decided at: 2026-05-09
+- notes: Human approval was granted before execution. Apply SQL was executed by Executor; verification SQL passed. App behavior verification was blocked by local browser automation / authenticated-session availability, so rollback was not executed because no app upload failure was observed.

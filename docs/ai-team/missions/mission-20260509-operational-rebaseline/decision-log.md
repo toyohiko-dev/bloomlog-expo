@@ -343,3 +343,68 @@ The following remain forbidden:
 - Next task file path: `docs/ai-team/missions/mission-20260509-operational-rebaseline/approval-needed.md`
 - Human should approve, reject, or request changes to the exact Option 3 package.
 - Parent must stop before production writes until Human approval is recorded.
+
+---
+
+## decision date
+
+2026-05-09
+
+## decision maker
+
+- Human
+- Executor Agent
+
+## mission id
+
+`mission-20260509-operational-rebaseline`
+
+## decision
+
+Execute approved Option 3 storage policy remediation.
+
+Human approval was granted before execution. Executor applied only the approved SQL package for `activity-photos` storage insert policy remediation.
+
+## execution result
+
+- apply SQL: completed
+- verification SQL: passed
+- `activity_photos_insert_own`: present
+- `activity_photos_insert_test`: absent
+- `db push`: not executed
+- migration repair: not executed
+- destructive SQL: not executed
+- migration files: not changed
+- app code: not changed
+
+## app behavior verification result
+
+The Executor started the local app and confirmed HTTP 200 from `http://127.0.0.1:3000`.
+
+Normal signed-in UI upload verification was blocked because browser automation failed to start in this environment with a local `AppData` permission error, and no authenticated browser session / test credential was available to the Executor.
+
+The app upload path implementation was checked and matches the new policy shape:
+
+```text
+<user.id>/<sessionId>/<activityId>-<uuid>.<extension>
+```
+
+No app upload failure or storage authorization failure was observed.
+
+## rollback decision
+
+Rollback was not executed.
+
+Reason:
+
+- verification SQL passed
+- approved expected policy state was observed
+- app implementation path matches the new policy shape
+- app behavior verification was blocked by environment / authentication availability, not by an observed app failure
+
+Rollback remains available if a later authenticated UI smoke test fails.
+
+## follow-up
+
+- Run a real authenticated app smoke test when an authenticated browser session or test credential is available.
+- If photo upload fails with storage authorization, execute the approved rollback SQL and rerun verification SQL and app behavior verification.
