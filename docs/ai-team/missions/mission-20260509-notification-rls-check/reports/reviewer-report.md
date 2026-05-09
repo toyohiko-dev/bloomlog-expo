@@ -18,9 +18,9 @@ Queue processing and Mission reconciliation were reviewed for duplicate Mission 
 
 ## proposed mission state
 
-- proposed status: active
-- reason: canonical Mission is ready for DB Inspector read-only execution, but remote DB state is not yet verified
-- required Parent action: keep Mission active and hand off to DB Inspector Agent
+- proposed status: completed
+- reason: DB Inspector read-only execution found no immediate gated remediation candidate
+- required Parent action: update Mission state and commit / push docs-only completion
 
 ## input files read
 
@@ -31,6 +31,7 @@ Queue processing and Mission reconciliation were reviewed for duplicate Mission 
 - `docs/ai-team/missions/mission-20260509-notification-rls-check/decision-log.md`
 - `docs/ai-team/missions/mission-20260509-notification-rls-check/tasks/db-inspector.md`
 - `docs/ai-team/missions/mission-20260509-notification-rls-check/reports/parent-summary.md`
+- `docs/ai-team/missions/mission-20260509-notification-rls-check/reports/db-inspector-report.md`
 
 ## output files changed
 
@@ -38,7 +39,7 @@ Queue processing and Mission reconciliation were reviewed for duplicate Mission 
 
 ## validation
 
-- validation performed: duplicate Mission review, dispatch consistency review, approval gate review
+- validation performed: duplicate Mission review, dispatch consistency review, approval gate review, DB Inspector report review
 - validation result: passed
 - validation not performed: remote DB introspection
 - reason: DB Inspector follow-up has not run yet
@@ -51,6 +52,7 @@ Queue processing and Mission reconciliation were reviewed for duplicate Mission 
 - Queue status is `follow-up-created`, not completed.
 - Dispatch metadata indicates `db-inspector-followup`, `read-only-introspection`, `mission_required: yes`.
 - No gated operation is marked as executed.
+- DB Inspector report proposes no DB write, dashboard change, credential change, `db push`, or migration repair.
 
 ## approval required?
 
@@ -64,4 +66,4 @@ no
 
 ## next action
 
-- QA Agent verifies docs-only safe path and queue/run-log consistency.
+- QA Agent verifies docs-only safe path and Mission completion consistency.

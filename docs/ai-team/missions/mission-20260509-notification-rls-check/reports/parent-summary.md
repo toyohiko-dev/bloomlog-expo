@@ -4,7 +4,7 @@
 
 ## Current Status
 
-This Mission is `active`.
+This Mission is `completed`.
 
 It is the canonical Mission created from notification intake queue entry `NTF-20260509-01`.
 
@@ -30,25 +30,42 @@ The Codex draft is not adopted as a new Mission. It is replaced by the canonical
 
 - Queue entry `NTF-20260509-01` was processed from `pending` to `follow-up-created`.
 - This read-only DB Inspector Mission was selected as the canonical follow-up.
+- DB Inspector Agent ran read-only Supabase CLI checks and read-only SQL.
+- `visit_sessions`, `activity_logs`, `profiles`, and `activity-photos` storage policies were checked.
 - No DB write or dashboard operation was performed.
+
+## Findings
+
+- `visit_sessions`: RLS ON, owner-scoped policies present.
+- `activity_logs`: RLS ON, owner-scoped policies present.
+- `profiles`: RLS ON, owner-scoped policies present.
+- `activity-photos` storage: authenticated owner-scoped insert/update/delete policies present.
+- `pavilions` and `pavilion_aliases`: RLS OFF, but observed columns are public master/reference data, not user ownership data.
+- remote migration history remains not visible to Supabase CLI; `db push` remains unsafe as a standard path.
 
 ## What Has Not Been Done
 
-- Remote DB read-only introspection has not been executed yet in this Mission.
 - No `db push` was run.
 - No migration repair was run.
 - No migration was created.
 - No dashboard or credential was changed.
 - No app code was changed.
+- No production SQL write was executed.
+
+## Final Judgment
+
+`NTF-20260509-01` is treated as historical/resolved for the owner data tables and storage policy that were previously remediated.
+
+No immediate approval-needed package is created.
+
+Residual risk remains because the exact Supabase Advisor target is unavailable from the sanitized queue entry, and one full public table RLS sweep failed due to temporary Supabase auth circuit breaker. If the alert persists, create a new sanitized queue entry with a narrower target category and rerun read-only follow-up.
 
 ## Next Action
 
-DB Inspector Agent should run the read-only checks defined in `tasks/db-inspector.md`.
-
-If any write, dashboard change, `db push`, or migration repair becomes necessary, create `approval-needed.md` and stop before execution.
+No immediate remediation. Watch for a new or persistent sanitized Supabase Advisor queue entry.
 
 ## Docs-only Safe Path
 
-This reconciliation step is docs-only.
+This Mission remained docs / read-only.
 
-The later DB Inspector execution may involve read-only commands and read-only SQL, but must not include write operations without Human approval.
+The docs updates are docs-only safe path. The Supabase checks were read-only CLI / SQL.

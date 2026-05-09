@@ -196,13 +196,16 @@ Sakura / ChatGPT は Gmail read-only intake から raw body を保存しない s
 - codex_decision:
   - Queue 内では完了しない。
   - read-only DB Inspector follow-up Mission に切り出した。
+  - Follow-up Mission completed read-only checks and found no immediate gated remediation candidate.
 - follow_up:
   - mission: `docs/ai-team/missions/mission-20260509-notification-rls-check/`
-  - approval_needed: none yet
+  - mission_status: completed
+  - approval_needed: none
 - run_log: `docs/ai-team/ops/notification-intake/runs/20260509-codex-process-pending-ntf-20260509-01.md`
 - notes:
   - この queue entry だけで DB write へ進まない。
   - Codex local draft `mission-20260509-supabase-security-alert-readonly` is replaced by canonical `mission-20260509-notification-rls-check`.
+  - If Supabase Advisor continues to show a specific active alert, add a new sanitized queue entry with target category only.
 
 ## Approval Needed Candidates
 

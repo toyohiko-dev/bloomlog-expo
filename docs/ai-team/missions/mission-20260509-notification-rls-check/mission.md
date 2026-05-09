@@ -3,16 +3,16 @@
 作成日: 2026-05-09
 
 ```yaml
-status: active
+status: completed
 owner_role: Parent Agent
-current_phase: mission
-selected_option: read-only follow-up
+current_phase: finalization
+selected_option: classify NTF-20260509-01 as historical/resolved for owner data tables; no gated remediation now
 approval_required: no
 approval_status: not-required
-execution_status: not-started
-verification_status: not-started
-residual_risk: current remote state is not yet verified
-next_action: DB Inspector Agent runs read-only RLS / policy / sensitive column checks for NTF-20260509-01
+execution_status: completed
+verification_status: partial
+residual_risk: exact Supabase Advisor target is unavailable from sanitized email; full public table sweep was blocked by temporary Supabase auth circuit breaker
+next_action: If the Supabase Advisor alert persists, create a new queue entry with sanitized target category and run a narrower read-only follow-up
 last_updated: 2026-05-09
 ```
 

@@ -18,12 +18,14 @@
 
 Remote に作成済みの `mission-20260509-notification-rls-check` を canonical Mission とする。Codex local draft `mission-20260509-supabase-security-alert-readonly` は新規 Mission として採用せず、必要な詳細だけ canonical Mission に統合した。
 
+Read-only DB Inspector checks completed. The alert is classified as historical/resolved for `visit_sessions`, `activity_logs`, `profiles`, and `activity-photos` storage policy. No gated remediation is proposed.
+
 ## state transition
 
-- from: queue pending
-- to: mission active
+- from: mission active
+- to: completed
 - changed by: Parent Agent
-- reason: action_class が DB対応候補 / Human approval needed であり、RLS / policy / sensitive columns の current state 確認が必要なため
+- reason: owner data tables and storage policy were verified read-only; no DB write / dashboard / credential / db push / migration repair candidate remains
 - blocker: none
 - unblock condition: none
 
@@ -61,6 +63,7 @@ Remote に作成済みの `mission-20260509-notification-rls-check` を canonica
 
 - DB Inspector Agent runs read-only RLS / policy / sensitive column checks.
 - If remediation is required, create `approval-needed.md` and stop before any gated operation.
+- If Supabase Advisor continues to show a specific active alert, add a new sanitized queue entry with target category only.
 
 ## revisit condition
 

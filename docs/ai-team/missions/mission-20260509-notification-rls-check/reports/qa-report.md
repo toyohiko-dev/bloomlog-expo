@@ -18,8 +18,8 @@ Docs-only reconciliation was checked for scope, queue consistency, dispatch meta
 
 ## proposed mission state
 
-- proposed status: active
-- reason: queue processing is recorded, but DB Inspector read-only check remains next action
+- proposed status: completed
+- reason: DB Inspector read-only check is recorded and no gated remediation is proposed
 - required Parent action: commit / push docs-only reconciliation if safe
 
 ## input files read
@@ -27,6 +27,7 @@ Docs-only reconciliation was checked for scope, queue consistency, dispatch meta
 - `docs/ai-team/ops/notification-intake/queue.md`
 - `docs/ai-team/ops/notification-intake/runs/20260509-codex-process-pending-ntf-20260509-01.md`
 - `docs/ai-team/missions/mission-20260509-notification-rls-check/`
+- `docs/ai-team/missions/mission-20260509-notification-rls-check/reports/db-inspector-report.md`
 
 ## output files changed
 
@@ -34,7 +35,7 @@ Docs-only reconciliation was checked for scope, queue consistency, dispatch meta
 
 ## validation
 
-- validation performed: docs-only file scope, queue status, run log path, dispatch fields
+- validation performed: docs-only file scope, queue status, run log path, dispatch fields, DB Inspector report consistency
 - validation result: passed
 - validation not performed: lint / build / browser verification
 - reason: no app code changed
@@ -64,6 +65,7 @@ Docs-only reconciliation was checked for scope, queue consistency, dispatch meta
 - `NTF-20260509-01` is in `Follow-up Created`.
 - follow-up mission path points to canonical `mission-20260509-notification-rls-check`.
 - run log points to the same canonical Mission.
+- DB Inspector report records read-only SQL only and no approval-needed package.
 
 ## approval required?
 
@@ -77,4 +79,4 @@ no
 
 ## next action
 
-- Commit / push docs-only reconciliation, then run DB Inspector read-only Mission as a separate bounded action.
+- Commit / push docs-only Mission completion.

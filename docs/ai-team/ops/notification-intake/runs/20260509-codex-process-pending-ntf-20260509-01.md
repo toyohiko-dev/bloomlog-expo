@@ -47,6 +47,24 @@ Codex had drafted `mission-20260509-supabase-security-alert-readonly` locally be
 - follow-up Mission: `docs/ai-team/missions/mission-20260509-notification-rls-check/`
 - queue status: `follow-up-created`
 
+## Follow-up Result
+
+The canonical follow-up Mission completed read-only checks.
+
+Result:
+
+- `visit_sessions`: RLS ON with owner-scoped policies.
+- `activity_logs`: RLS ON with owner-scoped policies.
+- `profiles`: RLS ON with owner-scoped policies.
+- `activity-photos` storage policy: authenticated owner-scoped policies present.
+- `pavilions` / `pavilion_aliases`: RLS OFF, but observed columns are public master/reference data.
+- no approval-needed package created.
+
+Residual risk:
+
+- exact Supabase Advisor target is unavailable from sanitized queue entry.
+- one full public table RLS sweep failed due to temporary Supabase auth circuit breaker.
+
 ## Approval
 
 No Human approval is required for this queue processing step.
