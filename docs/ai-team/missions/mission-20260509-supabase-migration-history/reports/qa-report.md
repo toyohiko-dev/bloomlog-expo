@@ -12,6 +12,10 @@
 
 QA Agent
 
+## rerun context
+
+This QA task was rerun after additional mission reports were present. The rerun validates the current report set and the current pending approval gate state, not only the earlier DB Inspector / Reviewer state.
+
 ## input files read
 
 - `AGENTS.md`
@@ -27,6 +31,7 @@ QA Agent
 - `docs/ai-team/missions/mission-20260509-supabase-migration-history/tasks/qa.md`
 - `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/db-inspector-report.md`
 - `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/reviewer-report.md`
+- `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/parent-summary.md`
 - `docs/ai-team/missions/mission-20260509-supabase-migration-history/approval-needed.md`
 - `docs/ai-team/missions/mission-20260509-supabase-migration-history/decision-log.md`
 
@@ -38,19 +43,11 @@ QA Agent
 
 ```powershell
 Get-Content -Encoding UTF8 -LiteralPath docs/ai-team/missions/mission-20260509-supabase-migration-history/tasks/qa.md
-Get-Content -Encoding UTF8 -LiteralPath docs/product/current-status.md
-Get-Content -Encoding UTF8 -LiteralPath docs/product/dev.md
-Get-Content -Encoding UTF8 -LiteralPath docs/ai-team/agent-operating-model.md
-Get-Content -Encoding UTF8 -LiteralPath docs/ai-team/agent-review-workflow.md
-Get-Content -Encoding UTF8 -LiteralPath docs/ai-team/agent-communication-protocol.md
-Get-Content -Encoding UTF8 -LiteralPath docs/ai-team/supabase-migration-ops.md
-Get-Content -Encoding UTF8 -LiteralPath docs/ai-team/supabase-db-introspection.md
-Get-Content -Encoding UTF8 -LiteralPath docs/ai-team/missions/mission-20260509-supabase-migration-history/mission.md
-Get-Content -Encoding UTF8 -LiteralPath docs/ai-team/missions/mission-20260509-supabase-migration-history/tasks/db-inspector.md
+Get-Content -Encoding UTF8 -LiteralPath docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/qa-report.md
 Get-Content -Encoding UTF8 -LiteralPath docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/db-inspector-report.md
 Get-Content -Encoding UTF8 -LiteralPath docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/reviewer-report.md
+Get-Content -Encoding UTF8 -LiteralPath docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/parent-summary.md
 Get-Content -Encoding UTF8 -LiteralPath docs/ai-team/missions/mission-20260509-supabase-migration-history/approval-needed.md
-Get-Content -Encoding UTF8 -LiteralPath docs/ai-team/missions/mission-20260509-supabase-migration-history/decision-log.md
 git status --short
 git diff --name-only
 git diff --stat
@@ -67,33 +64,34 @@ npx.cmd supabase migration list
 
 | command | result |
 | --- | --- |
-| `git status --short` | docs report 2 files were untracked before this QA report: `db-inspector-report.md`, `reviewer-report.md` |
-| `git diff --name-only` | no output |
-| `git diff --stat` | no output |
+| `git status --short` | before this QA update, `reviewer-report.md` was modified; no non-docs changes were shown |
+| `git diff --name-only` | before this QA update, only `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/reviewer-report.md` was listed |
+| `git diff --stat` | before this QA update, reviewer report showed `52 insertions(+), 43 deletions(-)` |
 | `git diff --cached --name-only` | no output |
 | `git diff --cached --stat` | no output |
 | `Get-ChildItem supabase\migrations \| Sort-Object Name \| Select-Object Name` | 10 migration files observed |
 | `npx supabase --version` | failed because PowerShell script execution is disabled for `npx.ps1` |
 | `npx supabase migration list` | failed because PowerShell script execution is disabled for `npx.ps1` |
 | `npx.cmd supabase --version` | sandbox run timed out; escalated read-only retry succeeded with `2.98.2` |
-| `npx.cmd supabase migration list` | sandbox run timed out; escalated read-only retry succeeded; local 10 migrations were listed and all remote entries were blank |
+| `npx.cmd supabase migration list` | sandbox / default run failed or timed out due npm cache / registry access; escalated read-only retry succeeded; local 10 migrations were listed and all remote entries were blank |
 
-`npx.cmd` was used only as the Windows executable equivalent of the allowed `npx` read-only checks after PowerShell blocked `npx.ps1`. No DB write, `db push`, `migration repair`, destructive SQL, dashboard change, secret change, archive move, or file deletion was performed.
+`npx.cmd` was used only as the Windows executable equivalent of the allowed `npx` read-only checks after PowerShell blocked `npx.ps1`. No DB write, `db push`, `migration repair`, destructive SQL, dashboard change, secret change, archive move, or file deletion was intentionally performed. This report was rewritten in place; the final target file still exists at the required path.
 
 ## validation results
 
-- docs-only diff validation: pass. Observed working tree changes are docs reports only. `git diff` / `git diff --cached` had no output because the existing reports were untracked and nothing was staged at validation time.
-- read-only CLI validation: pass with caveat. `npx` through PowerShell failed due to local execution policy, but `npx.cmd` succeeded after escalation and reproduced the DB Inspector finding: local migrations exist, remote migration history is blank.
-- repo migration list validation: pass. The repo contains 10 migration files, matching `db-inspector-report.md`.
-- report consistency validation: pass with one gate caveat. DB Inspector and Reviewer agree that current state is not safe for `db push` or `migration repair`, and that future write operations require Human approval gate.
-- prohibited-operation validation: pass. No prohibited command was executed during QA.
+- docs-only diff validation: pass with current caveat. Observed changes are under `docs/ai-team/missions/mission-20260509-supabase-migration-history/`. No `app/`, `lib/`, `supabase/`, `supabase/migrations/`, `package.json`, or `.env*` changes were observed.
+- read-only CLI validation: pass with caveat. `npx` through PowerShell fails due local execution policy, but `npx.cmd` succeeds with escalation and confirms Supabase CLI `2.98.2`.
+- migration-list validation: pass. CLI output again shows local 10 migrations and blank remote entries.
+- report consistency validation: pass. DB Inspector, Reviewer, QA, and Parent reports consistently classify the state as `migration history drift + partial schema drift`.
+- approval gate validation: pass. Reports consistently block `db push`, `migration repair`, individual production SQL, destructive SQL, dashboard changes, and secret changes until a Human approval gate is prepared and approved.
+- prohibited-operation validation: pass. QA did not run prohibited operations.
 
 ## DB Inspector report required fields check
 
 | required field | status | notes |
 | --- | --- | --- |
-| mission id / task id / agent role | present | matches task |
-| input files read | present | includes product docs, ai-team docs, mission, task, migrations |
+| mission id / task id / agent role | present | matches DB Inspector task |
+| input files read | present | includes product docs, ai-team docs, mission, task, approval file, migrations |
 | commands run | present | includes read-only CLI and supporting read-only inspection commands |
 | read-only SQL run | present | lists schema, table, column, RLS, policy, trigger and additional read-only checks |
 | repo migrations observed | present | 10 migration expectations are summarized |
@@ -130,21 +128,23 @@ QA judgment: DB Inspector report satisfies the required report fields for a read
 
 QA judgment:
 
-- As an approval gate placeholder: pass.
+- As a pending approval gate document: pass.
 - As an executable approval request: not ready.
 
 Reason:
 
-- `exact command / SQL / setting` is still `pending read-only investigation`.
-- Candidate operations are listed, but exact versions, exact SQL, target environment confirmation, operation-specific rollback, and operation-specific verification are not finalized.
-- This matches the DB Inspector / Reviewer conclusion that schema drift remains and Parent integration should narrow the candidate before asking Human to approve a write.
+- `exact command / SQL / setting` is still `pending remediation candidate narrowing`.
+- Candidate operations are explicitly marked `not ready` or `not allowed now`.
+- Target environment confirmation, exact repair versions, exact SQL, operation-specific rollback, and operation-specific verification remain incomplete.
+- This is consistent with Parent summary: the mission can be treated as a read-only inventory, but remediation execution must not begin.
 
 ## skipped validation and reason
 
 | skipped validation | reason |
 | --- | --- |
-| `npx supabase db push` | prohibited; production DB write and approval gate required |
-| `npx supabase migration repair` | prohibited; migration history write and approval gate required |
+| `npx supabase db push` | prohibited; production DB write and Human approval gate required |
+| `npx supabase migration repair` | prohibited; migration history write and Human approval gate required |
+| individual production SQL | prohibited until a narrowed approval request exists |
 | destructive SQL | prohibited; out of QA read-only scope |
 | dashboard verification / setting change | prohibited without approval; QA scope is repo / CLI read-only validation |
 | secret / token inspection | prohibited to request or store secrets |
@@ -154,10 +154,11 @@ Reason:
 
 ## residual risk
 
-- The linked Supabase project is still recorded as needing final target confirmation before any production write approval.
-- `approval-needed.md` is not yet executable and must not be treated as approval to run `migration repair`, `db push`, or individual SQL.
-- Schema drift remains: missing functions / triggers / indexes, storage policy difference, and remote-only schema need Parent / DB Inspector follow-up before choosing a remediation path.
-- Because report files are untracked docs, `git diff --name-only` does not show them until staged; final docs-only verification should use `git status --short` immediately before any commit / push.
+- The linked Supabase project still needs final target confirmation before any production write approval.
+- `approval-needed.md` is still pending and must not be treated as approval to run `migration repair`, `db push`, or individual SQL.
+- Schema drift remains: missing functions / triggers / indexes, storage policy difference, and remote-only schema need further DB Inspector follow-up before choosing remediation.
+- The current modified file set is docs-only, but final pre-commit / pre-push verification should rerun `git status --short`, `git diff --name-only`, and staged-file checks.
+- This QA rerun observed a modified `reviewer-report.md` before updating `qa-report.md`; Parent should consider whether another integration update is needed after both report updates.
 
 ## rollback
 
@@ -165,15 +166,16 @@ Rollback needed for this QA task: no.
 
 Reason:
 
-- QA only read docs, ran read-only validation commands, and created this docs report.
-- No DB write, migration repair, `db push`, destructive SQL, dashboard change, archive move, file deletion, app code change, or migration file change was performed.
+- QA only read docs, ran read-only validation commands, and updated this docs report.
+- No DB write, migration repair, `db push`, destructive SQL, dashboard change, archive move, app code change, or migration file change was performed.
 
-If this QA report itself must be reverted, removing this single docs report from the working branch is sufficient.
+If this QA report update must be reverted, revert only this docs report change.
 
 ## next action
 
-- Parent Agent should integrate `db-inspector-report.md`, `reviewer-report.md`, and this `qa-report.md` into `parent-summary.md`.
-- Parent Agent should keep `approval-needed.md` pending unless it can add exact command / SQL, target environment, risk, rollback, and verification for a narrowed write candidate.
+- Parent Agent should review whether the updated Reviewer / QA reports require a refreshed `parent-summary.md`.
+- DB Inspector follow-up should narrow the drift causes and remediation candidates before any executable approval request is written.
+- Keep `approval-needed.md` pending until it includes exact command / SQL, target environment, risk, rollback, and verification for one narrowed write candidate.
 - Do not run `db push`, `migration repair`, production SQL, destructive SQL, dashboard changes, or secret changes until Human approval gate is prepared and approved.
 
 ## human approval required?

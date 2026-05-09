@@ -74,6 +74,72 @@ remote migration 履歴空問題は、DB / migration path の Mission として�
 
 ## decision
 
+更新済みの Reviewer / QA reports を含めて再統合した。結論は変更しない。Mission result は docs-only safe path のままであり、read-only 棚卸しは完了扱いにできるが、remediation 実行には進まない。
+
+`approval-needed.md` は引き続き pending gate とし、Human approval を求める executable request にはしない。
+
+## alternatives considered
+
+- QA rerun / Reviewer rerun を受けて `approval-needed.md` を executable approval request に変える。
+- docs-only reintegration ではなく DB Inspector follow-up を待って Parent summary を更新しない。
+- `db push` または `migration repair` の approval gate に進める。
+
+## rationale
+
+- Reviewer rerun は docs-only safe path と pending approval gate を確認している。
+- QA rerun は full report set と Parent summary を含めて整合性を確認している。
+- どの report も `migration history drift + partial schema drift` の分類を維持している。
+- exact command / SQL、target environment、operation-specific rollback、verification がまだ揃っていない。
+- write 操作を承認依頼するには、remediation candidate の追加絞り込みが必要である。
+
+## impact
+
+- affected docs:
+  - `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/parent-summary.md`
+  - `docs/ai-team/missions/mission-20260509-supabase-migration-history/decision-log.md`
+  - `docs/ai-team/missions/mission-20260509-supabase-migration-history/approval-needed.md`
+- affected code: none
+- affected DB / migration: none
+- affected secret / dashboard: none
+- affected operations:
+  - production execution remains blocked.
+  - next action remains DB Inspector follow-up for drift narrowing.
+
+## follow-up
+
+- DB Inspector Agent が drift causes と remediation candidates を絞る。
+- `approval-needed.md` は候補が 1 つに絞られ、exact command / SQL / rollback / verification が揃うまで pending のままにする。
+- commit / push する場合は final docs-only safe path check を行う。
+
+## revisit condition
+
+- DB Inspector follow-up report が追加されたとき。
+- exact remediation candidate が 1 つに絞られたとき。
+- Human approval gate に進めるための exact command / SQL / rollback / verification が揃ったとき。
+
+## prohibited content
+
+- secret / token を保存しない。
+- メール本文全文を保存しない。
+- Human を Agent 間通信路にしない。
+- Sakura を Agent 間通信路にしない。
+
+---
+
+## decision date
+
+2026-05-09
+
+## decision maker
+
+- Parent Agent
+
+## mission id
+
+`mission-20260509-supabase-migration-history`
+
+## decision
+
 DB Inspector / Reviewer / QA reports を統合し、現時点の分類を `migration history drift + partial schema drift` とする。read-only 棚卸しは完了扱いにできるが、`db push`、`migration repair`、個別 production SQL の実行には進まない。
 
 `approval-needed.md` は executable approval request ではなく pending gate として残す。次は drift の追加調査と remediation 候補の絞り込みを行う。

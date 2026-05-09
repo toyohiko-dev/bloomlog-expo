@@ -236,3 +236,48 @@ Yes before any future:
   - `activity_logs_acquisition_method_check` の definition comparison を行う。
   - repair 可能な migration と repair してはいけない migration を再分類する。
   - 具体的な approval request は、候補を 1 つに絞れるまで pending のままにする。
+
+---
+
+## reintegration update
+
+Date: 2026-05-09
+
+Parent Agent reread all reports after `reviewer-report.md` and `qa-report.md` were rerun.
+
+Reports read:
+
+- `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/db-inspector-report.md`
+- `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/reviewer-report.md`
+- `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/qa-report.md`
+- `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/parent-summary.md`
+
+Updated Reviewer / QA findings:
+
+- Reviewer rerun confirms docs-only safe path, no prohibited area changes, and no push blocker from docs-only content.
+- Reviewer rerun confirms `approval-needed.md` is pending only and does not approve execution.
+- QA rerun validates the current full report set, including `parent-summary.md`.
+- QA rerun confirms reports consistently classify the state as `migration history drift + partial schema drift`.
+- QA rerun confirms `approval-needed.md` is a pending gate document, not an executable approval request.
+
+Parent reintegration judgment:
+
+- No change to the core mission decision.
+- Read-only inventory remains complete.
+- `db push`, `migration repair`, individual production SQL, destructive SQL, dashboard changes, and secret changes remain blocked.
+- Human approval is not needed for this docs-only reintegration.
+- Human approval will be needed only after a future narrowed remediation candidate has exact command / SQL, target environment, risk, rollback, and verification.
+
+Current changed files from this reintegration should remain docs-only:
+
+- `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/reviewer-report.md`
+- `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/qa-report.md`
+- `docs/ai-team/missions/mission-20260509-supabase-migration-history/reports/parent-summary.md`
+- `docs/ai-team/missions/mission-20260509-supabase-migration-history/decision-log.md`
+- `docs/ai-team/missions/mission-20260509-supabase-migration-history/approval-needed.md`
+
+Next action remains:
+
+- Next agent to run: DB Inspector Agent
+- Next task file path: `docs/ai-team/missions/mission-20260509-supabase-migration-history/tasks/db-inspector.md`
+- Next task purpose: narrow drift causes and remediation candidates before any executable approval request is written.

@@ -98,3 +98,31 @@ Human は次のいずれかを選ぶ。
 - decided by: pending
 - decided at: pending
 - notes: Parent integration keeps this approval pending. Do not execute `migration repair`, `db push`, production SQL, destructive SQL, dashboard changes, or secret changes from this file.
+
+## latest integration status
+
+Updated at: 2026-05-09
+
+Parent Agent reread all reports, including rerun Reviewer / QA reports.
+
+Status remains pending.
+
+Reason:
+
+- Reviewer rerun confirms `approval-needed.md` is pending only and not executable.
+- QA rerun confirms the current report set is consistent and still not ready for executable approval.
+- The mission state remains `migration history drift + partial schema drift`.
+- Exact command / SQL, target environment confirmation, operation-specific rollback, and operation-specific verification are not complete.
+
+Do not execute:
+
+- `npx supabase migration repair`
+- `npx supabase db push`
+- individual production SQL
+- destructive SQL
+- dashboard changes
+- secret / environment variable changes
+
+Next requirement before approval:
+
+- DB Inspector Agent must narrow one remediation candidate and provide exact command / SQL, target environment, risk, rollback, and verification.
