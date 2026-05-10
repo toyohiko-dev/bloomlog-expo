@@ -456,7 +456,7 @@ export function PavilionAlbum({ items, summary }: PavilionAlbumProps) {
   if (items.length === 0) {
     return (
       <div className="border border-dashed border-slate-300 bg-white px-6 py-10 text-sm leading-7 text-slate-600">
-        まだ area_id が解決できるパビリオン訪問はありません。
+        まだゾーンが紐づいたパビリオンの思い出はありません。
       </div>
     );
   }
@@ -542,7 +542,9 @@ export function PavilionAlbum({ items, summary }: PavilionAlbumProps) {
             {summary.topArea?.name ?? "まだありません"}
           </p>
           <p className="mt-1 text-sm text-slate-600">
-            {summary.topArea ? `${formatVisitCount(summary.topArea.value)}の訪問` : "pavilion_visit が追加されると表示されます。"}
+            {summary.topArea
+              ? `${formatVisitCount(summary.topArea.value)}の訪問`
+              : "パビリオンの思い出が追加されると表示されます。"}
           </p>
         </section>
 
@@ -556,7 +558,7 @@ export function PavilionAlbum({ items, summary }: PavilionAlbumProps) {
           <p className="mt-1 text-sm text-slate-600">
             {summary.topPavilion
               ? `${formatVisitCount(summary.topPavilion.count)}の訪問`
-              : "pavilion_visit が追加されると表示されます。"}
+              : "パビリオンの思い出が追加されると表示されます。"}
           </p>
           {summary.topPavilion?.areaName ? (
             <p className="mt-1 text-xs text-slate-500">
