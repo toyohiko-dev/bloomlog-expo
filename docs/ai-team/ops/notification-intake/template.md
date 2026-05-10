@@ -9,6 +9,8 @@ raw email body、認証情報、dashboard URL、project ID、内部 ID は保存
 ```md
 ### NTF-YYYYMMDD-NN
 
+- schema_version: ai-is-queue-entry/v1
+- queue_id: NTF-YYYYMMDD-NN
 - status: pending
 - source_role: Sakura / ChatGPT
 - intake_date: YYYY-MM-DD
@@ -22,10 +24,15 @@ raw email body、認証情報、dashboard URL、project ID、内部 ID は保存
 - affected_area: auth / deploy / DB / env / billing / domain / GitHub運用 / docs / unknown
 - action_class: 対応不要 / docs記録 / code変更候補 / DB対応候補 / dashboard変更候補 / Human approval needed
 - approval_gate_candidate: none / DB / dashboard / credential / production write / db push / migration repair / main merge
+- sanitization:
+  - raw_body_saved: false
+  - credentials_saved: false
+  - dashboard_url_saved: false
+  - project_id_saved: false
 - dispatch:
   - recommended_flow: queue-only / docs-record / db-inspector-followup / code-followup / security-hygiene-followup / approval-package
   - execution_mode: docs-only / read-only-introspection / approval-gated-write
-  - mission_required: yes / no
+  - mission_required: true / false
   - approval_gate_expected: yes / no / unknown
   - human_role: trigger-only / approval-rejection-only
   - codex_autonomy:
@@ -61,3 +68,14 @@ Codex が処理したら、同じ entry に次を追記する。
   - approval_needed: none / path
 - run_log: docs/ai-team/ops/notification-intake/runs/YYYYMMDD-*.md
 ```
+
+## Schema adoption rules
+
+- `schema_version` と `queue_id` は新規 entry で必須とする。
+- `queue_id` は見出しの `NTF-YYYYMMDD-NN` と一致させる。
+- `sanitization.*` はすべて `false` のままにする。
+- `redaction_check.*` は従来互換の human-readable 確認欄として残す。
+- raw email body、認証情報、dashboard URL、project ID、内部 ID は保存しない。
+- `dispatch.mission_required: true` の場合、Codex 処理後の `follow_up.mission` は official Mission path を指す。
+- `approval_gate_candidate` が `none` 以外の場合、queue 内で execution 完了扱いにしない。
+- `blocked` にする場合は、正確な blocker と unblock condition を notes または codex_decision に書く。
