@@ -8,19 +8,21 @@
 
 ## status
 
-setup-complete
+completed
 
 ## summary
 
-This Mission has been created as a repo-first autonomous AI team pilot. The actual read-only copy audit is not yet executed. Writer, Reviewer, and QA Agents can continue by reading the Mission artifacts in this directory.
+This Mission completed the repo-first autonomous AI team pilot for a read-only copy / CTA / page title / terminology audit.
+
+Writer, Reviewer, and QA worked through repo artifacts rather than Human-transferred chat context. The audit found several actionable copy issues and separated implementation-ready fixes from product-sensitive decisions. No app code or runtime configuration was changed.
 
 ## what changed
 
-- Created the Mission directory.
-- Created Mission definition.
-- Created Parent / Writer / Reviewer / QA task contracts.
-- Created report placeholders for Writer / Reviewer / QA / Parent.
-- Created Decision Log.
+- Created the Mission directory and Agent task contracts.
+- Writer Agent completed `reports/writer-report.md`.
+- Reviewer Agent completed `reports/reviewer-report.md`.
+- QA Agent completed `reports/qa-report.md`.
+- Parent Agent finalized `mission.md`, `reports/parent-summary.md`, and `decision-log.md`.
 
 ## why this is needed
 
@@ -29,10 +31,6 @@ The goal is to test repo-centric collaboration. Each Agent should be able to con
 ## changed files
 
 - `docs/ai-team/missions/mission-20260510-copy-terminology-audit/mission.md`
-- `docs/ai-team/missions/mission-20260510-copy-terminology-audit/tasks/parent.md`
-- `docs/ai-team/missions/mission-20260510-copy-terminology-audit/tasks/writer.md`
-- `docs/ai-team/missions/mission-20260510-copy-terminology-audit/tasks/reviewer.md`
-- `docs/ai-team/missions/mission-20260510-copy-terminology-audit/tasks/qa.md`
 - `docs/ai-team/missions/mission-20260510-copy-terminology-audit/reports/writer-report.md`
 - `docs/ai-team/missions/mission-20260510-copy-terminology-audit/reports/reviewer-report.md`
 - `docs/ai-team/missions/mission-20260510-copy-terminology-audit/reports/qa-report.md`
@@ -50,29 +48,59 @@ The goal is to test repo-centric collaboration. Each Agent should be able to con
 
 ## validation
 
-Initial setup validation performed before commit / push:
+Validation performed by Writer / Reviewer / QA / Parent:
 
 ```powershell
 git status --short
 git diff --name-only
 git diff --stat
 git diff --check
+git diff --cached --name-only
+git diff --cached --stat
+git diff --cached --check
 ```
 
 Result:
 
-- `git status --short`: only the new Mission directory is untracked.
-- `git diff --name-only`: no tracked file changes before staging.
-- `git diff --stat`: no tracked file changes before staging.
-- `git diff --check`: passed.
 - docs-only safe path: yes.
 - app / lib / supabase / migrations / package / env changes: no.
+- code change: no.
+- approval gate required: no.
+- Human transport layer required: no.
+- report completeness: passed.
+- `git diff --check`: passed with line-ending warnings only.
 
 ## residual risk
 
-- The actual copy audit has not been executed yet.
-- Findings may require follow-up code-pr or product-decision Mission.
+- Actual UI copy fixes remain unimplemented by design.
+- `/collection-next` is documented as a verification page, so its copy issues should be fixed as low-blast-radius follow-up, not treated as production blocker.
+- Brand casing and fallback wording need product decisions before implementation.
 
 ## next action
 
-Writer Agent reads `tasks/writer.md` and writes `reports/writer-report.md`.
+Create follow-up work:
+
+- code-pr: fix obvious collection copy issues in `app/collection/collection-filters.tsx` and `app/collection-next/**`.
+- product-decision: decide official brand casing for `Bloomlog` / `BloomLog`.
+- product-decision: decide fallback wording standard for `名前未設定` / `タイトル未設定` / `未設定`.
+- product-decision: decide date CTA wording for `来場日を開く` / `来場日を作成する`.
+
+## audit result summary
+
+Accepted code-pr candidates:
+
+- `app/collection/collection-filters.tsx`: mojibake fallback title in image alt / thumbnail title context.
+- `app/collection-next/page.tsx`: English / route-path wording such as `Collection Next` and `既存の /collection を見る`.
+- `app/collection-next/pavilion-album.tsx`: technical values such as `area_id` and `pavilion_visit` appear in user-facing empty states.
+
+Product-decision candidates:
+
+- Official brand casing: `Bloomlog` vs `BloomLog`.
+- Fallback wording standard: `名前未設定` / `タイトル未設定` / `未設定`.
+- Date CTA wording: `来場日を開く` / `来場日を作成する`.
+
+No-action confirmations:
+
+- Main navigation keeps fixed terminology such as `来場日一覧` and `思い出アルバム`.
+- Timeline wording aligns with `docs/product/overview.md`.
+- Metadata description uses fixed terms `来場日`、`思い出`、`記録`.

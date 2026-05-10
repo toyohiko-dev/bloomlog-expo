@@ -6,16 +6,16 @@
 template_version: ai-is-mission-template/v1
 mission_id: mission-20260510-copy-terminology-audit
 title: Copy / CTA / Page Title / Terminology Read-Only Audit
-status: active
+status: completed
 owner_role: Parent Agent
-current_phase: task
-selected_option: repo-first pilot mission for read-only copy audit
+current_phase: finalization
+selected_option: complete read-only audit and split implementation decisions into follow-up work
 approval_required: no
 approval_status: not-required
-execution_status: not-started
-verification_status: not-started
-residual_risk: none
-next_action: Writer Agent reads tasks/writer.md and writes reports/writer-report.md without changing app code
+execution_status: completed
+verification_status: passed
+residual_risk: copy fixes remain unimplemented by design and require follow-up code-pr or product-decision Mission
+next_action: Create follow-up work for obvious collection copy fixes and product decisions for brand casing and fallback wording
 last_updated: 2026-05-10
 intake_source: conversation
 mission_origin:
@@ -203,6 +203,25 @@ rollback required: false
 3. Reviewer Agent reviews Writer findings and writes `reports/reviewer-report.md`.
 4. QA Agent verifies docs-only state and report completeness, then writes `reports/qa-report.md`.
 5. Parent Agent integrates reports in `reports/parent-summary.md` and updates `mission.md` state.
+
+## Final Result
+
+Parent Agent finalized this Mission on 2026-05-10.
+
+Outcome:
+
+- Writer Agent completed the read-only audit.
+- Reviewer Agent accepted the main findings and separated code-pr-ready fixes from product-sensitive decisions.
+- QA Agent verified docs-only safe path and report completeness.
+- No `app/`, `lib/`, `supabase/`, `migrations/`, `package.json`, lockfile, or `.env*` files were changed.
+- Human was not used as an Agent transport layer.
+
+Follow-up candidates:
+
+- code-pr: obvious copy fixes in `app/collection/collection-filters.tsx` and `app/collection-next/**`.
+- product-decision: official brand casing for `Bloomlog` / `BloomLog`.
+- product-decision: fallback wording standard for `名前未設定` / `タイトル未設定` / `未設定`.
+- product-decision: date CTA wording around `来場日を開く` / `来場日を作成する`.
 
 ## Stop Conditions
 
