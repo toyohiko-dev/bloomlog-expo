@@ -2,6 +2,12 @@
 
 作成日: 2026-05-10
 
+## Status
+
+このドキュメントは過去の schema-first TO-BE 検討資料である。現行の TO-BE 正本は `docs/ai-team/ai-is-to-be-architecture.md` であり、Bloomlog AI-IS v1 は repo-first autonomous workflow を中心に扱う。
+
+この資料にある strict schema、machine-readable state、path enforcement tool は、現行 v1 の必須導入条件ではない。必要性が確認された場合に、別 Mission と Human approval の対象として再検討する。
+
 ## 1. Purpose
 
 このドキュメントは、`docs/ai-team/ai-is-to-be-architecture.md` で定義した TO-BE を、schema / validation / path enforcement の設計単位へ分解する。

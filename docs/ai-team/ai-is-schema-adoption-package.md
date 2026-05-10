@@ -2,6 +2,12 @@
 
 作成日: 2026-05-10
 
+## Status
+
+このドキュメントは過去の schema-first adoption 検討資料である。現行の TO-BE 正本は `docs/ai-team/ai-is-to-be-architecture.md` であり、Bloomlog AI-IS v1 は repo-first autonomous workflow を中心に扱う。
+
+この資料にある strict schema adoption、schema files、validator、state json、front matter 移行は、現行 v1 の必須導入条件ではない。必要性が確認された場合に、別 Mission と Human approval の対象として再検討する。
+
 ## 1. Purpose
 
 このドキュメントは、`docs/ai-team/ai-is-schema-and-enforcement.md` で定義した schema / validation / path enforcement を、どの順序で Bloomlog AI-IS に採用するかを定義する。

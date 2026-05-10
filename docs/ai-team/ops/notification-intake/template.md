@@ -4,6 +4,8 @@
 
 Sakura / ChatGPT は Gmail read-only intake 後、この形式で sanitized entry を作る。
 
+この template は notification / ops intake 専用である。Mission core schema ではない。通知から Mission に切り出す場合は、`docs/ai-team/templates/mission-template.md` を使い、`mission_origin.type: notification` として queue entry を参照する。
+
 raw email body、認証情報、dashboard URL、project ID、内部 ID は保存しない。
 
 ```md
@@ -44,6 +46,10 @@ raw email body、認証情報、dashboard URL、project ID、内部 ID は保存
 - codex_next_action:
   -
 - human_action: none / approval-rejection-only
+- mission_origin:
+  - create_mission: true / false
+  - mission_type: feature / UX / refactor / research / infra / ops / notification / DB / security / docs / none
+  - mission_ref: none / docs/ai-team/missions/mission-YYYYMMDD-short-name/mission.md
 - redaction_check:
   - raw_body_saved: no
   - credentials_saved: no
@@ -77,5 +83,6 @@ Codex が処理したら、同じ entry に次を追記する。
 - `redaction_check.*` は従来互換の human-readable 確認欄として残す。
 - raw email body、認証情報、dashboard URL、project ID、内部 ID は保存しない。
 - `dispatch.mission_required: true` の場合、Codex 処理後の `follow_up.mission` は official Mission path を指す。
+- Mission 化する場合、notification は optional origin として扱い、Mission core schema には notification-specific fields を入れない。
 - `approval_gate_candidate` が `none` 以外の場合、queue 内で execution 完了扱いにしない。
 - `blocked` にする場合は、正確な blocker と unblock condition を notes または codex_decision に書く。

@@ -17,6 +17,9 @@ Parent Agent / Writer Agent / Reviewer Agent / QA Agent / DB Inspector Agent / S
 - docs-only は Agent 間共有メモリとして作業ブランチへ auto commit / push する。
 - 起動不能を理由に、人間へ作業内容の転記を戻さない。
 - Human intervention は approval gate に限定する。
+- hidden memory、chat history、外部 AI の返答は source of truth ではない。Agent 間の共有状態は repo artifacts に戻す。
+- repo-first autonomous workflow では、plan、task split、execution result、validation、review findings、approval gate 判断を、必要な粒度で Mission、Task、Report、Decision Log、PR、issue に残す。
+- 複数 executor を使う場合は、bounded task ごとに branch、worktree、cloud task、subagent を分離し、Parent Agent が統合点を持つ。
 
 ## 2. 通信媒体の使い分け
 
@@ -71,6 +74,7 @@ Mission の lifecycle state と `mission.md` 必須状態フィールドは `doc
 - 対象 branch。
 - path 分類。
 - approval gate の有無。
+- branch / worktree strategy。
 
 ### `tasks/parent.md`
 
@@ -81,6 +85,7 @@ Mission の lifecycle state と `mission.md` 必須状態フィールドは `doc
 書くこと:
 
 - 読むべき docs。
+- repo grounding と plan。
 - Task 分解。
 - Agent 割り当て。
 - integration 条件。

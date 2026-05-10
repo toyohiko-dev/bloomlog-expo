@@ -17,6 +17,9 @@ Bloomlog はイベント体験を「来場日」単位で記録し、「思い�
 - Agent 間の共有は、チャットではなく repo files、GitHub branch、PR、issue に寄せる。
 - `docs/product/` は正式仕様、`docs/ai-team/` は AI 運用、分析、レビュー、handoff、承認前の判断材料として扱う。
 - 外部通知、DB 調査、実装、レビューは混ぜず、取得、分析、承認、実行を分離する。
+- Bloomlog AI-IS の TO-BE は repo-first autonomous workflow として扱う。非自明な作業は、repo grounding、plan、task split、execution、validation、review、approval gate、PR / final report の順で進める。
+- chat や hidden memory は source of truth ではない。重要な判断、状態、検証結果、残リスクは repo files、branch、PR、issue に戻す。
+- 並列実行する場合は、bounded task ごとに branch、worktree、cloud task、subagent を分離し、同じ作業ツリーや同じファイルを複数主体で同時に編集しない。
 
 ## 役割
 
@@ -62,6 +65,7 @@ Parent Agent は Mission 全体の統括者である。
 
 担当すること:
 
+- repo grounding と plan を行う。
 - Mission を Task に分解する。
 - `docs/product/`、`AGENTS.md`、関連 docs を読み、スコープを確認する。
 - Writer / Reviewer / QA / DB Inspector の担当範囲を決める。

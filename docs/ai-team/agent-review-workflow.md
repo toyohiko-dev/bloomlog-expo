@@ -15,6 +15,8 @@ AI Agent がどこまで自律実行し、どこで Reviewer / QA / Parent が�
 - AI が可能な read-only introspection、diff 確認、検証、rollback 案作成は AI が行う。
 - 本番 DB write、destructive SQL、secret 変更、dashboard 設定変更、main merge は Human approval gate で止める。
 - Mission、Task、Report、Review、Approval、Execution、Verification、Archive の状態を repo files、branch、PR、issue に残す。
+- Review flow は `docs/ai-team/ai-is-to-be-architecture.md` の repo-first autonomous workflow に従う。非自明な作業は、repo grounding、plan、task split、execution、validation、review、approval gate、PR / final report の順で扱う。
+- strict schema / machine-readable state / path enforcement tool は将来候補であり、現行 v1 の review flow では必須導入条件にしない。
 
 ## review flow
 
@@ -28,6 +30,7 @@ Parent Agent が行うこと:
 - 目的、背景、成功条件、禁止事項、approval gate の有無を明確にする。
 - `AGENTS.md`、`docs/product/`、`docs/ai-team/agent-operating-model.md`、`docs/ai-team/agent-docs-map.md` を確認する。
 - docs-only safe path、code branch + PR path、DB / migration path のどれに入るか判断する。
+- 必要に応じて、実装前 plan と branch / worktree strategy を作る。
 
 ### 2. Task 分解
 
@@ -41,6 +44,7 @@ Task に含めること:
 - 検証内容。
 - Report の出力先。
 - approval gate の有無。
+- 並列化する場合の branch / worktree / cloud task の分離方針。
 
 ### 3. Writer 実行
 
