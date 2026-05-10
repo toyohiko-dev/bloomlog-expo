@@ -58,7 +58,7 @@ export default async function CollectionNextPage() {
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div className="space-y-3">
                 <p className="text-sm font-medium text-emerald-700">
-                  Collection Next
+                  思い出アルバム 検証版
                 </p>
                 <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
                   パビリオン専用の思い出アルバム
@@ -72,7 +72,7 @@ export default async function CollectionNextPage() {
                 href="/collection"
                 className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
               >
-                既存の /collection を見る
+                思い出アルバムに戻る
               </Link>
             </div>
           </div>

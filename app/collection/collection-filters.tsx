@@ -425,7 +425,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
                   .map((log) => {
                     const preview = normalizeMemoPreview(log.memo);
                     const thumbnailTitle =
-                      getActivityLogTitle(log) || "蜷榊燕譛ｪ險ｭ螳・";
+                      getActivityLogTitle(log) || "名前未設定";
 
                     return (
                       <Link
