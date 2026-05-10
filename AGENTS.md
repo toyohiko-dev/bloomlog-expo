@@ -6,15 +6,20 @@ This version has breaking changes - APIs, conventions, and file structure may al
 
 # Bloomlog AGENTS
 
-## 1. 基本原則
+このファイルは、Bloomlog 開発時に AI が最初に読む軽量コンテキスト入口である。
 
-- Bloomlog はイベント体験記録アプリである
-- 日本語 UI を前提とする
-- `docs/product/` を正式仕様として扱う
-- `docs/ai-team/` は AI 運用、検討、レビュー、分析のための作業領域として扱う
-- 実装より先に、既存の仕様、用語、運用方針との整合性を確認する
+目的は、同じ前提を毎回会話で説明し直さなくてよいようにすること。AI Team / Agent OS / Mission lifecycle を通常開発の標準フローとして起動するためのものではない。
 
-## 2. 用語固定
+## 1. 基本方針
+
+- Bloomlog はイベント体験記録アプリである。
+- 日本語 UI を前提とする。
+- `docs/product/` を正式仕様として扱う。
+- `docs/ops/` は開発時の軽量 playbook / skill として扱う。
+- `docs/ai-team/` は過去の AI Team 実験・調査・handoff の履歴領域であり、通常開発の入口にしない。
+- repo は外部記憶として使う。ただし repo を疑似組織や人間オーケストレーション媒体にしない。
+
+## 2. 固定用語
 
 以下の用語は勝手に変更しない。
 
@@ -24,163 +29,96 @@ This version has breaking changes - APIs, conventions, and file structure may al
 - タイムライン
 - 記録
 
-次の行為は禁止する。
+禁止すること:
 
-- 上記用語の英語化
-- 既存日本語用語の独自言い換え
-- UI 文言の無断変更
+- 上記用語の英語化。
+- 既存日本語用語の独自言い換え。
+- DB column、route path、activity type などの実装詳細をユーザー向け UI に出すこと。
+- UI 文言を、目的や影響範囲を説明せずに大きく変更すること。
 
-## 3. 実装前ルール
+## 3. 通常開発フロー
 
-実装前は、次を最優先とする。
+通常の Bloomlog product development は main-centered simple development とする。
 
-1. まず docs を読む
-   - `docs/product/` を先に確認する
-   - 必要に応じて `docs/ai-team/` も確認する
-2. まず Plan only で整理する
-3. 実装前にスコープを確認する
-4. 最小変更を優先する
-5. 既存構造を壊さない
+基本形:
 
-追加原則:
+1. small scoped branch を切る。
+2. 既存仕様と関連 docs を必要最小限だけ読む。
+3. 最小差分で実装する。
+4. lint / build / 必要な確認を行う。
+5. PR を作成する。
+6. checks が通り、blast radius が限定されていれば merge する。
 
-- 既存ファイルの責務を優先する
-- 既存の画面構成、ルーティング、用語、データ構造に合わせる
-- 新規ファイルや新規構造の追加は、明確な必要性があるときだけ行う
+low-risk copy fix、UI 微修正、docs-only 整理は Mission 化しない。
 
-## 4. 禁止事項
+PR は単なる停止点ではなく risk check gate として使う。low blast radius で rollback が容易な変更は、必要以上に人間確認へ戻さない。
 
-明示依頼なしに、次の行為を行わない。
+## 4. 人間と AI の役割
 
-- migration を作らない
-- webhook を作らない
-- cron を作らない
-- Gmail API を追加しない
-- Apps Script を追加しない
-- `service_role` / admin client を追加しない
-- ops dashboard を作らない
-- notification inbox を作らない
-- app router を勝手に増やさない
-- route / page / component を大量追加しない
-- `package.json` を不要変更しない
+- AI は作業者であり、人間は承認者である。
+- 人間をスクリーンショット係、目視確認係、手作業の転記係、diff 比較係にしない。
+- read-only 調査、repo diff 確認、migration 影響分析、rollback 案作成、lint/build/test は AI が主体的に行う。
+- 人間承認が必要なのは、本番 DB write、destructive SQL、secret 変更、dashboard 設定変更、migration 適用、migration repair、db push である。
+- 「安全のため」という理由だけで、AI が可能な調査作業を人間へ戻さない。
 
-加えて、次も禁止する。
+## 5. 禁止事項
 
-- 実装相談なしに外部通知処理を Bloomlog 本体へ統合すること
-- メール本文やセキュリティ通知を DB に保存すること
-- 実運用に影響する大規模構造変更を未承認で進めること
+明示依頼または承認なしに、次を行わない。
 
-## 5. 通知レビュー運用
+- migration を作成または適用する。
+- webhook / cron / Gmail API / Apps Script を追加する。
+- `service_role` / admin client を追加する。
+- ops dashboard / notification inbox を作る。
+- route / page / component を大量追加する。
+- `package.json` を不要変更する。
+- secret や `.env*` を変更する。
+- 本番 DB write、destructive SQL、dashboard 設定変更、db push、migration repair を実行する。
 
-Supabase / Vercel / GitHub などの外部通知は、次の 3 層を分離して扱う。
-
-1. 取得
-2. 分析
-3. 承認
-
-人間承認前に、次を実行しない。
-
-- コード変更
-- migration
-- dashboard 変更
-
-通知レビューの扱い:
-
-- 取得は Gmail 検索または Gmail 連携などの外部手段で行う
-- 分析結果は `docs/ai-team/` に記録する
-- 承認後にのみ、Codex へ個別の実装依頼を出す
-- 通知レビューとアプリ実装を直結しない
-
-## 6. docs 運用
-
-各 docs の役割は次のとおり。
+## 6. docs の使い分け
 
 ### `docs/product/`
 
-- 確定事項のみを書く
-- 現在の仕様、正式な方針、確定済みの運用状態を残す
+正式仕様、用語、UX 方針、確定した技術方針を書く。
+
+### `docs/ops/`
+
+通常開発で繰り返し使う軽量 playbook / skill を書く。
 
 ### `docs/ai-team/`
 
-- 検討
-- 分析
-- レビュー
-- AI 運用ルール
-- 承認前の判断材料
+AI Team / Agent OS 実験の履歴、過去 mission、過去 report を残す場所。通常開発では参照必須にしない。
 
-### `PLANS.md`
+### `docs/archive/`
 
-- 将来案
-- 未確定案
-- 検討中の構想
+退役済み資料、古い handoff、過去ログを置く。
 
-### `tech-debt`
+新規 docs は増やす前に、既存 docs に追記できないか確認する。短命のメモは PR description に書けば足りる場合が多い。
 
-- 技術的負債
-- 将来改善案
-- 今すぐは着手しないが、後で改善が必要な内容
+## 7. 実装時の判断基準
 
-補足:
+実装に進む場合は、次の順で判断する。
 
-- 外部通知レビューの途中経過は `docs/ai-team/` に置く
-- プロダクトの確定事項だけを `docs/product/` に反映する
-
-## 7. 出力ルール
-
-- 日本語で説明する
-- 絵文字を使わない
-- 「変更したファイル一覧」を必ず報告する
-- 「なぜ必要か」を説明する
-- 実装時は root cause を書く
-- 変更範囲を限定して説明する
-
-報告時の基本観点:
-
-- 何を変えたか
-- なぜ必要か
-- どこまで変えたか
-- 何を変えていないか
-- 次に人間が確認すべきこと
-
-## 8. Plan mode
-
-`Plan only` の場合は、提案と実行を分離する。
-
-禁止事項:
-
-- file edit しない
-- migration を作らない
-- 実装しない
-
-求められること:
-
-- 提案内容を整理する
-- 実行時の影響範囲を明示する
-- 実装に進む前提条件を示す
-
-## 9. 将来構想
-
-Bloomlog は将来的に、次を検討している。
-
-- Codex 並列運用
-- AI 運用支援
-- docs 駆動開発
-- notification review automation
-
-ただし、段階導入を原則とする。
-
-- 未承認の大規模実装を行わない
-- 将来構想を理由に先回り実装しない
-- まずは最小構成で運用し、必要性が確認できた後に拡張する
-
-## 10. 実装時の判断基準
-
-実装に進む場合も、次の順で判断する。
-
-1. docs に明示された要件か
-2. 既存構造の中で対応できるか
-3. 新規追加より既存修正で済むか
-4. 変更範囲を小さく保てるか
-5. root cause に対処しているか
+1. product docs または現在の依頼に根拠があるか。
+2. 既存構造の中で対応できるか。
+3. 新規追加より既存修正で済むか。
+4. 変更範囲を小さく保てるか。
+5. root cause に対処しているか。
+6. rollback または revert が容易か。
 
 不要な拡張より、既存構造に沿った最小修正を優先する。
+
+## 8. AI Team 実験の扱い
+
+2026-05-10 時点で、Bloomlog の repo-first autonomous AI Team / parallel autonomous execution / Claude Code 的 multi-agent workflow 実験は棚上げする。
+
+理由:
+
+- human orchestration が消えなかった。
+- single workspace 運用が限界だった。
+- branch / reconcile topology が複雑化した。
+- mission / role / docs が増殖した。
+- execution より orchestration cost が大きくなった。
+
+今後の通常開発では、Mission lifecycle、Parent / Reviewer / QA role chain、reconcile branch 常設を標準フローにしない。
+
+必要になった場合だけ、より小さい sandbox repo または worktree isolation を前提に再検証する。
