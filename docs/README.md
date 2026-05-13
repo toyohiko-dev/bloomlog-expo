@@ -3,12 +3,13 @@
 `docs/` は、用途ごとに次の3系統へ整理する。
 
 - `product/`
-  - 人間向けの最新資料
-  - プロジェクト概要、仕様、引き継ぎ、開発メモを置く
+  - プロダクト仕様の正本
+  - プロジェクト概要、用語、現在の開発方針、実装状態を置く
 
 - `ai-team/`
-  - AIチーム（Codex）向けの資料
-  - AI運用ルール、Mission record、承認前判断材料を置く
+  - 過去の AI Team experiment era の資料
+  - 通常の Codex 開発入口ではない
+  - 必要な場合だけ、履歴、調査ログ、旧 Mission record として参照する
 
 - `archive/`
   - 旧資料の退避先
@@ -18,67 +19,60 @@
 
 ## まず読む
 
-開発に入る前に必ず以下を確認する。
+通常開発では、まず root `AGENTS.md` と作業対象に近い domain `AGENTS.md` を確認する。
+
+追加で、プロダクト仕様が必要な場合は以下を読む。
 
 1. `docs/product/overview.md`
    - プロジェクトの全体像
    - 用語定義
-   - 現在のブランチと構造
+   - 体験価値とドメイン構造
 
 2. `docs/product/dev.md`
-   - 現在の設計判断
-   - 実装方針
-   - 未解決の論点
+   - 現在の開発方針
+   - UI / UX / データ構造の注意点
+
+3. `docs/product/current-status.md`
+   - 現時点の実装状態
+   - 認証、フォント、思い出アルバム、DB の注意点
 
 ---
 
-## AIチーム向け
+## Domain Rules
 
-- `AGENTS.md`
-  - AI Team / Agent OS 作業の唯一の入口
+- root `AGENTS.md`
+  - repo 全体の最小原則
 
-- `docs/ai-team/mission-lifecycle.md`
-  - Mission state 管理の正本
+- `app/AGENTS.md`
+  - UI / UX / frontend / route / component / copy
 
-- `docs/ai-team/agent-operating-model.md`
-  - Agent 役割と承認境界の参照 docs
-
-- `docs/ai-team/agent-review-workflow.md`
-  - review / approval flow の参照 docs
-
-- `docs/ai-team/agent-communication-protocol.md`
-  - Agent 間通信の参照 docs
-
-- `docs/ai-team/templates/`
-  - Mission / report / decision log などのテンプレート
-
-Mission artifacts は運用記録であり、恒久ルールではない。完了済み・superseded の Mission は再開しない。
+- `supabase/AGENTS.md`
+  - DB / migration / RLS / policy / Supabase
 
 ---
 
 ## 書き分けルール
 
-### product に書くもの（人間向け）
+### product に書くもの
 
-- 概念（Event / Area / Pavilion / Spot）
+- 確定したプロダクト仕様
+- 概念とドメイン構造
 - 用語定義
 - 画面構成
-- 開発の意思決定理由
-- 引き継ぎ内容
-
-「人に説明する内容」を置く。
+- 現在の開発方針
+- 現時点の実装状態
 
 ---
 
-### ai-team に書くもの（AI向け）
+### ai-team にあるもの
 
-- Codexへの指示
-- タスクの前提条件
-- 実装依頼
-- 制約条件
+- 過去の AI 運用実験資料
+- Mission / Report / Decision Log の履歴
+- notification intake などの旧運用資料
+- DB / RLS 調査ログ
 
-「AIにやらせる内容」を置く。
-
+通常開発の作業ルールや入口としては扱わない。
+必要になった場合だけ、履歴資料として読む。
 ---
 
 ### archive に移すもの
@@ -94,8 +88,9 @@ Mission artifacts は運用記録であり、恒久ルールではない。完�
 
 ## 運用ルール
 
-- 正本として読む資料は `product/` と `ai-team/` に置く
-- AI Team / Agent OS 作業の入口は `AGENTS.md` に固定する
+- 通常開発の入口は root `AGENTS.md` と domain `AGENTS.md` に固定する
+- プロダクト仕様の正本は `docs/product/` に置く
+- `docs/ai-team/` は通常開発の入口にしない
 - 迷った場合は削除せず `archive/` に移動する
 - 同じ内容を複数ファイルに書かない
 - 最新版は上書き、過去版は `archive/` に保存する
@@ -104,8 +99,10 @@ Mission artifacts は運用記録であり、恒久ルールではない。完�
 
 ## 判断基準
 
-- 人に説明したい内容 → `product/`
-- Codexに実装させる内容 → `ai-team/`
+- プロダクト仕様として確定した内容 → `product/`
+- UI / frontend 作業ルール → `app/AGENTS.md`
+- DB / Supabase 作業ルール → `supabase/AGENTS.md`
+- 過去の AI 運用実験や調査ログ → `ai-team/`
 - 古くなったが残したい → `archive/`
 
 ---

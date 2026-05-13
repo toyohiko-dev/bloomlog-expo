@@ -1,12 +1,15 @@
 # Bloomlog Context Entry Point
 
-このファイルは、Codexが作業を開始する前に必ず参照する入口である。
+> Obsolete: このファイルは AI Team experiment era の旧入口資料である。
+> 通常の Codex 開発では入口として使わない。
+> まず root `AGENTS.md` と、作業対象に応じて `app/AGENTS.md` または `supabase/AGENTS.md` を読む。
+> プロダクト仕様は `docs/product/` を正とする。
 
 ---
 
-## 1. 必ず読む資料
+## 1. 当時の参照資料
 
-作業開始前に以下をすべて確認すること。
+AI Team experiment era では、作業開始前に以下を確認する運用だった。
 
 - docs/product/overview.md
   - プロジェクトの目的
