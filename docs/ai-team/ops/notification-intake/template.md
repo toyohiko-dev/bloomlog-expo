@@ -1,5 +1,8 @@
 # Notification Intake Entry Template
 
+> Historical note: この文書は AI Team experiment era の notification intake template であり、通常の Codex 開発の正本ではない。
+> 通常開発ではこの template を入口にしない。
+
 作成日: 2026-05-09
 
 Sakura / ChatGPT は Gmail read-only intake 後、この形式で sanitized entry を作る。

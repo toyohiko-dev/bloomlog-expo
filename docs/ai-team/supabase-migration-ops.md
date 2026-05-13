@@ -1,5 +1,8 @@
 # Supabase Migration Ops
 
+> Historical note: この文書は AI Team experiment era の migration 運用資料であり、通常の Codex 開発の正本ではない。
+> DB / migration / RLS 作業ではまず `supabase/AGENTS.md` を優先する。
+
 作成日: 2026-05-09
 
 ## 目的

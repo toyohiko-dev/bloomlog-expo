@@ -1,5 +1,8 @@
 # Notification Intake Policy
 
+> Historical note: この文書は AI Team experiment era の notification intake policy であり、通常の Codex 開発の正本ではない。
+> 外部通知対応でも、まず root `AGENTS.md` の承認 gate を優先する。
+
 作成日: 2026-05-09
 
 ## 基本方針

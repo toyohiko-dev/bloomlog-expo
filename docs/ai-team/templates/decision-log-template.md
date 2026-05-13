@@ -1,5 +1,8 @@
 # Decision Log Template
 
+> Historical note: この template は AI Team experiment era の Decision Log 運用向けであり、通常の Codex 開発の正本ではない。
+> 大きな判断だけ、必要に応じて現在の docs 方針に沿って記録する。
+
 ## decision date
 
 YYYY-MM-DD

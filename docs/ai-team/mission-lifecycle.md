@@ -1,5 +1,8 @@
 # Bloomlog Agent Mission Lifecycle
 
+> Historical note: この文書は AI Team experiment era の Mission 管理資料であり、通常の Codex 開発の正本ではない。
+> 通常開発では mission lifecycle を前提にせず、依頼、issue、branch、PR、final report で扱う。
+
 作成日: 2026-05-09
 
 ## 目的

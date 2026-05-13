@@ -1,5 +1,8 @@
 # Supabase RLS 修正チェックリスト
 
+> Historical note: この文書は過去の RLS 修正チェックリストであり、通常の Codex 開発の正本ではない。
+> DB / RLS 作業ではまず `supabase/AGENTS.md` を優先し、必要な場合だけ履歴資料として参照する。
+
 ## 目的
 
 `visit_sessions` と `activity_logs` の RLS 警告に対して、repository 側の migration を適用したあとに、人間が確認する項目をまとめる。

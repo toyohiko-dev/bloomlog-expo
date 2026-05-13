@@ -1,5 +1,8 @@
 # Mission Template
 
+> Historical note: この template は AI Team experiment era の Mission 運用向けであり、通常の Codex 開発の正本ではない。
+> 通常開発では issue / branch / PR / final report を優先する。
+
 新規 Mission はこの template から作成する。
 
 Mission は、Bloomlog AI-IS における bounded development unit である。feature、UX、refactor、research、infra、ops、notification follow-up のいずれにも使える。notification / queue は Mission の optional origin であり、Mission core schema ではない。

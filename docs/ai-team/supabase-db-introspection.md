@@ -1,5 +1,8 @@
 # Supabase 実 DB 参照手順
 
+> Historical note: この文書は AI Team experiment era の DB 調査ログ / 手順であり、通常の Codex 開発の正本ではない。
+> DB / migration / RLS 作業ではまず `supabase/AGENTS.md` を優先し、必要な場合だけ履歴資料として参照する。
+
 ## 目的
 
 Bloomlog で Supabase の実 DB 状態を確認するときに、dashboard のスクリーンショットに依存せず、Codex と人間が同じ前提で read-only 調査できるようにする。

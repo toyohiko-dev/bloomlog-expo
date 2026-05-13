@@ -1,5 +1,8 @@
 # Collection Treemap 設計（最新版）
 
+> Supporting note: この文書は `/collection-next` と treemap 検証に触る場合だけ参照する補助資料である。
+> 通常開発の正本は `docs/product/overview.md`、現在方針は `docs/product/dev.md`、現在状態は `docs/product/current-status.md` とする。
+
 ## 1. 目的
 
 来場記録を「視覚的に振り返れる体験」にする。

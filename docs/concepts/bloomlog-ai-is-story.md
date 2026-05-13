@@ -1,4 +1,8 @@
 # Bloomlog AI-IS AS-IS
+
+> Historical note: この文書は AI Team experiment era の思想整理であり、通常の Codex 開発の正本ではない。
+> 現在の通常開発では root `AGENTS.md`、`app/AGENTS.md`、`supabase/AGENTS.md`、`docs/product/` を優先する。
+
 ## 会話型AI運用から repo-driven AI Team へ
 
 ## なぜこの文書が必要か

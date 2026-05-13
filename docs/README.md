@@ -38,6 +38,24 @@
 
 ---
 
+## 読み分け
+
+| 分類 | ファイル / directory | 扱い |
+| --- | --- | --- |
+| authoritative | `docs/product/overview.md` | プロダクト仕様の正本。通常開発で参照してよい。 |
+| authoritative | `docs/product/dev.md` | 現在の開発方針の補助資料。通常開発で参照してよい。 |
+| authoritative | `docs/product/current-status.md` | 現時点の実装状態。通常開発で参照してよい。 |
+| supporting | `docs/product/collection-treemap.md` | `/collection-next` や treemap 検証に触る場合だけ読む。 |
+| supporting | `docs/product/tech-debt.md` | 該当する技術的負債に触る場合だけ読む。 |
+| historical | `docs/concepts/` | 過去の思想・検討資料。通常開発の正本にしない。 |
+| historical | `docs/ai-team/` | AI Team experiment era の履歴資料。通常開発の入口にしない。 |
+| historical | `docs/archive/` | 退避済み資料。通常開発の正本にしない。 |
+
+検索で historical 資料が見つかった場合も、現在の作業ルールとして採用しない。
+まず `AGENTS.md`、domain `AGENTS.md`、`docs/product/` の authoritative docs を優先する。
+
+---
+
 ## Domain Rules
 
 - root `AGENTS.md`

@@ -1,5 +1,8 @@
 # 外部通知レビュー記録 / Agent Input Queue 入口
 
+> Historical note: この文書は AI Team experiment era の通知レビュー記録であり、通常の Codex 開発の正本ではない。
+> 通常開発ではこの queue / Mission 運用を入口にしない。
+
 作成日: 2026-05-09
 
 このファイルは、旧来の外部通知レビュー記録の入口であり、現在は Agent Input Queue への互換ポインタとして扱う。

@@ -1,5 +1,8 @@
 # Bloomlog Agent Review Workflow
 
+> Historical note: この文書は AI Team experiment era の review workflow 資料であり、通常の Codex 開発の正本ではない。
+> 現在の通常開発では issue / branch / PR / final report と root `AGENTS.md` を優先する。
+
 作成日: 2026-05-09
 
 ## 目的

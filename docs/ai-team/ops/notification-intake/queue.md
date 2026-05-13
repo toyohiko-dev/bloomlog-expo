@@ -1,5 +1,8 @@
 # Notification Intake Queue
 
+> Historical note: この文書は AI Team experiment era の notification queue であり、通常の Codex 開発の正本ではない。
+> 通常開発ではこの queue を入口にしない。
+
 作成日: 2026-05-09
 
 このファイルは Agent Input Queue である。

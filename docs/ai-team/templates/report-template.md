@@ -1,5 +1,8 @@
 # Report Template
 
+> Historical note: この template は AI Team experiment era の Report 運用向けであり、通常の Codex 開発の正本ではない。
+> 通常開発では final answer、PR description、commit message を優先する。
+
 ## mission id
 
 `mission-YYYYMMDD-short-name`

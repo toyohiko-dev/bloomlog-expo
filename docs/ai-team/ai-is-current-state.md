@@ -1,5 +1,8 @@
 # Bloomlog AI-IS Current State
 
+> Historical note: この文書は AI Team experiment era の状態整理であり、通常の Codex 開発の正本ではない。
+> 現在の通常開発では root `AGENTS.md`、domain `AGENTS.md`、`docs/product/` を優先する。
+
 作成日: 2026-05-10
 
 ## 1. Purpose

@@ -1,5 +1,8 @@
 # Task Template
 
+> Historical note: この template は AI Team experiment era の Task 運用向けであり、通常の Codex 開発の正本ではない。
+> 通常開発では Codex の作業 plan、issue、PR checklist を優先する。
+
 ## task id
 
 `task-001-short-name`

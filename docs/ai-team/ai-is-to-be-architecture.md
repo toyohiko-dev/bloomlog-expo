@@ -1,5 +1,8 @@
 # Bloomlog AI-IS TO-BE Architecture
 
+> Historical note: この文書は AI Team experiment era の TO-BE 検討資料であり、通常の Codex 開発の正本ではない。
+> 現在の通常開発では独自 AI 組織構造を前提にせず、root `AGENTS.md` と domain `AGENTS.md` を優先する。
+
 作成日: 2026-05-10
 
 ## 1. Purpose

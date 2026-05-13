@@ -1,5 +1,8 @@
 # Approval Needed Template
 
+> Historical note: この template は AI Team experiment era の approval package 運用向けであり、通常の Codex 開発の正本ではない。
+> 現在の承認 gate は root `AGENTS.md` と `supabase/AGENTS.md` を優先する。
+
 ## approval id
 
 `approval-YYYYMMDD-short-name`

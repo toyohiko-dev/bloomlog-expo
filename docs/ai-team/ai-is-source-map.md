@@ -1,5 +1,8 @@
 # Bloomlog AI-IS Source Map
 
+> Historical note: この文書は AI Team experiment era の source map であり、通常の Codex 開発の正本ではない。
+> 現在の通常開発では `docs/README.md` の読み分けを優先する。
+
 作成日: 2026-05-10
 
 ## 1. Source-of-Truth Mapping

@@ -1,5 +1,8 @@
 # Bloomlog AI-IS Schema Adoption Package
 
+> Historical note: この文書は schema-first adoption の過去検討資料であり、通常の Codex 開発の正本ではない。
+> 現在の通常開発ではこの adoption plan を採用しない。
+
 作成日: 2026-05-10
 
 ## Status

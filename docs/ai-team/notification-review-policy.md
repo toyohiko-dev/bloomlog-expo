@@ -1,5 +1,8 @@
 # 外部通知レビュー方針
 
+> Historical note: この文書は AI Team experiment era の通知レビュー資料であり、通常の Codex 開発の正本ではない。
+> 通知や外部サービス対応が必要な場合も、まず root `AGENTS.md` の承認 gate を優先する。
+
 ## 目的
 
 Bloomlog では、Supabase / Vercel / GitHub などの外部サービスから届く通知メールを、安全にレビューして判断する。

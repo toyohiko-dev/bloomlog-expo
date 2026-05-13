@@ -1,5 +1,8 @@
 # Bloomlog AI-IS Schema and Enforcement
 
+> Historical note: この文書は schema-first 検討資料であり、通常の Codex 開発の正本ではない。
+> 現在の通常開発ではこの schema-first 方針を採用しない。
+
 作成日: 2026-05-10
 
 ## Status
