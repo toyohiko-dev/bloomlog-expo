@@ -1,33 +1,79 @@
-## フォント方針（恒久対応）
+# Bloomlog Current Status
 
-恒久的な方針:
-- 日本語 UI の主要フォントは `next/font/local` を使う
-- フォントファイルはリポジトリ内で self-host する
-- UI 用テキストと等幅フォントは分けて管理する
-- フォント変数は `app/layout.tsx` で適用する
-- グローバル CSS では `--font-sans` と `--font-mono` 経由で利用する
-- 特に屋外利用やモバイル利用を考慮し、細さより可読性を優先する
-- `app/fonts/` のような import しやすい配置を優先する
-- ビルド時・実行時ともに外部フォント取得に依存しない
+このファイルは、現時点の実装状態と近い将来の注意点を短くまとめる。
+恒久仕様は `docs/product/overview.md`、開発方針の補足は `docs/product/dev.md` を正とする。
 
-推奨ウェイト方針:
-- 本文: 400〜500
-- 小さな文字: 400
-- ボタン: 500〜600
-- 見出し: 600
+---
 
-実装メモ:
-- フォントファイルは `app/fonts/` のような import しやすいディレクトリに置くのが望ましい
-- ビルド時や実行時に外部フォント取得へ依存する構成は避ける
+## アプリ構成
 
-現在の暫定状態:
-- 現在のアプリは暫定対応としてシステムフォールバックフォントを使っている
-- この構成によりデプロイの安定性は保てているが、タイポグラフィは端末依存の要素が残っている
-- 次のフォント対応は `next/font/local` を前提とし、`next/font/google` に戻さない
+- Next.js App Router を使用している。
+- TypeScript と Tailwind CSS を使用している。
+- Supabase を DB / Auth として使用している。
+- 主要 UI は日本語前提である。
 
-## Google OAuth 実装メモ
+---
 
-- Google OAuth の開始処理は server action ではなく client component 側で実装する
-- `supabase.auth.signInWithOAuth()` はブラウザ環境から呼び出す
-- `redirectTo` には `window.location.origin` をベースにした `/auth/callback` を渡す
-- `localhost:3000` 向けの開発用フォールバックは使用しない
+## 認証
+
+現在の状態:
+
+- Google OAuth に対応している。
+- OAuth 開始処理は client component 側で `supabase.auth.signInWithOAuth()` を呼び出す。
+- `redirectTo` は `window.location.origin` をベースにした `/auth/callback` を使う。
+- `/auth/callback` で code を session に交換し、プロフィール設定の有無で遷移先を分ける。
+- `localhost:3000` 固定の開発用 fallback は使わない。
+
+注意:
+
+- OAuth redirect URL や provider 設定を変える場合は、実運用設定に影響するため承認 gate として扱う。
+
+---
+
+## フォント
+
+現在の状態:
+
+- 現在のアプリは、システムフォールバックフォントを CSS 変数経由で使っている。
+- `app/layout.tsx` で `--font-noto-sans-jp` と `--font-geist-mono` 相当の font stack を指定している。
+- `app/globals.css` では `--font-sans` と `--font-mono` を経由して利用している。
+- `next/font/google` は使っていない。
+- `next/font/local` による self-hosted font は、まだ導入していない。
+
+今後の方針:
+
+- 日本語 UI の読みやすさを優先する。
+- 外部フォント取得に依存する構成へ戻さない。
+- self-hosted font を導入する場合は、`next/font/local` を前提にする。
+- フォントファイルを追加する場合は、bundle size とライセンスを確認する。
+
+---
+
+## 思い出アルバム
+
+現在の状態:
+
+- `/collection` が現行の思い出アルバム画面である。
+- `/collection-next` は思い出アルバム表現の検証ページである。
+- Pavilion 画像は `pavilions.image_path` を使って表示する。
+- Area を使ったグルーピング表現は検証対象である。
+
+注意:
+
+- 本採用が決まるまでは、`/collection-next` の変更と `/collection` の変更を分けて扱う。
+- ユーザー向け文言に route path、DB column、内部 enum をそのまま出さない。
+
+---
+
+## DB / Supabase
+
+現在の状態:
+
+- `supabase/migrations/` に migration ファイルがある。
+- Auth、profiles、visit_sessions、activity_logs、pavilions、photo path、RLS 修正に関する migration が存在する。
+- DB / migration / RLS 変更は `supabase/AGENTS.md` の承認 gate に従う。
+
+注意:
+
+- `db push`、migration repair、本番 DB write、destructive SQL は通常作業で実行しない。
+- 必要になった場合は、対象、影響、rollback、検証方法を整理してから承認を求める。
