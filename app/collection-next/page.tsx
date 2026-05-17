@@ -1,22 +1,26 @@
 import Link from "next/link";
 import { AppPrimaryNav } from "@/app/_components/app-primary-nav";
+import { BloomingVenueMap } from "./blooming-venue-map";
 import { PavilionAlbum } from "./pavilion-album";
 import {
   buildAreaGroupedPavilionTreemapData,
   buildPavilionCollection,
   listAreas,
   listCollectionActivityLogs,
+  listPavilions,
 } from "@/lib/sessions";
 
 export default async function CollectionNextPage() {
-  const [logs, areas] = await Promise.all([
+  const [logs, areas, pavilions] = await Promise.all([
     listCollectionActivityLogs(),
     listAreas(),
+    listPavilions(),
   ]);
   console.log("[areas]", areas);
   console.log("[collection-next] page data sizes", {
     logsLength: logs.length,
     areasLength: areas.length,
+    pavilionsLength: pavilions.length,
   });
   const pavilionItems = buildPavilionCollection(logs);
   const groupedItems = buildAreaGroupedPavilionTreemapData(pavilionItems, areas);
@@ -78,6 +82,14 @@ export default async function CollectionNextPage() {
           </div>
 
           <div className="px-5 py-6 sm:px-8 sm:py-8">
+            <div className="mb-8">
+              <BloomingVenueMap
+                areas={areas}
+                pavilions={pavilions}
+                visitedItems={pavilionItems}
+              />
+            </div>
+
             <PavilionAlbum
               items={groupedItems}
               summary={{
