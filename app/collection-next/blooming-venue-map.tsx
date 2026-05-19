@@ -156,7 +156,7 @@ function buildPavilionPoints({
         imageUrl: pavilion.image_path
           ? getPavilionImageUrl(pavilion.image_path)
           : null,
-        size: fixedPoint?.size ?? 1 + ((pavilionIndex * 17) % 3) * 0.16,
+        size: fixedPoint?.size ?? 1,
         rotation: fixedPoint?.rotation ?? ((pavilionIndex * 47) % 34) - 17,
       } satisfies PavilionMapPoint;
     });

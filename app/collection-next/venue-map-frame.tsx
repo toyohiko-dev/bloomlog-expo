@@ -88,7 +88,7 @@ function VenueMapMarkerView({ marker, position }: {
     left: `${position.x}px`,
     top: `${position.y}px`,
     "--marker-bloom": marker.bloom,
-    transform: `translate(-50%, -50%) rotate(${marker.rotation}deg)`,
+    transform: `translate(-50%, -50%) rotate(${marker.rotation}deg) scale(${marker.size})`,
   } as CSSProperties;
 
   if (!marker.visited) {

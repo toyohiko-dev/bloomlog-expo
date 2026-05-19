@@ -16,12 +16,6 @@ export default async function CollectionNextPage() {
     listAreas(),
     listPavilions(),
   ]);
-  console.log("[areas]", areas);
-  console.log("[collection-next] page data sizes", {
-    logsLength: logs.length,
-    areasLength: areas.length,
-    pavilionsLength: pavilions.length,
-  });
   const pavilionItems = buildPavilionCollection(logs);
   const groupedItems = buildAreaGroupedPavilionTreemapData(pavilionItems, areas);
   const areaCountItems = groupedItems.map((group) => ({
@@ -49,8 +43,6 @@ export default async function CollectionNextPage() {
           : null,
       }
     : null;
-
-  console.log("[collection-next] grouped treemap data", groupedItems);
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#eefbf5_46%,#f8fafc_100%)]">
