@@ -57,11 +57,15 @@
 - `/collection-next` は思い出アルバム表現の検証ページである。
 - Pavilion 画像は `pavilions.image_path` を使って表示する。
 - Area を使ったグルーピング表現は検証対象である。
+- `/collection-next` の制覇マップ prototype は、ゾーン付き会場マップ画像を下敷きにした一枚絵構成を検証している。
+- 制覇マップ prototype では、地図内ズーム / パン、訪問済み Pavilion の花 + サムネイル表示、未訪問 Pavilion のつぼみ表示を扱っている。
+- Pavilion 座標は将来の固定座標化に備えて `app/collection-next/venue-map-config.ts` に寄せている。
 
 注意:
 
 - 本採用が決まるまでは、`/collection-next` の変更と `/collection` の変更を分けて扱う。
 - ユーザー向け文言に route path、DB column、内部 enum をそのまま出さない。
+- 制覇マップの残作業は `docs/product/map-prototype-direction.md` を参照する。
 
 ---
 

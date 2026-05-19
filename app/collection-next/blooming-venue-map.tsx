@@ -1,6 +1,14 @@
 import type { PavilionCollectionItem } from "@/lib/sessions";
 import type { Area, PavilionOption } from "@/lib/session-shared";
 import { getPavilionImageUrl } from "@/lib/supabase/shared";
+import {
+  getVenueAreaPlacement,
+  getVenuePavilionPlacement,
+  VENUE_MAP_ASSET,
+  VENUE_MAP_CANVAS,
+  type VenueAreaPlacement,
+} from "./venue-map-config";
+import { VenueMapFrame } from "./venue-map-frame";
 
 type BloomingVenueMapProps = {
   areas: Area[];
@@ -8,105 +16,30 @@ type BloomingVenueMapProps = {
   visitedItems: PavilionCollectionItem[];
 };
 
-type VenueAreaLayout = {
-  pointBox: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  };
-  bloom: string;
-};
-
 type PavilionMapPoint = {
   id: string;
   name: string;
+  areaId: string;
   x: number;
   y: number;
   visited: boolean;
   areaName: string;
+  placementKey: string;
   bloom: string;
   imageUrl: string | null;
   size: number;
   rotation: number;
 };
 
-const AREA_LAYOUTS: VenueAreaLayout[] = [
-  {
-    pointBox: { x: 24, y: 19, width: 13, height: 18 },
-    bloom: "#2563eb",
-  },
-  {
-    pointBox: { x: 51, y: 14, width: 12, height: 17 },
-    bloom: "#16a34a",
-  },
-  {
-    pointBox: { x: 62, y: 9, width: 17, height: 20 },
-    bloom: "#dc2626",
-  },
-  {
-    pointBox: { x: 39, y: 31, width: 18, height: 12 },
-    bloom: "#eab308",
-  },
-  {
-    pointBox: { x: 58, y: 32, width: 16, height: 11 },
-    bloom: "#f97316",
-  },
-  {
-    pointBox: { x: 66, y: 46, width: 10, height: 8 },
-    bloom: "#f43f5e",
-  },
-  {
-    pointBox: { x: 68, y: 51, width: 9, height: 7 },
-    bloom: "#14b8a6",
-  },
-  {
-    pointBox: { x: 70, y: 54, width: 22, height: 12 },
-    bloom: "#16a34a",
-  },
-];
-
-function getAreaLayout(index: number) {
-  return AREA_LAYOUTS[index % AREA_LAYOUTS.length];
-}
-
-function getAreaLayoutIndex(areaName: string, fallbackIndex: number) {
-  const normalized = areaName.toLowerCase();
-
-  if (normalized.includes("urban") || normalized.includes("gx")) {
-    return 0;
-  }
-
-  if (normalized.includes("garden") && !normalized.includes("food")) {
-    return 1;
-  }
-
-  if (normalized.includes("farm") || normalized.includes("food")) {
-    return 2;
-  }
-
-  if (normalized.includes("craft")) {
-    return 3;
-  }
-
-  if (normalized.includes("kids")) {
-    return 4;
-  }
-
-  if (normalized.includes("indoor") || normalized.includes("theme")) {
-    return 5;
-  }
-
-  if (normalized.includes("culture") || normalized.includes("government")) {
-    return 6;
-  }
-
-  if (normalized.includes("satoyama") || normalized.includes("花壇")) {
-    return 7;
-  }
-
-  return fallbackIndex % AREA_LAYOUTS.length;
-}
+type CompletedVillageArea = {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  bloom: string;
+};
 
 function getAreaNameById(areas: Area[]) {
   return new Map(areas.map((area) => [area.id, area.name] as const));
@@ -160,11 +93,11 @@ function groupPavilionsByArea(pavilions: PavilionOption[], areas: Area[]) {
 }
 
 function getGridPoint(
-  layout: VenueAreaLayout,
+  placement: VenueAreaPlacement,
   index: number,
   total: number,
 ) {
-  const box = layout.pointBox;
+  const box = placement.pointBox;
   const columns = Math.max(2, Math.ceil(Math.sqrt(total)));
   const rows = Math.max(1, Math.ceil(total / columns));
   const column = index % columns;
@@ -200,113 +133,101 @@ function buildPavilionPoints({
   return orderedAreaIds.flatMap((areaId, areaIndex) => {
     const areaPavilions = grouped.get(areaId) ?? [];
     const areaName = areaNameById.get(areaId) ?? "未分類";
-    const layout = getAreaLayout(getAreaLayoutIndex(areaName, areaIndex));
+    const placement = getVenueAreaPlacement(areaName, areaIndex);
 
     return areaPavilions.map((pavilion, pavilionIndex) => {
-      const point = getGridPoint(layout, pavilionIndex, areaPavilions.length);
+      const fixedPoint = getVenuePavilionPlacement({
+        pavilionId: pavilion.id,
+        name: pavilion.name,
+      });
+      const point = fixedPoint
+        ?? getGridPoint(placement, pavilionIndex, areaPavilions.length);
 
       return {
         id: pavilion.id,
         name: pavilion.name,
+        areaId,
         x: point.x,
         y: point.y,
         visited: visitedIds.has(pavilion.id),
         areaName,
-        bloom: layout.bloom,
+        placementKey: placement.key,
+        bloom: placement.bloom,
         imageUrl: pavilion.image_path
           ? getPavilionImageUrl(pavilion.image_path)
           : null,
-        size: 1 + ((pavilionIndex * 17) % 3) * 0.16,
-        rotation: ((pavilionIndex * 47) % 34) - 17,
+        size: fixedPoint?.size ?? 1 + ((pavilionIndex * 17) % 3) * 0.16,
+        rotation: fixedPoint?.rotation ?? ((pavilionIndex * 47) % 34) - 17,
       } satisfies PavilionMapPoint;
     });
   });
 }
 
-function PavilionPoint({ point }: { point: PavilionMapPoint }) {
-  if (!point.visited) {
-    return (
-      <g>
-        <circle
-          cx={point.x}
-          cy={point.y}
-          r="1.7"
-          fill="#ffffff"
-          stroke="#bfd2cc"
-          strokeWidth="0.7"
-        />
-        <path
-          d={`M${point.x} ${point.y - 1.1} C${point.x - 1.2} ${point.y - 2.6} ${point.x - 2.3} ${point.y - 0.4} ${point.x} ${point.y + 1.3} C${point.x + 2.3} ${point.y - 0.4} ${point.x + 1.2} ${point.y - 2.6} ${point.x} ${point.y - 1.1}Z`}
-          fill="none"
-          stroke="#d1ded9"
-          strokeWidth="0.5"
-        />
-        <title>{`${point.name}（未訪問）`}</title>
-      </g>
-    );
-  }
+function buildCompletedVillageAreas({
+  areas,
+  pavilions,
+  visitedIds,
+}: {
+  areas: Area[];
+  pavilions: PavilionOption[];
+  visitedIds: Set<string>;
+}) {
+  const areaNameById = getAreaNameById(areas);
+  const grouped = groupPavilionsByArea(pavilions, areas);
+  const orderedAreaIds = Array.from(new Set([
+    ...areas.map((area) => area.id),
+    grouped.get("unassigned")?.length ? "unassigned" : null,
+  ].filter((areaId): areaId is string => Boolean(areaId))));
 
-  const clipId = `pavilion-thumb-${point.id.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
-  const petalRadius = 1.32 * point.size;
-  const glowRadius = 4.3 * point.size;
-  const imageRadius = 1.35 * point.size;
+  return orderedAreaIds.flatMap((areaId, areaIndex) => {
+    const areaPavilions = grouped.get(areaId) ?? [];
 
+    if (
+      areaPavilions.length === 0
+      || areaPavilions.some((pavilion) => !visitedIds.has(pavilion.id))
+    ) {
+      return [];
+    }
+
+    const areaName = areaNameById.get(areaId) ?? "未分類";
+    const placement = getVenueAreaPlacement(areaName, areaIndex);
+
+    return [{
+      id: areaId,
+      name: areaName,
+      x: placement.areaBox.x,
+      y: placement.areaBox.y,
+      width: placement.areaBox.width,
+      height: placement.areaBox.height,
+      bloom: placement.bloom,
+    } satisfies CompletedVillageArea];
+  });
+}
+
+function CompletedVillageLayer({ area }: { area: CompletedVillageArea }) {
   return (
-    <g transform={`rotate(${point.rotation} ${point.x} ${point.y})`}>
-      <defs>
-        <clipPath id={clipId}>
-          <circle cx={point.x} cy={point.y} r={imageRadius} />
-        </clipPath>
-      </defs>
-      <circle
-        cx={point.x}
-        cy={point.y}
-        r={glowRadius}
-        fill={point.bloom}
+    <g className="venue-map-village-complete">
+      <rect
+        x={area.x}
+        y={area.y}
+        width={area.width}
+        height={area.height}
+        rx="5"
+        fill={area.bloom}
         opacity="0.16"
       />
-      {[0, 72, 144, 216, 288].map((angle) => {
-        const radians = (angle * Math.PI) / 180;
-        const petalX = point.x + Math.cos(radians) * (1.35 * point.size);
-        const petalY = point.y + Math.sin(radians) * (1.35 * point.size);
-
-        return (
-          <ellipse
-            key={angle}
-            cx={petalX}
-            cy={petalY}
-            rx={petalRadius * 0.62}
-            ry={petalRadius}
-            fill={point.bloom}
-            transform={`rotate(${angle} ${petalX} ${petalY})`}
-          />
-        );
-      })}
-      {point.imageUrl ? (
-        <>
-          <image
-            href={point.imageUrl}
-            x={point.x - imageRadius}
-            y={point.y - imageRadius}
-            width={imageRadius * 2}
-            height={imageRadius * 2}
-            preserveAspectRatio="xMidYMid slice"
-            clipPath={`url(#${clipId})`}
-            opacity="0.9"
-          />
-          <circle
-            cx={point.x}
-            cy={point.y}
-            r={imageRadius}
-            fill="none"
-            stroke="#fff7ed"
-            strokeWidth="0.42"
-          />
-        </>
-      ) : (
-        <circle cx={point.x} cy={point.y} r={imageRadius} fill="#fff7ed" />
-      )}
-      <title>{`${point.name}（訪問済み）`}</title>
+      <rect
+        x={area.x + 0.8}
+        y={area.y + 0.8}
+        width={Math.max(area.width - 1.6, 0)}
+        height={Math.max(area.height - 1.6, 0)}
+        rx="4.2"
+        fill="none"
+        stroke={area.bloom}
+        strokeWidth="0.5"
+        opacity="0.26"
+      />
+      <title>{`${area.name}（制覇）`}</title>
     </g>
   );
 }
@@ -336,11 +257,138 @@ export function BloomingVenueMap({
     pavilions,
     visitedIds,
   });
+  const completedVillageAreas = buildCompletedVillageAreas({
+    areas: mapAreas,
+    pavilions,
+    visitedIds,
+  });
   const visitedCount = points.filter((point) => point.visited).length;
   const unvisitedCount = Math.max(points.length - visitedCount, 0);
 
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(135deg,#fbfffc_0%,#f8fbff_48%,#fffaf2_100%)] px-3 py-3 ring-1 ring-emerald-100 sm:px-5 sm:py-5">
+    <section className="relative overflow-hidden bg-[linear-gradient(135deg,#fbfffc_0%,#f8fbff_48%,#fffaf2_100%)] ring-1 ring-emerald-100">
+      <style>
+        {`
+          .venue-map-village-complete {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: venue-map-village-wash 620ms ease-out both;
+          }
+
+          @keyframes venue-map-village-wash {
+            0% { opacity: 0; scale: .96; }
+            100% { opacity: 1; scale: 1; }
+          }
+
+          .venue-map-marker-layer {
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            position: absolute;
+            z-index: 10;
+          }
+
+          .venue-map-marker {
+            position: absolute;
+            transform-origin: center;
+            will-change: left, top;
+          }
+
+          .venue-map-marker-unvisited {
+            background: #fff;
+            border: 1.5px solid #bfd2cc;
+            border-radius: 999px;
+            height: 12px;
+            width: 12px;
+          }
+
+          .venue-map-marker-visited {
+            animation: venue-map-bloom-open 360ms ease-out both;
+            height: 68px;
+            width: 68px;
+          }
+
+          .venue-map-bloom-petal {
+            background:
+              radial-gradient(ellipse at 34% 24%, rgba(255, 255, 255, 0.88), transparent 38%),
+              linear-gradient(160deg, color-mix(in srgb, var(--marker-bloom) 62%, #ffffff) 0%, var(--marker-bloom) 76%),
+              var(--marker-bloom);
+            border: 1.5px solid rgba(255, 255, 255, 0.82);
+            border-radius: 999px 999px 720px 720px;
+            box-shadow: 0 6px 12px color-mix(in srgb, var(--marker-bloom) 22%, transparent);
+            height: 30px;
+            left: 23px;
+            position: absolute;
+            top: 0;
+            transform-origin: 11px 34px;
+            width: 22px;
+            z-index: 0;
+          }
+
+          .venue-map-bloom-petal-1 {
+            transform: rotate(0deg);
+          }
+
+          .venue-map-bloom-petal-2 {
+            transform: rotate(45deg);
+          }
+
+          .venue-map-bloom-petal-3 {
+            transform: rotate(90deg);
+          }
+
+          .venue-map-bloom-petal-4 {
+            transform: rotate(135deg);
+          }
+
+          .venue-map-bloom-petal-5 {
+            transform: rotate(180deg);
+          }
+
+          .venue-map-bloom-petal-6 {
+            transform: rotate(225deg);
+          }
+
+          .venue-map-bloom-petal-7 {
+            transform: rotate(270deg);
+          }
+
+          .venue-map-bloom-petal-8 {
+            transform: rotate(315deg);
+          }
+
+          .venue-map-bloom-core {
+            background-color: #fff7d6;
+            background-position: center;
+            background-size: cover;
+            border: 1px solid rgba(120, 93, 34, 0.18);
+            border-radius: 999px;
+            box-shadow:
+              0 0 0 3px rgba(255, 255, 255, 0.86),
+              0 0 0 5px color-mix(in srgb, var(--marker-bloom) 20%, transparent),
+              0 7px 14px rgba(78, 68, 47, 0.16);
+            height: 34px;
+            left: 17px;
+            position: absolute;
+            top: 17px;
+            width: 34px;
+            z-index: 1;
+          }
+
+          @keyframes venue-map-bloom-open {
+            from {
+              opacity: 0.75;
+              transform: translate(-50%, -50%) scale(0.72);
+            }
+
+            to {
+              opacity: 1;
+            }
+          }
+
+        `}
+      </style>
+
       <div className="pointer-events-none absolute left-5 top-5 z-10 sm:left-8 sm:top-8">
         <p className="text-xs font-semibold tracking-[0.18em] text-emerald-700/80">
           制覇マップ
@@ -350,25 +398,30 @@ export function BloomingVenueMap({
         </h2>
       </div>
 
-      <svg
-        aria-label="訪問済みと未訪問のパビリオンを示す白地図ベースの制覇マップ"
-        className="relative z-0 h-[500px] w-full sm:h-[650px] lg:h-[760px]"
-        viewBox="0 0 100 67"
-        role="img"
-      >
-        <image
-          href="/prototypes/venue-map-zones.png"
-          x="0"
-          y="0"
-          width="100"
-          height="67"
-          preserveAspectRatio="xMidYMid meet"
-        />
+      <VenueMapFrame markers={points}>
+        <svg
+          aria-label="訪問済みと未訪問のパビリオンを示す白地図ベースの制覇マップ"
+          className={[
+            "relative z-0 h-auto w-full max-w-none",
+            VENUE_MAP_CANVAS.aspectRatio,
+          ].join(" ")}
+          viewBox={VENUE_MAP_ASSET.viewBox}
+          role="img"
+        >
+          <image
+            href={VENUE_MAP_ASSET.href}
+            x="0"
+            y="0"
+            width={VENUE_MAP_ASSET.width}
+            height={VENUE_MAP_ASSET.height}
+            preserveAspectRatio="xMidYMid meet"
+          />
 
-        {points.map((point) => (
-          <PavilionPoint key={point.id} point={point} />
-        ))}
-      </svg>
+          {completedVillageAreas.map((area) => (
+            <CompletedVillageLayer key={area.id} area={area} />
+          ))}
+        </svg>
+      </VenueMapFrame>
 
       <div className="pointer-events-none absolute bottom-5 left-5 z-10 flex items-end gap-5 sm:bottom-8 sm:left-8">
         <div>
