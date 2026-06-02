@@ -2,7 +2,11 @@
 
 ## Scope
 
-このファイルは `supabase/` 配下、DB / migration / RLS / policy / trigger / function / Supabase 運用に適用する。
+このファイルは DB / migration / RLS / policy / trigger / function / Supabase 運用に適用する。
+
+`supabase/` 配下のファイル編集だけでなく、Supabase MCP / Connector を使う project introspection、schema 確認、Security Advisor 確認、SQL verification、本番 DB に関わる targeted SQL apply にも適用する。
+
+root `AGENTS.md` は Bloomlog 全体の入口と横断 gate を定義する。このファイルは Supabase 作業の実務ルールを定義する。
 
 ## 基本原則
 

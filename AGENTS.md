@@ -19,9 +19,11 @@ This version has breaking changes - APIs, conventions, and file structure may al
 作業対象に応じて、近い階層の `AGENTS.md` も読む。
 
 - UI / UX / frontend / route / component / copy: `app/AGENTS.md`
-- DB / migration / RLS / policy / Supabase: `supabase/AGENTS.md`
+- DB / migration / RLS / policy / Supabase / Supabase MCP: `supabase/AGENTS.md`
 - product spec: `docs/product/`
 - AI 運用や過去の作業ログ: `docs/ai-team/` は必要な場合だけ参照する。通常開発の入口にはしない。
+
+Supabase MCP / Connector を使う調査や本番 DB に関わる運用は、ファイル編集の有無や作業ディレクトリに関係なく `supabase/AGENTS.md` を読む。
 
 ## 固定用語
 
