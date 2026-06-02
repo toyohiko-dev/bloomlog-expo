@@ -1,6 +1,9 @@
 alter table public.pavilions enable row level security;
 alter table public.pavilion_aliases enable row level security;
 
+revoke all privileges on table public.pavilions from anon, authenticated;
+revoke all privileges on table public.pavilion_aliases from anon, authenticated;
+
 grant select on table public.pavilions to anon, authenticated;
 grant select on table public.pavilion_aliases to anon, authenticated;
 
