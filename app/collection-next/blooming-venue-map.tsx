@@ -396,6 +396,9 @@ export function BloomingVenueMap({
         <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950/90 sm:text-3xl">
           訪問の記録
         </h2>
+        <p className="mt-2 inline-flex bg-white/75 px-2 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200/80 backdrop-blur sm:hidden">
+          {visitedCount} / {points.length} 訪問済み
+        </p>
       </div>
 
       <VenueMapFrame markers={points}>
@@ -423,7 +426,7 @@ export function BloomingVenueMap({
         </svg>
       </VenueMapFrame>
 
-      <div className="pointer-events-none absolute bottom-5 left-5 z-10 flex items-end gap-5 sm:bottom-8 sm:left-8">
+      <div className="pointer-events-none absolute bottom-5 left-5 z-10 hidden items-end gap-5 sm:bottom-8 sm:left-8 sm:flex">
         <div>
           <p className="text-4xl font-semibold tracking-tight text-slate-950/90 sm:text-5xl">
             {visitedCount} / {points.length}
@@ -435,7 +438,7 @@ export function BloomingVenueMap({
         </p>
       </div>
 
-      <div className="pointer-events-none absolute bottom-5 right-5 z-10 flex items-center gap-3 text-[11px] font-medium text-slate-500 sm:bottom-8 sm:right-8">
+      <div className="pointer-events-none absolute bottom-5 right-5 z-10 hidden items-center gap-3 text-[11px] font-medium text-slate-500 sm:bottom-8 sm:right-8 sm:flex">
         <span className="inline-flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
           訪問済み

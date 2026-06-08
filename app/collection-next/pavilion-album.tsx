@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ResponsiveContainer, Treemap, type TreemapNode } from "recharts";
 import type {
@@ -449,10 +448,6 @@ function AreaTreemapContent({
 export function PavilionAlbum({ items, summary }: PavilionAlbumProps) {
   const router = useRouter();
 
-  useEffect(() => {
-    console.log("[collection-next] grouped treemap data", items);
-  }, [items]);
-
   if (items.length === 0) {
     return (
       <div className="border border-dashed border-slate-300 bg-white px-6 py-10 text-sm leading-7 text-slate-600">
@@ -464,8 +459,8 @@ export function PavilionAlbum({ items, summary }: PavilionAlbumProps) {
   return (
     <section className="space-y-4">
       <div className="overflow-hidden bg-white shadow-sm ring-1 ring-emerald-100/80">
-        <div className="relative h-[560px] w-full bg-[linear-gradient(180deg,#f8fffc_0%,#effcf7_100%)] sm:h-[640px] lg:h-[720px]">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="relative h-[560px] min-h-[560px] min-w-0 w-full bg-[linear-gradient(180deg,#f8fffc_0%,#effcf7_100%)] sm:h-[640px] sm:min-h-[640px] lg:h-[720px] lg:min-h-[720px]">
+          <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
             <Treemap
               data={items}
               dataKey="value"

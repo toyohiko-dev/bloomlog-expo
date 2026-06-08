@@ -306,13 +306,6 @@ export async function listAreas() {
     .order("sort_order", { ascending: true, nullsFirst: false })
     .order("name", { ascending: true });
 
-  console.log("[collection-next] listAreas raw result", {
-    hasError: Boolean(error),
-    errorMessage: error?.message ?? null,
-    rowCount: data?.length ?? 0,
-    rows: data ?? [],
-  });
-
   if (error) {
     throw new Error(error.message);
   }
@@ -466,30 +459,6 @@ export function buildPavilionCollection(logs: ActivityLog[]) {
   }
 
   const items = Array.from(groups.values()).sort(comparePavilionCollectionItems);
-  const spotlightTitles = new Set([
-    "アメリカ館",
-    "インドネシア館",
-    "大阪パビリオン",
-    "庭園パビリオン",
-  ]);
-  const spotlightItems = items
-    .filter((item) => spotlightTitles.has(item.title))
-    .map((item) => ({
-      name: item.title,
-      areaId: item.areaId,
-      pavilionId: item.pavilionId,
-      count: item.count,
-    }));
-
-  console.log("[collection-next] buildPavilionCollection items", {
-    total: items.length,
-    firstItems: items.slice(0, 12).map((item) => ({
-      name: item.title,
-      areaId: item.areaId,
-      count: item.count,
-    })),
-    spotlightItems,
-  });
 
   return items;
 }
@@ -555,26 +524,6 @@ export function buildAreaGroupedPavilionTreemapData(
     }))
     .sort(compareAreaGroups);
 
-  console.log("[collection-next] buildAreaGroupedPavilionTreemapData", {
-    inputCount: items.length,
-    inputFirstItems: items.slice(0, 12).map((item) => ({
-      name: item.title,
-      areaId: item.areaId,
-      count: item.count,
-    })),
-    areaKeySample: Array.from(areaNameById.entries()).slice(0, 12),
-    groupedSummary: groupedItems.map((group) => ({
-      areaId: group.areaId,
-      name: group.name,
-      childCount: group.children.length,
-      firstChildren: group.children.slice(0, 5).map((child) => ({
-        name: child.title,
-        areaId: child.areaId,
-        count: child.count,
-      })),
-    })),
-  });
-
   return groupedItems;
 }
 
@@ -611,12 +560,6 @@ export function buildAreaTreemapData(
 
       return left.name.localeCompare(right.name, "en");
     });
-
-  console.log("[collection-next] buildAreaTreemapData", {
-    inputCount: items.length,
-    areaCount: areas.length,
-    items: treemapItems,
-  });
 
   return treemapItems satisfies AreaTreemapItem[];
 }
