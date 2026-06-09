@@ -71,6 +71,48 @@ verification を分離して考える:
 
 browser automation failure だけで Mission 全体を blocked にしない。
 
+### Windows sandbox と browser automation
+
+2026-06-09 時点の運用メモ。
+
+Codex の Windows 設定で以下の状態だったとき、`node_repl` / in-app Browser / Chrome runtime が起動前に失敗した。
+
+```toml
+[windows]
+sandbox = "elevated"
+```
+
+代表的なエラー:
+
+```text
+windows sandbox failed: spawn setup refresh
+node_repl kernel exited unexpectedly
+```
+
+この場合、アプリ実装や localhost の問題ではなく、Codex の Windows sandbox 初期化問題として切り分ける。
+
+確認順:
+
+1. `~/.codex/config.toml` の `[windows] sandbox` を確認する。
+2. `node_repl` 単体で最小実行が通るか確認する。
+3. in-app Browser runtime を確認する。
+4. Chrome runtime を確認する。
+5. localhost の認証状態は `127.0.0.1` と `localhost` で cookie が分かれる点に注意する。
+
+`sandbox = "unelevated"` に変更して Codex を再起動したところ、以下が復旧した。
+
+- `node_repl`
+- in-app Browser runtime
+- Chrome runtime
+- `http://localhost:3000/collection-next` の automated smoke check
+
+注意:
+
+- `unelevated` は elevated より Windows sandbox の隔離が弱くなる可能性がある。
+- trusted な local development repo での lint / build / browser verification の実用性を優先する場合の workaround として扱う。
+- untrusted repo や不明な script 実行では、sandbox mode の安全性を再評価する。
+- `git push` など network を伴う操作は、sandbox mode とは別に approval / network gate の対象として扱う。
+
 ## anti-patterns
 
 避けること:
