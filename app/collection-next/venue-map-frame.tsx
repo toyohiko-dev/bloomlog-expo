@@ -344,6 +344,7 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<VenueMapMarker | null>(null);
   const [mapSize, setMapSize] = useState<MapSize>({ height: 0, width: 0 });
+  const [viewportSize, setViewportSize] = useState<MapSize>({ height: 0, width: 0 });
   const [offset, setOffset] = useState<MapOffset>({ x: 0, y: 0 });
   const viewportRef = useRef<HTMLDivElement>(null);
   const hasInitializedViewportRef = useRef(false);
@@ -360,9 +361,13 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
     function syncMapSize() {
       const viewportElement = viewportRef.current;
       const nextSize = getBaseMapSize(viewportElement);
+      const nextViewportSize = {
+        height: viewportElement?.clientHeight ?? 0,
+        width: viewportElement?.clientWidth ?? 0,
+      };
       const shouldUseMobileStart =
         !hasInitializedViewportRef.current &&
-        (viewportElement?.clientWidth ?? 0) < 640;
+        nextViewportSize.width < 640;
       const shouldInitializeViewport = !hasInitializedViewportRef.current;
       const nextZoom = shouldInitializeViewport
         ? shouldUseMobileStart
@@ -374,6 +379,7 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
         setZoom(nextZoom);
       }
 
+      setViewportSize(nextViewportSize);
       setMapSize(nextSize);
       setOffset((currentOffset) => {
         if (shouldUseMobileStart) {
@@ -465,6 +471,15 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
       }),
     );
   }, [mapSize]);
+
+  const minimapViewport = viewportSize.width > 0 && viewportSize.height > 0
+    ? {
+        x: clamp((-offset.x / (mapSize.width * zoom)) * VENUE_MAP_ASSET.width, 0, VENUE_MAP_ASSET.width),
+        y: clamp((-offset.y / (mapSize.height * zoom)) * VENUE_MAP_ASSET.height, 0, VENUE_MAP_ASSET.height),
+        width: clamp((viewportSize.width / (mapSize.width * zoom)) * VENUE_MAP_ASSET.width, 0, VENUE_MAP_ASSET.width),
+        height: clamp((viewportSize.height / (mapSize.height * zoom)) * VENUE_MAP_ASSET.height, 0, VENUE_MAP_ASSET.height),
+      }
+    : null;
 
   useEffect(() => {
     const viewportElement = viewportRef.current;
@@ -661,6 +676,38 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
             onClose={() => setSelectedMarker(null)}
           />
         ) : null}
+      </div>
+
+      <div className="pointer-events-none absolute bottom-4 right-4 z-20 sm:hidden">
+        <div className="w-[104px] overflow-hidden bg-white/82 p-1.5 shadow-sm ring-1 ring-slate-200/80 backdrop-blur">
+          <svg
+            aria-label="現在見ている地図範囲"
+            className="block h-auto w-full"
+            viewBox={VENUE_MAP_ASSET.viewBox}
+            role="img"
+          >
+            <image
+              href={VENUE_MAP_ASSET.href}
+              x="0"
+              y="0"
+              width={VENUE_MAP_ASSET.width}
+              height={VENUE_MAP_ASSET.height}
+              preserveAspectRatio="xMidYMid meet"
+              opacity="0.78"
+            />
+            {minimapViewport ? (
+              <rect
+                x={minimapViewport.x}
+                y={minimapViewport.y}
+                width={minimapViewport.width}
+                height={minimapViewport.height}
+                fill="rgba(16, 185, 129, 0.18)"
+                stroke="#059669"
+                strokeWidth="1.4"
+              />
+            ) : null}
+          </svg>
+        </div>
       </div>
     </div>
   );
