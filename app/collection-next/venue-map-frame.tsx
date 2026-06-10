@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { CSSProperties, PointerEvent, ReactNode } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { VENUE_MAP_ASSET } from "./venue-map-config";
@@ -27,6 +28,10 @@ export type VenueMapMarker = {
   imageUrl: string | null;
   size: number;
   rotation: number;
+  visitCount: number;
+  firstVisitedAt: string | null;
+  latestVisitedAt: string | null;
+  latestSessionId: string | null;
 };
 
 type MapSize = {
@@ -44,6 +49,16 @@ type FocusTarget = {
   label: string;
   x: number;
   y: number;
+  zoom: number;
+};
+
+type TrackedPointer = {
+  x: number;
+  y: number;
+};
+
+type PinchStart = {
+  distance: number;
   zoom: number;
 };
 
@@ -117,6 +132,38 @@ function getViewportCenterOffset({
     viewport,
     zoom,
   });
+}
+
+function getPointerDistance(left: TrackedPointer, right: TrackedPointer) {
+  return Math.hypot(left.x - right.x, left.y - right.y);
+}
+
+function getPointerCenter(left: TrackedPointer, right: TrackedPointer) {
+  return {
+    x: (left.x + right.x) / 2,
+    y: (left.y + right.y) / 2,
+  };
+}
+
+function getFirstTwoPointers(pointers: Map<number, TrackedPointer>) {
+  return Array.from(pointers.values()).slice(0, 2);
+}
+
+function formatMapDate(value: string | null) {
+  if (!value) {
+    return "未記録";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "未記録";
+  }
+
+  return new Intl.DateTimeFormat("ja-JP", {
+    month: "short",
+    day: "numeric",
+  }).format(date);
 }
 
 function getMarkerCentroid(markers: VenueMapMarker[]) {
@@ -211,9 +258,10 @@ function buildFocusTargets(markers: VenueMapMarker[]) {
   ] satisfies FocusTarget[];
 }
 
-function VenueMapMarkerView({ marker, position }: {
+function VenueMapMarkerView({ marker, position, onSelect }: {
   marker: VenueMapMarker;
   position: { x: number; y: number };
+  onSelect: (marker: VenueMapMarker) => void;
 }) {
   const markerStyle = {
     left: `${position.x}px`,
@@ -224,10 +272,11 @@ function VenueMapMarkerView({ marker, position }: {
 
   if (!marker.visited) {
     return (
-      <div
+      <button
+        type="button"
         aria-label={`${marker.name}（未訪問）`}
-        className="venue-map-marker venue-map-marker-unvisited"
-        role="img"
+        className="venue-map-marker venue-map-marker-button venue-map-marker-unvisited"
+        onClick={() => onSelect(marker)}
         style={markerStyle}
         title={`${marker.name}（未訪問）`}
       />
@@ -235,10 +284,11 @@ function VenueMapMarkerView({ marker, position }: {
   }
 
   return (
-    <div
+    <button
+      type="button"
       aria-label={`${marker.name}（訪問済み）`}
-      className="venue-map-marker venue-map-marker-visited"
-      role="img"
+      className="venue-map-marker venue-map-marker-button venue-map-marker-visited"
+      onClick={() => onSelect(marker)}
       style={markerStyle}
       title={`${marker.name}（訪問済み）`}
     >
@@ -256,18 +306,90 @@ function VenueMapMarkerView({ marker, position }: {
           backgroundImage: `url("${marker.imageUrl}")`,
         } : undefined}
       />
-    </div>
+    </button>
+  );
+}
+
+function VenueMapMarkerDetail({
+  marker,
+  onClose,
+}: {
+  marker: VenueMapMarker;
+  onClose: () => void;
+}) {
+  return (
+    <aside className="pointer-events-auto absolute bottom-0 left-0 right-0 z-30 border-t border-emerald-100 bg-white/94 px-5 py-4 shadow-[0_-14px_30px_rgba(15,23,42,0.12)] backdrop-blur sm:bottom-6 sm:left-auto sm:right-6 sm:w-[320px] sm:border sm:shadow-lg">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-emerald-700">
+            {marker.areaName}
+          </p>
+          <h3 className="mt-1 break-words text-lg font-semibold leading-snug text-slate-950">
+            {marker.name}
+          </h3>
+        </div>
+        <button
+          type="button"
+          aria-label="詳細を閉じる"
+          className="grid h-8 w-8 shrink-0 place-items-center border border-slate-200 bg-white text-lg leading-none text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
+          onClick={onClose}
+        >
+          ×
+        </button>
+      </div>
+
+      {marker.visited ? (
+        <>
+          <dl className="mt-4 grid grid-cols-3 gap-2 text-sm">
+            <div className="bg-emerald-50 px-3 py-2">
+              <dt className="text-[11px] font-medium text-emerald-700">訪問回数</dt>
+              <dd className="mt-1 text-base font-semibold text-slate-950">
+                {marker.visitCount}回
+              </dd>
+            </div>
+            <div className="bg-slate-50 px-3 py-2">
+              <dt className="text-[11px] font-medium text-slate-500">初回</dt>
+              <dd className="mt-1 text-sm font-semibold text-slate-900">
+                {formatMapDate(marker.firstVisitedAt)}
+              </dd>
+            </div>
+            <div className="bg-slate-50 px-3 py-2">
+              <dt className="text-[11px] font-medium text-slate-500">最新</dt>
+              <dd className="mt-1 text-sm font-semibold text-slate-900">
+                {formatMapDate(marker.latestVisitedAt)}
+              </dd>
+            </div>
+          </dl>
+
+          {marker.latestSessionId ? (
+            <Link
+              href={`/sessions/${marker.latestSessionId}`}
+              className="mt-4 inline-flex w-full items-center justify-center bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+            >
+              最新の来場日の記録を見る
+            </Link>
+          ) : null}
+        </>
+      ) : (
+        <p className="mt-4 bg-slate-50 px-3 py-3 text-sm leading-6 text-slate-600">
+          まだ訪問していないパビリオンです。
+        </p>
+      )}
+    </aside>
   );
 }
 
 export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
   const [zoom, setZoom] = useState(MIN_ZOOM);
   const [isDragging, setIsDragging] = useState(false);
+  const [selectedMarker, setSelectedMarker] = useState<VenueMapMarker | null>(null);
   const [mapSize, setMapSize] = useState<MapSize>({ height: 0, width: 0 });
   const [viewportSize, setViewportSize] = useState<MapSize>({ height: 0, width: 0 });
   const [offset, setOffset] = useState<MapOffset>({ x: 0, y: 0 });
   const viewportRef = useRef<HTMLDivElement>(null);
   const hasInitializedViewportRef = useRef(false);
+  const activePointersRef = useRef(new Map<number, TrackedPointer>());
+  const pinchStartRef = useRef<PinchStart | null>(null);
   const dragStartRef = useRef({
     clientX: 0,
     clientY: 0,
@@ -423,6 +545,22 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
     }
 
     event.currentTarget.setPointerCapture(event.pointerId);
+    activePointersRef.current.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    if (activePointersRef.current.size >= 2) {
+      const [left, right] = getFirstTwoPointers(activePointersRef.current);
+
+      pinchStartRef.current = {
+        distance: getPointerDistance(left, right),
+        zoom,
+      };
+      setIsDragging(false);
+      return;
+    }
+
     dragStartRef.current = {
       clientX: event.clientX,
       clientY: event.clientY,
@@ -433,6 +571,39 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
   }
 
   function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
+    if (activePointersRef.current.has(event.pointerId)) {
+      activePointersRef.current.set(event.pointerId, {
+        x: event.clientX,
+        y: event.clientY,
+      });
+    }
+
+    if (activePointersRef.current.size >= 2) {
+      const [left, right] = getFirstTwoPointers(activePointersRef.current);
+      const pinchStart = pinchStartRef.current;
+
+      if (!pinchStart) {
+        pinchStartRef.current = {
+          distance: getPointerDistance(left, right),
+          zoom,
+        };
+        return;
+      }
+
+      const nextDistance = getPointerDistance(left, right);
+      const center = getPointerCenter(left, right);
+
+      if (pinchStart.distance > 0) {
+        zoomTo(
+          pinchStart.zoom * (nextDistance / pinchStart.distance),
+          center.x,
+          center.y,
+        );
+      }
+
+      return;
+    }
+
     if (!isDragging) {
       return;
     }
@@ -458,6 +629,8 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
 
+    activePointersRef.current.delete(event.pointerId);
+    pinchStartRef.current = null;
     setIsDragging(false);
   }
 
@@ -517,6 +690,7 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
             <VenueMapMarkerView
               key={marker.id}
               marker={marker}
+              onSelect={setSelectedMarker}
               position={{
                 x: offset.x + mapSize.width * (marker.x / VENUE_MAP_ASSET.width) * zoom,
                 y: offset.y + mapSize.height * (marker.y / VENUE_MAP_ASSET.height) * zoom,
@@ -524,6 +698,12 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
             />
           ))}
         </div>
+        {selectedMarker ? (
+          <VenueMapMarkerDetail
+            marker={selectedMarker}
+            onClose={() => setSelectedMarker(null)}
+          />
+        ) : null}
       </div>
 
       <div className="pointer-events-auto absolute bottom-4 left-4 right-4 z-20 sm:hidden">

@@ -29,9 +29,13 @@ type PavilionMapPoint = {
   imageUrl: string | null;
   size: number;
   rotation: number;
+  visitCount: number;
+  firstVisitedAt: string | null;
+  latestVisitedAt: string | null;
+  latestSessionId: string | null;
 };
 
-type CompletedVillageArea = {
+type VenueAreaProgress = {
   id: string;
   name: string;
   x: number;
@@ -39,6 +43,9 @@ type CompletedVillageArea = {
   width: number;
   height: number;
   bloom: string;
+  visitedCount: number;
+  totalCount: number;
+  progress: number;
 };
 
 function getAreaNameById(areas: Area[]) {
@@ -50,6 +57,16 @@ function buildVisitedPavilionIds(items: PavilionCollectionItem[]) {
     items
       .map((item) => item.pavilionId)
       .filter((id): id is string => Boolean(id)),
+  );
+}
+
+function buildVisitedPavilionItemById(items: PavilionCollectionItem[]) {
+  return new Map(
+    items
+      .filter((item): item is PavilionCollectionItem & { pavilionId: string } =>
+        Boolean(item.pavilionId)
+      )
+      .map((item) => [item.pavilionId, item] as const),
   );
 }
 
@@ -118,10 +135,12 @@ function buildPavilionPoints({
   areas,
   pavilions,
   visitedIds,
+  visitedItemById,
 }: {
   areas: Area[];
   pavilions: PavilionOption[];
   visitedIds: Set<string>;
+  visitedItemById: Map<string, PavilionCollectionItem>;
 }) {
   const areaNameById = getAreaNameById(areas);
   const grouped = groupPavilionsByArea(pavilions, areas);
@@ -142,6 +161,7 @@ function buildPavilionPoints({
       });
       const point = fixedPoint
         ?? getGridPoint(placement, pavilionIndex, areaPavilions.length);
+      const visitedItem = visitedItemById.get(pavilion.id);
 
       return {
         id: pavilion.id,
@@ -158,12 +178,16 @@ function buildPavilionPoints({
           : null,
         size: fixedPoint?.size ?? 1,
         rotation: fixedPoint?.rotation ?? ((pavilionIndex * 47) % 34) - 17,
+        visitCount: visitedItem?.count ?? 0,
+        firstVisitedAt: visitedItem?.firstVisitedAt ?? null,
+        latestVisitedAt: visitedItem?.latestVisitedAt ?? null,
+        latestSessionId: visitedItem?.latestSessionId ?? null,
       } satisfies PavilionMapPoint;
     });
   });
 }
 
-function buildCompletedVillageAreas({
+function buildVenueAreaProgress({
   areas,
   pavilions,
   visitedIds,
@@ -181,14 +205,15 @@ function buildCompletedVillageAreas({
 
   return orderedAreaIds.flatMap((areaId, areaIndex) => {
     const areaPavilions = grouped.get(areaId) ?? [];
+    const totalCount = areaPavilions.length;
 
-    if (
-      areaPavilions.length === 0
-      || areaPavilions.some((pavilion) => !visitedIds.has(pavilion.id))
-    ) {
+    if (totalCount === 0) {
       return [];
     }
 
+    const visitedCount = areaPavilions.filter((pavilion) =>
+      visitedIds.has(pavilion.id)
+    ).length;
     const areaName = areaNameById.get(areaId) ?? "未分類";
     const placement = getVenueAreaPlacement(areaName, areaIndex);
 
@@ -200,13 +225,39 @@ function buildCompletedVillageAreas({
       width: placement.areaBox.width,
       height: placement.areaBox.height,
       bloom: placement.bloom,
-    } satisfies CompletedVillageArea];
+      visitedCount,
+      totalCount,
+      progress: visitedCount / totalCount,
+    } satisfies VenueAreaProgress];
   });
 }
 
-function CompletedVillageLayer({ area }: { area: CompletedVillageArea }) {
+function AreaProgressLayer({ area }: { area: VenueAreaProgress }) {
+  if (area.progress <= 0) {
+    return null;
+  }
+
+  const isCompleted = area.progress >= 1;
+  const washOpacity = isCompleted ? 0.2 : 0.06 + area.progress * 0.1;
+  const strokeOpacity = isCompleted ? 0.3 : 0.12 + area.progress * 0.12;
+  const patternId = `venue-area-flower-field-${area.id.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+
   return (
-    <g className="venue-map-village-complete">
+    <g className="venue-map-area-progress">
+      {isCompleted ? (
+        <defs>
+          <pattern
+            id={patternId}
+            width="4.8"
+            height="4.8"
+            patternUnits="userSpaceOnUse"
+          >
+            <circle cx="1.4" cy="1.6" r="0.45" fill={area.bloom} opacity="0.52" />
+            <circle cx="2.2" cy="1.6" r="0.45" fill="#fbbf24" opacity="0.46" />
+            <circle cx="1.8" cy="2.3" r="0.45" fill="#fb7185" opacity="0.42" />
+          </pattern>
+        </defs>
+      ) : null}
       <rect
         x={area.x}
         y={area.y}
@@ -214,8 +265,19 @@ function CompletedVillageLayer({ area }: { area: CompletedVillageArea }) {
         height={area.height}
         rx="5"
         fill={area.bloom}
-        opacity="0.16"
+        opacity={washOpacity}
       />
+      {isCompleted ? (
+        <rect
+          x={area.x}
+          y={area.y}
+          width={area.width}
+          height={area.height}
+          rx="5"
+          fill={`url(#${patternId})`}
+          opacity="0.72"
+        />
+      ) : null}
       <rect
         x={area.x + 0.8}
         y={area.y + 0.8}
@@ -225,9 +287,9 @@ function CompletedVillageLayer({ area }: { area: CompletedVillageArea }) {
         fill="none"
         stroke={area.bloom}
         strokeWidth="0.5"
-        opacity="0.26"
+        opacity={strokeOpacity}
       />
-      <title>{`${area.name}（制覇）`}</title>
+      <title>{`${area.name}・${area.visitedCount}/${area.totalCount} 訪問済み`}</title>
     </g>
   );
 }
@@ -252,12 +314,14 @@ export function BloomingVenueMap({
       ]
     : areas;
   const visitedIds = buildVisitedPavilionIds(visitedItems);
+  const visitedItemById = buildVisitedPavilionItemById(visitedItems);
   const points = buildPavilionPoints({
     areas: mapAreas,
     pavilions,
     visitedIds,
+    visitedItemById,
   });
-  const completedVillageAreas = buildCompletedVillageAreas({
+  const areaProgress = buildVenueAreaProgress({
     areas: mapAreas,
     pavilions,
     visitedIds,
@@ -269,7 +333,7 @@ export function BloomingVenueMap({
     <section className="relative overflow-hidden bg-[linear-gradient(135deg,#fbfffc_0%,#f8fbff_48%,#fffaf2_100%)] ring-1 ring-emerald-100">
       <style>
         {`
-          .venue-map-village-complete {
+          .venue-map-area-progress {
             transform-box: fill-box;
             transform-origin: center;
             animation: venue-map-village-wash 620ms ease-out both;
@@ -294,6 +358,15 @@ export function BloomingVenueMap({
             will-change: left, top;
           }
 
+          .venue-map-marker-button {
+            appearance: none;
+            border: 0;
+            color: inherit;
+            cursor: pointer;
+            padding: 0;
+            pointer-events: auto;
+          }
+
           .venue-map-marker-unvisited {
             background: #fff;
             border: 1.5px solid #bfd2cc;
@@ -302,10 +375,30 @@ export function BloomingVenueMap({
             width: 12px;
           }
 
+          .venue-map-marker-unvisited:hover,
+          .venue-map-marker-unvisited:focus-visible {
+            border-color: #059669;
+            box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.12);
+            outline: none;
+          }
+
           .venue-map-marker-visited {
             animation: venue-map-bloom-open 360ms ease-out both;
+            background: transparent;
             height: 68px;
             width: 68px;
+          }
+
+          .venue-map-marker-visited:focus-visible {
+            outline: none;
+          }
+
+          .venue-map-marker-visited:hover .venue-map-bloom-core,
+          .venue-map-marker-visited:focus-visible .venue-map-bloom-core {
+            box-shadow:
+              0 0 0 3px rgba(255, 255, 255, 0.9),
+              0 0 0 6px color-mix(in srgb, var(--marker-bloom) 34%, transparent),
+              0 10px 18px rgba(78, 68, 47, 0.2);
           }
 
           .venue-map-bloom-petal {
@@ -420,8 +513,8 @@ export function BloomingVenueMap({
             preserveAspectRatio="xMidYMid meet"
           />
 
-          {completedVillageAreas.map((area) => (
-            <CompletedVillageLayer key={area.id} area={area} />
+          {areaProgress.map((area) => (
+            <AreaProgressLayer key={area.id} area={area} />
           ))}
         </svg>
       </VenueMapFrame>
