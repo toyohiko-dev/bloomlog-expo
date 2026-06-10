@@ -48,6 +48,13 @@ type VenueAreaProgress = {
   progress: number;
 };
 
+type AreaProgressVisual = {
+  stage: "sprout" | "growing" | "rich" | "complete";
+  washOpacity: number;
+  strokeOpacity: number;
+  patternOpacity: number;
+};
+
 function getAreaNameById(areas: Area[]) {
   return new Map(areas.map((area) => [area.id, area.name] as const));
 }
@@ -232,19 +239,59 @@ function buildVenueAreaProgress({
   });
 }
 
-function AreaProgressLayer({ area }: { area: VenueAreaProgress }) {
-  if (area.progress <= 0) {
+function getAreaProgressVisual(progress: number): AreaProgressVisual | null {
+  if (progress <= 0) {
     return null;
   }
 
-  const isCompleted = area.progress >= 1;
-  const washOpacity = isCompleted ? 0.2 : 0.06 + area.progress * 0.1;
-  const strokeOpacity = isCompleted ? 0.3 : 0.12 + area.progress * 0.12;
+  if (progress >= 1) {
+    return {
+      stage: "complete",
+      washOpacity: 0.24,
+      strokeOpacity: 0.34,
+      patternOpacity: 0.76,
+    };
+  }
+
+  if (progress >= 0.68) {
+    return {
+      stage: "rich",
+      washOpacity: 0.19,
+      strokeOpacity: 0.27,
+      patternOpacity: 0.24,
+    };
+  }
+
+  if (progress >= 0.34) {
+    return {
+      stage: "growing",
+      washOpacity: 0.14,
+      strokeOpacity: 0.21,
+      patternOpacity: 0.14,
+    };
+  }
+
+  return {
+    stage: "sprout",
+    washOpacity: 0.08,
+    strokeOpacity: 0.15,
+    patternOpacity: 0,
+  };
+}
+
+function AreaProgressLayer({ area }: { area: VenueAreaProgress }) {
+  const visual = getAreaProgressVisual(area.progress);
+
+  if (!visual) {
+    return null;
+  }
+
+  const shouldShowPattern = visual.patternOpacity > 0;
   const patternId = `venue-area-flower-field-${area.id.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
 
   return (
-    <g className="venue-map-area-progress">
-      {isCompleted ? (
+    <g className="venue-map-area-progress" data-stage={visual.stage}>
+      {shouldShowPattern ? (
         <defs>
           <pattern
             id={patternId}
@@ -265,9 +312,9 @@ function AreaProgressLayer({ area }: { area: VenueAreaProgress }) {
         height={area.height}
         rx="5"
         fill={area.bloom}
-        opacity={washOpacity}
+        opacity={visual.washOpacity}
       />
-      {isCompleted ? (
+      {shouldShowPattern ? (
         <rect
           x={area.x}
           y={area.y}
@@ -275,7 +322,7 @@ function AreaProgressLayer({ area }: { area: VenueAreaProgress }) {
           height={area.height}
           rx="5"
           fill={`url(#${patternId})`}
-          opacity="0.72"
+          opacity={visual.patternOpacity}
         />
       ) : null}
       <rect
@@ -287,9 +334,9 @@ function AreaProgressLayer({ area }: { area: VenueAreaProgress }) {
         fill="none"
         stroke={area.bloom}
         strokeWidth="0.5"
-        opacity={strokeOpacity}
+        opacity={visual.strokeOpacity}
       />
-      <title>{`${area.name}・${area.visitedCount}/${area.totalCount} 訪問済み`}</title>
+      <title>{`${area.name}・${area.visitedCount}/${area.totalCount} 訪問済み（${Math.round(area.progress * 100)}%）`}</title>
     </g>
   );
 }

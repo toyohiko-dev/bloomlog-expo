@@ -5,11 +5,13 @@ import type { CSSProperties, PointerEvent, ReactNode } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { VENUE_MAP_ASSET } from "./venue-map-config";
 
-const MIN_ZOOM = 1;
-const MAX_ZOOM = 2.6;
-const MOBILE_INITIAL_ZOOM = 1.35;
-const BUTTON_ZOOM_STEP = 0.22;
-const DOUBLE_CLICK_ZOOM_STEP = 0.35;
+const MIN_ZOOM = 0.38;
+const MAX_ZOOM = 4.2;
+const DESKTOP_INITIAL_ZOOM = 1;
+const MOBILE_INITIAL_ZOOM = 0.72;
+const BUTTON_ZOOM_STEP = 0.28;
+const DOUBLE_CLICK_ZOOM_STEP = 0.5;
+const AREA_FOCUS_ZOOM = 1.12;
 
 type VenueMapFrameProps = {
   children: ReactNode;
@@ -97,6 +99,28 @@ function clampOffset({
 
   const scaledWidth = size.width * zoom;
   const scaledHeight = size.height * zoom;
+
+  if (scaledWidth <= viewport.clientWidth && scaledHeight <= viewport.clientHeight) {
+    return {
+      x: (viewport.clientWidth - scaledWidth) / 2,
+      y: (viewport.clientHeight - scaledHeight) / 2,
+    };
+  }
+
+  if (scaledWidth <= viewport.clientWidth) {
+    return {
+      x: (viewport.clientWidth - scaledWidth) / 2,
+      y: clamp(offset.y, viewport.clientHeight - scaledHeight, 0),
+    };
+  }
+
+  if (scaledHeight <= viewport.clientHeight) {
+    return {
+      x: clamp(offset.x, viewport.clientWidth - scaledWidth, 0),
+      y: (viewport.clientHeight - scaledHeight) / 2,
+    };
+  }
+
   const minX = Math.min(viewport.clientWidth - scaledWidth, 0);
   const minY = Math.min(viewport.clientHeight - scaledHeight, 0);
 
@@ -132,6 +156,21 @@ function getViewportCenterOffset({
     viewport,
     zoom,
   });
+}
+
+function getFitZoom(size: MapSize, viewport: HTMLDivElement | null) {
+  if (!viewport || size.width === 0 || size.height === 0) {
+    return DESKTOP_INITIAL_ZOOM;
+  }
+
+  return clamp(
+    Math.min(
+      viewport.clientWidth / size.width,
+      viewport.clientHeight / size.height,
+    ) * 0.94,
+    MIN_ZOOM,
+    DESKTOP_INITIAL_ZOOM,
+  );
 }
 
 function getPointerDistance(left: TrackedPointer, right: TrackedPointer) {
@@ -221,7 +260,7 @@ function buildFocusTargets(markers: VenueMapMarker[]) {
         label: group.areaName,
         x: centroid.x,
         y: centroid.y,
-        zoom: MOBILE_INITIAL_ZOOM + 0.16,
+        zoom: AREA_FOCUS_ZOOM,
         visitedCount: group.visitedCount,
         totalCount: group.markers.length,
       };
@@ -380,7 +419,7 @@ function VenueMapMarkerDetail({
 }
 
 export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
-  const [zoom, setZoom] = useState(MIN_ZOOM);
+  const [zoom, setZoom] = useState(DESKTOP_INITIAL_ZOOM);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<VenueMapMarker | null>(null);
   const [mapSize, setMapSize] = useState<MapSize>({ height: 0, width: 0 });
@@ -407,9 +446,14 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
       };
       const shouldUseMobileStart =
         !hasInitializedViewportRef.current && nextViewportSize.width < 640;
-      const nextZoom = shouldUseMobileStart ? MOBILE_INITIAL_ZOOM : zoom;
+      const shouldInitializeViewport = !hasInitializedViewportRef.current;
+      const nextZoom = shouldInitializeViewport
+        ? shouldUseMobileStart
+          ? MOBILE_INITIAL_ZOOM
+          : DESKTOP_INITIAL_ZOOM
+        : clamp(zoom, MIN_ZOOM, MAX_ZOOM);
 
-      if (shouldUseMobileStart) {
+      if (shouldInitializeViewport && nextZoom !== zoom) {
         setZoom(nextZoom);
       }
 
@@ -491,6 +535,22 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
   }, [zoom, zoomTo]);
 
   const focusTargets = buildFocusTargets(markers);
+
+  const fitMap = useCallback(() => {
+    const viewportElement = viewportRef.current;
+    const nextZoom = getFitZoom(mapSize, viewportElement);
+
+    setZoom(nextZoom);
+    setOffset(
+      getViewportCenterOffset({
+        focusX: mapSize.width / 2,
+        focusY: mapSize.height / 2,
+        size: mapSize,
+        viewport: viewportElement,
+        zoom: nextZoom,
+      }),
+    );
+  }, [mapSize]);
 
   const focusMap = useCallback((target: FocusTarget) => {
     const viewportElement = viewportRef.current;
@@ -649,6 +709,14 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
         <span className="min-w-12 text-center text-xs font-semibold text-slate-500">
           {Math.round(zoom * 100)}%
         </span>
+        <button
+          type="button"
+          aria-label="地図全体を表示"
+          className="grid h-8 min-w-10 place-items-center px-2 text-xs font-semibold text-slate-600 transition hover:text-slate-950"
+          onClick={fitMap}
+        >
+          全体
+        </button>
         <button
           type="button"
           aria-label="地図を拡大"
