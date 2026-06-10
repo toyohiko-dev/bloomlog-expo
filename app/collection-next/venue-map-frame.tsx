@@ -11,7 +11,6 @@ const DESKTOP_INITIAL_ZOOM = 1;
 const MOBILE_INITIAL_ZOOM = 0.72;
 const BUTTON_ZOOM_STEP = 0.28;
 const DOUBLE_CLICK_ZOOM_STEP = 0.5;
-const AREA_FOCUS_ZOOM = 1.12;
 
 type VenueMapFrameProps = {
   children: ReactNode;
@@ -44,14 +43,6 @@ type MapSize = {
 type MapOffset = {
   x: number;
   y: number;
-};
-
-type FocusTarget = {
-  key: string;
-  label: string;
-  x: number;
-  y: number;
-  zoom: number;
 };
 
 type TrackedPointer = {
@@ -227,76 +218,6 @@ function getMarkerCentroid(markers: VenueMapMarker[]) {
   };
 }
 
-function buildFocusTargets(markers: VenueMapMarker[]) {
-  const grouped = new Map<string, {
-    areaName: string;
-    markers: VenueMapMarker[];
-    visitedCount: number;
-  }>();
-
-  for (const marker of markers) {
-    const current = grouped.get(marker.areaId) ?? {
-      areaName: marker.areaName,
-      markers: [],
-      visitedCount: 0,
-    };
-
-    current.markers.push(marker);
-
-    if (marker.visited) {
-      current.visitedCount += 1;
-    }
-
-    grouped.set(marker.areaId, current);
-  }
-
-  const allCentroid = getMarkerCentroid(markers);
-  const areaTargets = Array.from(grouped.entries())
-    .map(([areaId, group]) => {
-      const centroid = getMarkerCentroid(group.markers);
-
-      return {
-        key: areaId,
-        label: group.areaName,
-        x: centroid.x,
-        y: centroid.y,
-        zoom: AREA_FOCUS_ZOOM,
-        visitedCount: group.visitedCount,
-        totalCount: group.markers.length,
-      };
-    })
-    .sort((left, right) => {
-      if (left.visitedCount !== right.visitedCount) {
-        return right.visitedCount - left.visitedCount;
-      }
-
-      if (left.totalCount !== right.totalCount) {
-        return right.totalCount - left.totalCount;
-      }
-
-      return left.label.localeCompare(right.label, "ja-JP");
-    })
-    .slice(0, 8)
-    .map((target) => ({
-      key: target.key,
-      label: target.label,
-      x: target.x,
-      y: target.y,
-      zoom: target.zoom,
-    }));
-
-  return [
-    {
-      key: "visited",
-      label: "訪問済み",
-      x: allCentroid.x,
-      y: allCentroid.y,
-      zoom: MOBILE_INITIAL_ZOOM,
-    },
-    ...areaTargets,
-  ] satisfies FocusTarget[];
-}
-
 function VenueMapMarkerView({ marker, position, onSelect }: {
   marker: VenueMapMarker;
   position: { x: number; y: number };
@@ -423,7 +344,6 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<VenueMapMarker | null>(null);
   const [mapSize, setMapSize] = useState<MapSize>({ height: 0, width: 0 });
-  const [viewportSize, setViewportSize] = useState<MapSize>({ height: 0, width: 0 });
   const [offset, setOffset] = useState<MapOffset>({ x: 0, y: 0 });
   const viewportRef = useRef<HTMLDivElement>(null);
   const hasInitializedViewportRef = useRef(false);
@@ -440,12 +360,9 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
     function syncMapSize() {
       const viewportElement = viewportRef.current;
       const nextSize = getBaseMapSize(viewportElement);
-      const nextViewportSize = {
-        height: viewportElement?.clientHeight ?? 0,
-        width: viewportElement?.clientWidth ?? 0,
-      };
       const shouldUseMobileStart =
-        !hasInitializedViewportRef.current && nextViewportSize.width < 640;
+        !hasInitializedViewportRef.current &&
+        (viewportElement?.clientWidth ?? 0) < 640;
       const shouldInitializeViewport = !hasInitializedViewportRef.current;
       const nextZoom = shouldInitializeViewport
         ? shouldUseMobileStart
@@ -457,7 +374,6 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
         setZoom(nextZoom);
       }
 
-      setViewportSize(nextViewportSize);
       setMapSize(nextSize);
       setOffset((currentOffset) => {
         if (shouldUseMobileStart) {
@@ -534,8 +450,6 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
     zoomTo(zoom + delta, anchorClientX, anchorClientY);
   }, [zoom, zoomTo]);
 
-  const focusTargets = buildFocusTargets(markers);
-
   const fitMap = useCallback(() => {
     const viewportElement = viewportRef.current;
     const nextZoom = getFitZoom(mapSize, viewportElement);
@@ -551,31 +465,6 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
       }),
     );
   }, [mapSize]);
-
-  const focusMap = useCallback((target: FocusTarget) => {
-    const viewportElement = viewportRef.current;
-    const nextZoom = Math.min(Math.max(target.zoom, MIN_ZOOM), MAX_ZOOM);
-
-    setZoom(nextZoom);
-    setOffset(
-      getViewportCenterOffset({
-        focusX: mapSize.width * (target.x / VENUE_MAP_ASSET.width),
-        focusY: mapSize.height * (target.y / VENUE_MAP_ASSET.height),
-        size: mapSize,
-        viewport: viewportElement,
-        zoom: nextZoom,
-      }),
-    );
-  }, [mapSize]);
-
-  const minimapViewport = viewportSize.width > 0 && viewportSize.height > 0
-    ? {
-        x: clamp((-offset.x / (mapSize.width * zoom)) * VENUE_MAP_ASSET.width, 0, VENUE_MAP_ASSET.width),
-        y: clamp((-offset.y / (mapSize.height * zoom)) * VENUE_MAP_ASSET.height, 0, VENUE_MAP_ASSET.height),
-        width: clamp((viewportSize.width / (mapSize.width * zoom)) * VENUE_MAP_ASSET.width, 0, VENUE_MAP_ASSET.width),
-        height: clamp((viewportSize.height / (mapSize.height * zoom)) * VENUE_MAP_ASSET.height, 0, VENUE_MAP_ASSET.height),
-      }
-    : null;
 
   useEffect(() => {
     const viewportElement = viewportRef.current;
@@ -772,51 +661,6 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
             onClose={() => setSelectedMarker(null)}
           />
         ) : null}
-      </div>
-
-      <div className="pointer-events-auto absolute bottom-4 left-4 right-4 z-20 sm:hidden">
-        <div className="mb-3 ml-auto w-[104px] overflow-hidden bg-white/82 p-1.5 shadow-sm ring-1 ring-slate-200/80 backdrop-blur">
-          <svg
-            aria-label="現在見ている地図範囲"
-            className="block h-auto w-full"
-            viewBox={VENUE_MAP_ASSET.viewBox}
-            role="img"
-          >
-            <image
-              href={VENUE_MAP_ASSET.href}
-              x="0"
-              y="0"
-              width={VENUE_MAP_ASSET.width}
-              height={VENUE_MAP_ASSET.height}
-              preserveAspectRatio="xMidYMid meet"
-              opacity="0.78"
-            />
-            {minimapViewport ? (
-              <rect
-                x={minimapViewport.x}
-                y={minimapViewport.y}
-                width={minimapViewport.width}
-                height={minimapViewport.height}
-                fill="rgba(16, 185, 129, 0.18)"
-                stroke="#059669"
-                strokeWidth="1.4"
-              />
-            ) : null}
-          </svg>
-        </div>
-
-        <div className="flex gap-2 overflow-x-auto bg-white/82 px-2 py-2 shadow-sm ring-1 ring-slate-200/80 backdrop-blur">
-          {focusTargets.map((target) => (
-            <button
-              key={target.key}
-              type="button"
-              className="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm"
-              onClick={() => focusMap(target)}
-            >
-              {target.label}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );
