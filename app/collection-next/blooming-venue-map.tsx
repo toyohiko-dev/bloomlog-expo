@@ -49,11 +49,22 @@ type VenueAreaProgress = {
 };
 
 type AreaProgressVisual = {
-  stage: "sprout" | "growing" | "rich" | "complete";
+  stage: "awakened" | "growing" | "alive" | "complete";
   washOpacity: number;
   strokeOpacity: number;
-  patternOpacity: number;
+  flowOpacity: number;
+  flowScale: number;
+  flowSaturation: number;
 };
+
+const LIFE_FLOW_COLORS = {
+  blue: "#0b75b7",
+  cyan: "#35c7d0",
+  green: "#20a85a",
+  lime: "#b9d93b",
+  pink: "#e65a91",
+  yellow: "#f4df63",
+} as const;
 
 function getAreaNameById(areas: Area[]) {
   return new Map(areas.map((area) => [area.id, area.name] as const));
@@ -247,18 +258,22 @@ function getAreaProgressVisual(progress: number): AreaProgressVisual | null {
   if (progress >= 1) {
     return {
       stage: "complete",
-      washOpacity: 0.24,
-      strokeOpacity: 0.34,
-      patternOpacity: 0.76,
+      washOpacity: 0.3,
+      strokeOpacity: 0.38,
+      flowOpacity: 0.78,
+      flowScale: 1,
+      flowSaturation: 1,
     };
   }
 
   if (progress >= 0.68) {
     return {
-      stage: "rich",
+      stage: "alive",
       washOpacity: 0.19,
       strokeOpacity: 0.27,
-      patternOpacity: 0.24,
+      flowOpacity: 0.34,
+      flowScale: 0.78,
+      flowSaturation: 0.68,
     };
   }
 
@@ -267,15 +282,19 @@ function getAreaProgressVisual(progress: number): AreaProgressVisual | null {
       stage: "growing",
       washOpacity: 0.14,
       strokeOpacity: 0.21,
-      patternOpacity: 0.14,
+      flowOpacity: 0.22,
+      flowScale: 0.58,
+      flowSaturation: 0.46,
     };
   }
 
   return {
-    stage: "sprout",
+    stage: "awakened",
     washOpacity: 0.08,
     strokeOpacity: 0.15,
-    patternOpacity: 0,
+    flowOpacity: 0.11,
+    flowScale: 0.36,
+    flowSaturation: 0.28,
   };
 }
 
@@ -286,25 +305,51 @@ function AreaProgressLayer({ area }: { area: VenueAreaProgress }) {
     return null;
   }
 
-  const shouldShowPattern = visual.patternOpacity > 0;
-  const patternId = `venue-area-flower-field-${area.id.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+  const safeAreaId = area.id.replace(/[^a-zA-Z0-9_-]/g, "-");
+  const clipId = `venue-area-life-clip-${safeAreaId}`;
+  const blueGradientId = `venue-area-life-blue-${safeAreaId}`;
+  const greenGradientId = `venue-area-life-green-${safeAreaId}`;
+  const pinkGradientId = `venue-area-life-pink-${safeAreaId}`;
+  const lifeFlowClassName = visual.stage === "complete"
+    ? "venue-map-life-flow venue-map-life-flow-complete"
+    : "venue-map-life-flow";
+  const flowX = area.x - area.width * (0.34 - visual.flowScale * 0.18);
+  const flowY = area.y - area.height * (0.38 - visual.flowScale * 0.2);
+  const flowWidth = area.width * (0.92 + visual.flowScale * 0.72);
+  const flowHeight = area.height * (0.52 + visual.flowScale * 0.5);
+  const lowerFlowX = area.x + area.width * (0.1 - visual.flowScale * 0.16);
+  const lowerFlowY = area.y + area.height * (0.38 - visual.flowScale * 0.08);
+  const lowerFlowWidth = area.width * (0.74 + visual.flowScale * 0.64);
+  const lowerFlowHeight = area.height * (0.32 + visual.flowScale * 0.34);
 
   return (
     <g className="venue-map-area-progress" data-stage={visual.stage}>
-      {shouldShowPattern ? (
-        <defs>
-          <pattern
-            id={patternId}
-            width="4.8"
-            height="4.8"
-            patternUnits="userSpaceOnUse"
-          >
-            <circle cx="1.4" cy="1.6" r="0.45" fill={area.bloom} opacity="0.52" />
-            <circle cx="2.2" cy="1.6" r="0.45" fill="#fbbf24" opacity="0.46" />
-            <circle cx="1.8" cy="2.3" r="0.45" fill="#fb7185" opacity="0.42" />
-          </pattern>
-        </defs>
-      ) : null}
+      <defs>
+        <clipPath id={clipId}>
+          <rect
+            x={area.x}
+            y={area.y}
+            width={area.width}
+            height={area.height}
+            rx="5"
+          />
+        </clipPath>
+        <linearGradient id={blueGradientId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={LIFE_FLOW_COLORS.cyan} />
+          <stop offset="48%" stopColor={LIFE_FLOW_COLORS.blue} />
+          <stop offset="100%" stopColor={LIFE_FLOW_COLORS.green} />
+        </linearGradient>
+        <linearGradient id={greenGradientId} x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%" stopColor={LIFE_FLOW_COLORS.yellow} />
+          <stop offset="45%" stopColor={LIFE_FLOW_COLORS.lime} />
+          <stop offset="100%" stopColor={LIFE_FLOW_COLORS.green} />
+        </linearGradient>
+        <linearGradient id={pinkGradientId} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor={LIFE_FLOW_COLORS.yellow} />
+          <stop offset="42%" stopColor={LIFE_FLOW_COLORS.pink} />
+          <stop offset="100%" stopColor={LIFE_FLOW_COLORS.cyan} />
+        </linearGradient>
+      </defs>
       <rect
         x={area.x}
         y={area.y}
@@ -314,17 +359,41 @@ function AreaProgressLayer({ area }: { area: VenueAreaProgress }) {
         fill={area.bloom}
         opacity={visual.washOpacity}
       />
-      {shouldShowPattern ? (
-        <rect
-          x={area.x}
-          y={area.y}
-          width={area.width}
-          height={area.height}
-          rx="5"
-          fill={`url(#${patternId})`}
-          opacity={visual.patternOpacity}
+      <g
+        clipPath={`url(#${clipId})`}
+        opacity={visual.flowOpacity}
+        style={{
+          filter: `saturate(${visual.flowSaturation})`,
+        }}
+      >
+        <ellipse
+          className={lifeFlowClassName}
+          cx={flowX + flowWidth * 0.55}
+          cy={flowY + flowHeight * 0.52}
+          rx={flowWidth * 0.52}
+          ry={flowHeight * 0.3}
+          fill={`url(#${blueGradientId})`}
+          transform={`rotate(-14 ${flowX + flowWidth * 0.55} ${flowY + flowHeight * 0.52})`}
         />
-      ) : null}
+        <ellipse
+          className={lifeFlowClassName}
+          cx={lowerFlowX + lowerFlowWidth * 0.48}
+          cy={lowerFlowY + lowerFlowHeight * 0.58}
+          rx={lowerFlowWidth * 0.5}
+          ry={lowerFlowHeight * 0.36}
+          fill={`url(#${greenGradientId})`}
+          transform={`rotate(18 ${lowerFlowX + lowerFlowWidth * 0.48} ${lowerFlowY + lowerFlowHeight * 0.58})`}
+        />
+        <ellipse
+          className={lifeFlowClassName}
+          cx={area.x + area.width * 0.74}
+          cy={area.y + area.height * 0.28}
+          rx={area.width * (0.12 + visual.flowScale * 0.18)}
+          ry={area.height * (0.09 + visual.flowScale * 0.16)}
+          fill={`url(#${pinkGradientId})`}
+          transform={`rotate(-28 ${area.x + area.width * 0.74} ${area.y + area.height * 0.28})`}
+        />
+      </g>
       <rect
         x={area.x + 0.8}
         y={area.y + 0.8}
@@ -386,8 +455,23 @@ export function BloomingVenueMap({
             animation: venue-map-village-wash 620ms ease-out both;
           }
 
+          .venue-map-life-flow {
+            transform-box: fill-box;
+            transform-origin: center;
+          }
+
+          .venue-map-life-flow-complete {
+            animation: venue-map-life-flow-in 900ms cubic-bezier(.16, 1, .3, 1) both;
+          }
+
           @keyframes venue-map-village-wash {
             0% { opacity: 0; scale: .96; }
+            100% { opacity: 1; scale: 1; }
+          }
+
+          @keyframes venue-map-life-flow-in {
+            0% { opacity: 0; scale: .72; }
+            58% { opacity: .88; scale: 1.04; }
             100% { opacity: 1; scale: 1; }
           }
 
