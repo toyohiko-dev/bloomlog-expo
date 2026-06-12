@@ -11,6 +11,7 @@ const DESKTOP_INITIAL_ZOOM = 1;
 const MOBILE_INITIAL_ZOOM = 0.72;
 const BUTTON_ZOOM_STEP = 0.28;
 const DOUBLE_CLICK_ZOOM_STEP = 0.5;
+const MINIMIZED_PAN_MARGIN_RATIO = 0.42;
 
 type VenueMapFrameProps = {
   children: ReactNode;
@@ -90,34 +91,16 @@ function clampOffset({
 
   const scaledWidth = size.width * zoom;
   const scaledHeight = size.height * zoom;
-
-  if (scaledWidth <= viewport.clientWidth && scaledHeight <= viewport.clientHeight) {
-    return {
-      x: (viewport.clientWidth - scaledWidth) / 2,
-      y: (viewport.clientHeight - scaledHeight) / 2,
-    };
-  }
-
-  if (scaledWidth <= viewport.clientWidth) {
-    return {
-      x: (viewport.clientWidth - scaledWidth) / 2,
-      y: clamp(offset.y, viewport.clientHeight - scaledHeight, 0),
-    };
-  }
-
-  if (scaledHeight <= viewport.clientHeight) {
-    return {
-      x: clamp(offset.x, viewport.clientWidth - scaledWidth, 0),
-      y: (viewport.clientHeight - scaledHeight) / 2,
-    };
-  }
-
-  const minX = Math.min(viewport.clientWidth - scaledWidth, 0);
-  const minY = Math.min(viewport.clientHeight - scaledHeight, 0);
+  const horizontalPanMargin = viewport.clientWidth * MINIMIZED_PAN_MARGIN_RATIO;
+  const verticalPanMargin = viewport.clientHeight * MINIMIZED_PAN_MARGIN_RATIO;
+  const minX = viewport.clientWidth - scaledWidth - horizontalPanMargin;
+  const maxX = horizontalPanMargin;
+  const minY = viewport.clientHeight - scaledHeight - verticalPanMargin;
+  const maxY = verticalPanMargin;
 
   return {
-    x: clamp(offset.x, minX, 0),
-    y: clamp(offset.y, minY, 0),
+    x: clamp(offset.x, minX, maxX),
+    y: clamp(offset.y, minY, maxY),
   };
 }
 
@@ -237,6 +220,7 @@ function VenueMapMarkerView({ marker, position, onSelect }: {
         aria-label={`${marker.name}（未訪問）`}
         className="venue-map-marker venue-map-marker-button venue-map-marker-unvisited"
         onClick={() => onSelect(marker)}
+        onPointerDown={(event) => event.stopPropagation()}
         style={markerStyle}
         title={`${marker.name}（未訪問）`}
       />
@@ -249,6 +233,7 @@ function VenueMapMarkerView({ marker, position, onSelect }: {
       aria-label={`${marker.name}（訪問済み）`}
       className="venue-map-marker venue-map-marker-button venue-map-marker-visited"
       onClick={() => onSelect(marker)}
+      onPointerDown={(event) => event.stopPropagation()}
       style={markerStyle}
       title={`${marker.name}（訪問済み）`}
     >
@@ -278,7 +263,10 @@ function VenueMapMarkerDetail({
   onClose: () => void;
 }) {
   return (
-    <aside className="pointer-events-auto absolute bottom-0 left-0 right-0 z-30 border-t border-emerald-100 bg-white/94 px-5 py-4 shadow-[0_-14px_30px_rgba(15,23,42,0.12)] backdrop-blur sm:bottom-6 sm:left-auto sm:right-6 sm:w-[320px] sm:border sm:shadow-lg">
+    <aside
+      className="pointer-events-auto absolute bottom-0 left-0 right-0 z-30 border-t border-emerald-100 bg-white/94 px-5 py-4 shadow-[0_-14px_30px_rgba(15,23,42,0.12)] backdrop-blur sm:bottom-6 sm:left-auto sm:right-6 sm:top-20 sm:flex sm:w-[340px] sm:flex-col sm:border sm:shadow-lg"
+      onPointerDown={(event) => event.stopPropagation()}
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold text-emerald-700">
@@ -300,7 +288,7 @@ function VenueMapMarkerDetail({
 
       {marker.visited ? (
         <>
-          <dl className="mt-4 grid grid-cols-3 gap-2 text-sm">
+          <dl className="mt-4 grid grid-cols-3 gap-2 text-sm sm:grid-cols-1">
             <div className="bg-emerald-50 px-3 py-2">
               <dt className="text-[11px] font-medium text-emerald-700">訪問回数</dt>
               <dd className="mt-1 text-base font-semibold text-slate-950">
@@ -678,8 +666,8 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
         ) : null}
       </div>
 
-      <div className="pointer-events-none absolute bottom-4 right-4 z-20 sm:hidden">
-        <div className="w-[104px] overflow-hidden bg-white/82 p-1.5 shadow-sm ring-1 ring-slate-200/80 backdrop-blur">
+      <div className="pointer-events-none absolute bottom-4 right-4 z-20 sm:bottom-6 sm:left-6 sm:right-auto">
+        <div className="w-[104px] overflow-hidden bg-white/82 p-1.5 shadow-sm ring-1 ring-slate-200/80 backdrop-blur sm:w-[132px]">
           <svg
             aria-label="現在見ている地図範囲"
             className="block h-auto w-full"

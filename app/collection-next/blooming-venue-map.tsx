@@ -50,11 +50,10 @@ type VenueAreaProgress = {
 
 type AreaProgressVisual = {
   stage: "awakened" | "growing" | "alive" | "complete";
-  washOpacity: number;
   strokeOpacity: number;
-  flowOpacity: number;
-  flowScale: number;
-  flowSaturation: number;
+  motifOpacity: number;
+  motifScale: number;
+  motifSaturation: number;
 };
 
 const LIFE_FLOW_COLORS = {
@@ -258,43 +257,39 @@ function getAreaProgressVisual(progress: number): AreaProgressVisual | null {
   if (progress >= 1) {
     return {
       stage: "complete",
-      washOpacity: 0.3,
-      strokeOpacity: 0.38,
-      flowOpacity: 0.78,
-      flowScale: 1,
-      flowSaturation: 1,
+      strokeOpacity: 0.42,
+      motifOpacity: 0.9,
+      motifScale: 1,
+      motifSaturation: 1.08,
     };
   }
 
   if (progress >= 0.68) {
     return {
       stage: "alive",
-      washOpacity: 0.19,
-      strokeOpacity: 0.27,
-      flowOpacity: 0.34,
-      flowScale: 0.78,
-      flowSaturation: 0.68,
+      strokeOpacity: 0.3,
+      motifOpacity: 0.62,
+      motifScale: 0.82,
+      motifSaturation: 0.86,
     };
   }
 
   if (progress >= 0.34) {
     return {
       stage: "growing",
-      washOpacity: 0.14,
-      strokeOpacity: 0.21,
-      flowOpacity: 0.22,
-      flowScale: 0.58,
-      flowSaturation: 0.46,
+      strokeOpacity: 0.24,
+      motifOpacity: 0.44,
+      motifScale: 0.62,
+      motifSaturation: 0.68,
     };
   }
 
   return {
     stage: "awakened",
-    washOpacity: 0.08,
     strokeOpacity: 0.15,
-    flowOpacity: 0.11,
-    flowScale: 0.36,
-    flowSaturation: 0.28,
+    motifOpacity: 0.26,
+    motifScale: 0.42,
+    motifSaturation: 0.52,
   };
 }
 
@@ -313,14 +308,15 @@ function AreaProgressLayer({ area }: { area: VenueAreaProgress }) {
   const lifeFlowClassName = visual.stage === "complete"
     ? "venue-map-life-flow venue-map-life-flow-complete"
     : "venue-map-life-flow";
-  const flowX = area.x - area.width * (0.34 - visual.flowScale * 0.18);
-  const flowY = area.y - area.height * (0.38 - visual.flowScale * 0.2);
-  const flowWidth = area.width * (0.92 + visual.flowScale * 0.72);
-  const flowHeight = area.height * (0.52 + visual.flowScale * 0.5);
-  const lowerFlowX = area.x + area.width * (0.1 - visual.flowScale * 0.16);
-  const lowerFlowY = area.y + area.height * (0.38 - visual.flowScale * 0.08);
-  const lowerFlowWidth = area.width * (0.74 + visual.flowScale * 0.64);
-  const lowerFlowHeight = area.height * (0.32 + visual.flowScale * 0.34);
+  const motifPoints = [
+    { x: 0.18, y: 0.24, r: 0.018, color: LIFE_FLOW_COLORS.yellow },
+    { x: 0.31, y: 0.36, r: 0.014, color: LIFE_FLOW_COLORS.cyan },
+    { x: 0.44, y: 0.22, r: 0.022, color: LIFE_FLOW_COLORS.lime },
+    { x: 0.58, y: 0.5, r: 0.017, color: LIFE_FLOW_COLORS.pink },
+    { x: 0.73, y: 0.31, r: 0.013, color: LIFE_FLOW_COLORS.green },
+    { x: 0.82, y: 0.62, r: 0.02, color: LIFE_FLOW_COLORS.cyan },
+  ];
+  const motifRadiusBase = Math.min(area.width, area.height);
 
   return (
     <g className="venue-map-area-progress" data-stage={visual.stage}>
@@ -350,48 +346,83 @@ function AreaProgressLayer({ area }: { area: VenueAreaProgress }) {
           <stop offset="100%" stopColor={LIFE_FLOW_COLORS.cyan} />
         </linearGradient>
       </defs>
-      <rect
-        x={area.x}
-        y={area.y}
-        width={area.width}
-        height={area.height}
-        rx="5"
-        fill={area.bloom}
-        opacity={visual.washOpacity}
-      />
       <g
         clipPath={`url(#${clipId})`}
-        opacity={visual.flowOpacity}
+        opacity={visual.motifOpacity}
         style={{
-          filter: `saturate(${visual.flowSaturation})`,
+          filter: `saturate(${visual.motifSaturation})`,
         }}
       >
-        <ellipse
+        <path
           className={lifeFlowClassName}
-          cx={flowX + flowWidth * 0.55}
-          cy={flowY + flowHeight * 0.52}
-          rx={flowWidth * 0.52}
-          ry={flowHeight * 0.3}
-          fill={`url(#${blueGradientId})`}
-          transform={`rotate(-14 ${flowX + flowWidth * 0.55} ${flowY + flowHeight * 0.52})`}
+          d={[
+            `M ${area.x + area.width * 0.08} ${area.y + area.height * 0.34}`,
+            `C ${area.x + area.width * 0.28} ${area.y + area.height * 0.08}`,
+            `${area.x + area.width * 0.56} ${area.y + area.height * 0.52}`,
+            `${area.x + area.width * 0.86} ${area.y + area.height * 0.22}`,
+          ].join(" ")}
+          fill="none"
+          stroke={`url(#${blueGradientId})`}
+          strokeLinecap="round"
+          strokeWidth={Math.max(1.1, motifRadiusBase * 0.018 * visual.motifScale)}
         />
-        <ellipse
+        <path
           className={lifeFlowClassName}
-          cx={lowerFlowX + lowerFlowWidth * 0.48}
-          cy={lowerFlowY + lowerFlowHeight * 0.58}
-          rx={lowerFlowWidth * 0.5}
-          ry={lowerFlowHeight * 0.36}
-          fill={`url(#${greenGradientId})`}
-          transform={`rotate(18 ${lowerFlowX + lowerFlowWidth * 0.48} ${lowerFlowY + lowerFlowHeight * 0.58})`}
+          d={[
+            `M ${area.x + area.width * 0.16} ${area.y + area.height * 0.68}`,
+            `C ${area.x + area.width * 0.38} ${area.y + area.height * 0.5}`,
+            `${area.x + area.width * 0.54} ${area.y + area.height * 0.82}`,
+            `${area.x + area.width * 0.78} ${area.y + area.height * 0.58}`,
+          ].join(" ")}
+          fill="none"
+          stroke={`url(#${greenGradientId})`}
+          strokeDasharray="1.4 5"
+          strokeLinecap="round"
+          strokeWidth={Math.max(1, motifRadiusBase * 0.014 * visual.motifScale)}
         />
-        <ellipse
+        {motifPoints.slice(0, Math.max(3, Math.ceil(motifPoints.length * area.progress))).map((point, index) => {
+          const cx = area.x + area.width * point.x;
+          const cy = area.y + area.height * point.y;
+          const radius = motifRadiusBase * point.r * (0.75 + visual.motifScale * 0.55);
+
+          return (
+            <g
+              key={`${area.id}-motif-${index}`}
+              className={lifeFlowClassName}
+              transform={`rotate(${index % 2 === 0 ? -18 : 16} ${cx} ${cy})`}
+            >
+              <circle
+                cx={cx}
+                cy={cy}
+                r={radius}
+                fill={point.color}
+                opacity="0.42"
+              />
+              <circle
+                cx={cx}
+                cy={cy}
+                r={radius * 0.38}
+                fill="#fff8d7"
+                opacity="0.78"
+              />
+            </g>
+          );
+        })}
+        <path
           className={lifeFlowClassName}
-          cx={area.x + area.width * 0.74}
-          cy={area.y + area.height * 0.28}
-          rx={area.width * (0.12 + visual.flowScale * 0.18)}
-          ry={area.height * (0.09 + visual.flowScale * 0.16)}
+          d={[
+            `M ${area.x + area.width * 0.7} ${area.y + area.height * 0.18}`,
+            `l ${motifRadiusBase * 0.018} ${motifRadiusBase * 0.036}`,
+            `l ${motifRadiusBase * 0.036} ${motifRadiusBase * 0.018}`,
+            `l ${-motifRadiusBase * 0.036} ${motifRadiusBase * 0.018}`,
+            `l ${-motifRadiusBase * 0.018} ${motifRadiusBase * 0.036}`,
+            `l ${-motifRadiusBase * 0.018} ${-motifRadiusBase * 0.036}`,
+            `l ${-motifRadiusBase * 0.036} ${-motifRadiusBase * 0.018}`,
+            `l ${motifRadiusBase * 0.036} ${-motifRadiusBase * 0.018}`,
+            "Z",
+          ].join(" ")}
           fill={`url(#${pinkGradientId})`}
-          transform={`rotate(-28 ${area.x + area.width * 0.74} ${area.y + area.height * 0.28})`}
+          opacity="0.58"
         />
       </g>
       <rect
@@ -402,7 +433,8 @@ function AreaProgressLayer({ area }: { area: VenueAreaProgress }) {
         rx="4.2"
         fill="none"
         stroke={area.bloom}
-        strokeWidth="0.5"
+        strokeDasharray="2.5 5"
+        strokeWidth="0.65"
         opacity={visual.strokeOpacity}
       />
       <title>{`${area.name}・${area.visitedCount}/${area.totalCount} 訪問済み（${Math.round(area.progress * 100)}%）`}</title>
@@ -443,10 +475,9 @@ export function BloomingVenueMap({
     visitedIds,
   });
   const visitedCount = points.filter((point) => point.visited).length;
-  const unvisitedCount = Math.max(points.length - visitedCount, 0);
 
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(135deg,#fbfffc_0%,#f8fbff_48%,#fffaf2_100%)] ring-1 ring-emerald-100">
+    <section className="relative overflow-hidden bg-white ring-1 ring-slate-200/80">
       <style>
         {`
           .venue-map-area-progress {
@@ -614,13 +645,10 @@ export function BloomingVenueMap({
       </style>
 
       <div className="pointer-events-none absolute left-5 top-5 z-10 sm:left-8 sm:top-8">
-        <p className="text-xs font-semibold tracking-[0.18em] text-emerald-700/80">
+        <h2 className="text-2xl font-semibold tracking-tight text-slate-950/90 sm:text-3xl">
           制覇マップ
-        </p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950/90 sm:text-3xl">
-          訪問の記録
         </h2>
-        <p className="mt-2 inline-flex bg-white/75 px-2 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200/80 backdrop-blur sm:hidden">
+        <p className="mt-2 inline-flex bg-white/75 px-2 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200/80 backdrop-blur">
           {visitedCount} / {points.length} 訪問済み
         </p>
       </div>
@@ -649,29 +677,6 @@ export function BloomingVenueMap({
           ))}
         </svg>
       </VenueMapFrame>
-
-      <div className="pointer-events-none absolute bottom-5 left-5 z-10 hidden items-end gap-5 sm:bottom-8 sm:left-8 sm:flex">
-        <div>
-          <p className="text-4xl font-semibold tracking-tight text-slate-950/90 sm:text-5xl">
-            {visitedCount} / {points.length}
-          </p>
-          <p className="mt-1 text-sm font-medium text-slate-500">訪問済み</p>
-        </div>
-        <p className="pb-2 text-xs font-medium text-slate-500 sm:text-sm">
-          未訪問 {unvisitedCount}
-        </p>
-      </div>
-
-      <div className="pointer-events-none absolute bottom-5 right-5 z-10 hidden items-center gap-3 text-[11px] font-medium text-slate-500 sm:bottom-8 sm:right-8 sm:flex">
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-          訪問済み
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full border border-slate-300 bg-white" />
-          未訪問
-        </span>
-      </div>
     </section>
   );
 }
