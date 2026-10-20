@@ -42,7 +42,9 @@ export default async function NewActivityPage({ params }: NewActivityPageProps) 
 
           <div className="mt-6">
             <ActivityLogForm
+              key={`${session.user_id}:${session.id}`}
               sessionId={session.id}
+              draftOwnerId={session.user_id}
               pavilions={pavilions}
               successRedirectPath={`/sessions/${session.id}`}
               submitLabel="思い出を記録する"

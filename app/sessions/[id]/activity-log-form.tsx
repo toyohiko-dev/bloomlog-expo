@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
-import { useDeferredValue, useRef, useState, useTransition } from "react";
+import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   initialActivityLogFormState,
@@ -15,6 +15,10 @@ import {
   type ActivityType,
 } from "@/lib/activity-types";
 import { searchPavilions, type PavilionOption } from "@/lib/session-shared";
+import {
+  createEmptyDraft, readActivityDrafts, writeActivityDraft, removeActivityDraft,
+  type ActivityTypeDraft,
+} from "@/lib/activity-log-drafts";
 import {
   submitActivityLogAction,
   updateActivityLogAction,
@@ -49,6 +53,7 @@ function fieldClass(hasError: boolean) {
 
 type ActivityLogFormProps = {
   sessionId: string;
+  draftOwnerId?: string;
   pavilions: PavilionOption[];
   mode?: "create" | "edit";
   logId?: string;
@@ -65,26 +70,9 @@ type ActivityLogFormProps = {
   initialPavilionId?: string | null;
 };
 
-type ActivityTypeDraft = {
-  title: string;
-  price: string;
-  acquisitionMethod: string;
-  pavilionId: string;
-  pavilionSearch: string;
-};
-
-function createEmptyDraft(): ActivityTypeDraft {
-  return {
-    title: "",
-    price: "",
-    acquisitionMethod: "",
-    pavilionId: "",
-    pavilionSearch: "",
-  };
-}
-
 export function ActivityLogForm({
   sessionId,
+  draftOwnerId,
   pavilions,
   mode = "create",
   logId,
@@ -125,6 +113,11 @@ export function ActivityLogForm({
     initialSelectedPavilion?.id ?? "",
   );
   const [hasSelectedPhoto, setHasSelectedPhoto] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const [photoNeedsReselect, setPhotoNeedsReselect] = useState(false);
+  const [draftReady, setDraftReady] = useState(mode !== "create" || !draftOwnerId);
+  const [draftNotice, setDraftNotice] = useState("");
+  const submittingRef = useRef(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const deferredPavilionSearch = useDeferredValue(pavilionSearch);
 
@@ -132,6 +125,7 @@ export function ActivityLogForm({
     pavilion_visit:
       initialActivityType === "pavilion_visit"
         ? {
+            ...createEmptyDraft(),
             title: initialSelectedPavilion?.name ?? initialTitle,
             price: "",
             acquisitionMethod: "",
@@ -142,6 +136,7 @@ export function ActivityLogForm({
     food:
       initialActivityType === "food"
         ? {
+            ...createEmptyDraft(),
             title: initialTitle,
             price: initialPrice === null ? "" : String(initialPrice),
             acquisitionMethod: "",
@@ -152,6 +147,7 @@ export function ActivityLogForm({
     pin:
       initialActivityType === "pin"
         ? {
+            ...createEmptyDraft(),
             title: initialTitle,
             price: initialPrice === null ? "" : String(initialPrice),
             acquisitionMethod:
@@ -163,6 +159,7 @@ export function ActivityLogForm({
     event_participation:
       initialActivityType === "event_participation"
         ? {
+            ...createEmptyDraft(),
             title: initialTitle,
             price: "",
             acquisitionMethod: "",
@@ -171,6 +168,33 @@ export function ActivityLogForm({
           }
         : createEmptyDraft(),
   });
+
+  useEffect(() => {
+    if (mode !== "create" || !draftOwnerId) return;
+    try {
+      const saved = readActivityDrafts(window.localStorage, draftOwnerId, sessionId);
+      draftsRef.current = saved.drafts;
+      const draft = saved.drafts[saved.activeType];
+      // Restore browser-owned state after hydration, before enabling the form.
+      setActivityType(saved.activeType);
+      setTitle(draft.title);
+      setMemo(draft.memo);
+      setOccurredAt(draft.occurredAt);
+      setPrice(draft.price);
+      setAcquisitionMethod(draft.acquisitionMethod);
+      setPavilionSearch(draft.pavilionSearch);
+      setSelectedPavilionId(draft.pavilionId);
+      setSelectedPhoto(null);
+      setHasSelectedPhoto(false);
+      setPhotoNeedsReselect(draft.photoNeedsReselect);
+      setDraftNotice(saved.restored
+        ? "下書きを復元しました。このブラウザだけに保存されます。"
+        : "下書きはこのブラウザに保存されます。");
+    } catch {
+      setDraftNotice("下書きを保存できません。画面を閉じると入力内容が失われます。");
+    }
+    setDraftReady(true);
+  }, [draftOwnerId, mode, sessionId]);
 
   const normalizedInitialMethod =
     normalizeAcquisitionMethod(initialAcquisitionMethod) ?? "";
@@ -239,6 +263,10 @@ export function ActivityLogForm({
 
   function buildCurrentDraft(): ActivityTypeDraft {
     return {
+      memo,
+      occurredAt,
+      photo: selectedPhoto,
+      photoNeedsReselect,
       title,
       price,
       acquisitionMethod,
@@ -247,39 +275,19 @@ export function ActivityLogForm({
     };
   }
 
+  function persistDraft(patch: Partial<ActivityTypeDraft> = {}, type = activityType) {
+    if (mode !== "create" || !draftOwnerId || !draftReady) return;
+    try {
+      writeActivityDraft(window.localStorage, draftOwnerId, sessionId, type,
+        { ...buildCurrentDraft(), ...patch });
+      setDraftNotice("下書きをこのブラウザに保存しました。");
+    } catch {
+      setDraftNotice("下書きを保存できません。画面を閉じると入力内容が失われます。");
+    }
+  }
+
   function handleActivityTypeChange(nextActivityType: ActivityType) {
-    if (mode === "create") {
-      draftsRef.current = {
-        pavilion_visit: createEmptyDraft(),
-        food: createEmptyDraft(),
-        pin: createEmptyDraft(),
-        event_participation: createEmptyDraft(),
-      };
-      setActivityType(nextActivityType);
-      setTitle("");
-      setMemo("");
-      setOccurredAt("");
-      setPrice("");
-      setAcquisitionMethod("");
-      setPavilionSearch("");
-      setSelectedPavilionId("");
-      setHasSelectedPhoto(false);
-      setState((current) => ({
-        ...current,
-        status: "idle",
-        message: "",
-        fieldErrors: {
-          ...current.fieldErrors,
-          activityType: undefined,
-          pavilionId: undefined,
-          title: undefined,
-          memo: undefined,
-          occurredAt: undefined,
-          price: undefined,
-          acquisitionMethod: undefined,
-          photo: undefined,
-        },
-      }));
+    if (!draftReady || submittingRef.current || pending || nextActivityType === activityType) {
       return;
     }
 
@@ -292,18 +300,22 @@ export function ActivityLogForm({
     setAcquisitionMethod(nextDraft.acquisitionMethod);
     setPavilionSearch(nextDraft.pavilionSearch);
     setSelectedPavilionId(nextDraft.pavilionId);
+    if (mode === "create") {
+      setMemo(nextDraft.memo);
+      setOccurredAt(nextDraft.occurredAt);
+      setSelectedPhoto(nextDraft.photo);
+      setPhotoNeedsReselect(nextDraft.photoNeedsReselect);
+      setHasSelectedPhoto(Boolean(nextDraft.photo));
+      persistDraft(nextDraft, nextActivityType);
+      setState(initialActivityLogFormState);
+      return;
+    }
     clearFieldState("activityType");
     clearTypeSpecificFieldStates();
   }
 
-  function resetForm() {
-    draftsRef.current = {
-      pavilion_visit: createEmptyDraft(),
-      food: createEmptyDraft(),
-      pin: createEmptyDraft(),
-      event_participation: createEmptyDraft(),
-    };
-    setActivityType("pavilion_visit");
+  function resetForm(savedActivityType: ActivityType) {
+    draftsRef.current[savedActivityType] = createEmptyDraft();
     setTitle("");
     setMemo("");
     setOccurredAt("");
@@ -312,42 +324,78 @@ export function ActivityLogForm({
     setPavilionSearch("");
     setSelectedPavilionId("");
     setHasSelectedPhoto(false);
+    setSelectedPhoto(null);
+    setPhotoNeedsReselect(false);
     if (photoInputRef.current) {
       photoInputRef.current.value = "";
     }
     setState(initialActivityLogFormState);
+    if (draftOwnerId) {
+      try {
+        removeActivityDraft(window.localStorage, draftOwnerId, sessionId, savedActivityType);
+        setDraftNotice("保存した思い出の下書きを消去しました。");
+      } catch {
+        setDraftNotice("思い出は保存されましたが、下書きを消去できませんでした。再読み込み後の重複保存にご注意ください。");
+      }
+    }
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!draftReady || submittingRef.current || pending) {
+      return;
+    }
+    persistDraft();
     const formData = new FormData(event.currentTarget);
+    const submittedActivityType = activityType;
+    if (mode === "create") {
+      formData.delete("photo");
+      if (showPhotoInput && selectedPhoto) {
+        formData.set("photo", selectedPhoto);
+      }
+    }
+    submittingRef.current = true;
 
     startTransition(async () => {
-      const result =
-        mode === "edit"
-          ? await updateActivityLogAction(formData)
-          : await submitActivityLogAction(formData);
+      try {
+        const result =
+          mode === "edit"
+            ? await updateActivityLogAction(formData)
+            : await submitActivityLogAction(formData);
 
-      setState(result);
+        setState(result);
 
-      if (result.status !== "success") {
-        return;
-      }
+        if (result.status !== "success") {
+          return;
+        }
 
-      if (successRedirectPath) {
-        router.push(successRedirectPath);
+        if (mode === "create") {
+          resetForm(submittedActivityType);
+          setState(result);
+        }
+
+        if (successRedirectPath) {
+          router.push(successRedirectPath);
+          router.refresh();
+          return;
+        }
+
+        if (mode === "edit") {
+          router.push(`/sessions/${sessionId}`);
+          router.refresh();
+          return;
+        }
+
         router.refresh();
-        return;
+      } catch {
+        setState({
+          status: "error",
+          message: "保存できませんでした。入力内容を確認して、もう一度お試しください。",
+          fieldErrors: {},
+        });
+      } finally {
+        submittingRef.current = false;
       }
-
-      if (mode === "edit") {
-        router.push(`/sessions/${sessionId}`);
-        router.refresh();
-        return;
-      }
-
-      resetForm();
-      router.refresh();
     });
   }
 
@@ -375,7 +423,12 @@ export function ActivityLogForm({
         </div>
       ) : null}
 
-      <fieldset disabled={pending} className={pending ? "opacity-70" : undefined}>
+      {mode === "create" && draftOwnerId ? (
+        <p role="status" aria-live="polite" className="text-sm text-slate-500">
+          {!draftReady ? "下書きを確認しています..." : pending ? "思い出を保存しています..." : draftNotice}
+        </p>
+      ) : null}
+      <fieldset disabled={pending || !draftReady} className={pending ? "opacity-70" : undefined}>
         <section className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-50/80">
           <div className="border-b border-slate-200 bg-white/80 px-5 py-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -461,6 +514,7 @@ export function ActivityLogForm({
                     setPavilionSearch(event.target.value);
                     setSelectedPavilionId("");
                     setTitle("");
+                    persistDraft({ pavilionSearch: event.target.value, pavilionId: "", title: "" });
                     clearFieldState("pavilionId");
                   }}
                   placeholder="パビリオン名で検索"
@@ -501,6 +555,7 @@ export function ActivityLogForm({
                                   setSelectedPavilionId(pavilion.id);
                                   setPavilionSearch(pavilion.name);
                                   setTitle(pavilion.name);
+                                  persistDraft({ pavilionId: pavilion.id, pavilionSearch: pavilion.name, title: pavilion.name });
                                   clearFieldState("pavilionId");
                                 }}
                                 className={`flex w-full flex-col gap-2 rounded-2xl border px-4 py-3 text-left transition ${
@@ -566,6 +621,7 @@ export function ActivityLogForm({
                   value={title}
                   onChange={(event) => {
                     setTitle(event.target.value);
+                    persistDraft({ title: event.target.value });
                     clearFieldState("title");
                   }}
                   placeholder={activityTypeMeta.titlePlaceholder}
@@ -593,6 +649,7 @@ export function ActivityLogForm({
                 value={occurredAt}
                 onChange={(event) => {
                   setOccurredAt(event.target.value);
+                  persistDraft({ occurredAt: event.target.value });
                   clearFieldState("occurredAt");
                 }}
                 className={fieldClass(Boolean(state.fieldErrors.occurredAt))}
@@ -625,6 +682,7 @@ export function ActivityLogForm({
                   value={price}
                   onChange={(event) => {
                     setPrice(event.target.value);
+                    persistDraft({ price: event.target.value });
                     clearFieldState("price");
                   }}
                   placeholder="例: 1200"
@@ -654,6 +712,7 @@ export function ActivityLogForm({
                           checked={acquisitionMethod === option.value}
                           onChange={() => {
                             setAcquisitionMethod(option.value);
+                            persistDraft({ acquisitionMethod: option.value });
                             clearFieldState("acquisitionMethod");
                           }}
                           className="peer sr-only"
@@ -682,17 +741,35 @@ export function ActivityLogForm({
                   写真
                 </label>
                 <input
-                  ref={photoInputRef}
+                  ref={(input) => {
+                    photoInputRef.current = input;
+                    if (input && mode === "create") {
+                      // 種類を戻したときも、表示中のファイルと送信する File を一致させる。
+                      const files = new DataTransfer();
+                      if (selectedPhoto) files.items.add(selectedPhoto);
+                      input.files = files.files;
+                    }
+                  }}
                   id="photo"
                   name="photo"
                   type="file"
                   accept="image/*"
                   onChange={(event) => {
+                    if (mode === "create") {
+                      setSelectedPhoto(event.target.files?.[0] ?? null);
+                      setPhotoNeedsReselect(false);
+                      persistDraft({ photo: event.target.files?.[0] ?? null, photoNeedsReselect: false });
+                    }
                     setHasSelectedPhoto(Boolean(event.target.files?.length));
                     clearFieldState("photo");
                   }}
                   className={fieldClass(Boolean(state.fieldErrors.photo))}
                 />
+                {photoNeedsReselect && mode === "create" ? (
+                  <p className="mt-2 text-sm text-amber-700">
+                    写真はもう一度選択してください。写真本体は下書きに保存されません。
+                  </p>
+                ) : null}
                 {state.fieldErrors.photo ? (
                   <p className="mt-2 text-sm text-rose-600">
                     {state.fieldErrors.photo}
@@ -718,6 +795,7 @@ export function ActivityLogForm({
                 value={memo}
                 onChange={(event) => {
                   setMemo(event.target.value);
+                  persistDraft({ memo: event.target.value });
                   clearFieldState("memo");
                 }}
                 maxLength={1000}
@@ -740,7 +818,7 @@ export function ActivityLogForm({
       <div className="flex flex-col gap-3">
         <button
           type="submit"
-          disabled={pending || (mode === "edit" && !isDirty)}
+          disabled={!draftReady || pending || (mode === "edit" && !isDirty)}
           className="inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
           {pending

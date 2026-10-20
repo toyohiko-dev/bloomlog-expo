@@ -5,9 +5,10 @@ import { getCurrentProfile, hasCompletedProfile } from "@/lib/profiles";
 import { getSafeRedirectPath } from "@/lib/redirect";
 
 type LoginPageProps = {
-  searchParams?:
-    | Promise<{ next?: string | string[] | undefined; error?: string | string[] | undefined }>
-    | { next?: string | string[] | undefined; error?: string | string[] | undefined };
+  searchParams?: Promise<{
+    next?: string | string[] | undefined;
+    error?: string | string[] | undefined;
+  }>;
 };
 
 function readQueryValue(value?: string | string[] | undefined) {

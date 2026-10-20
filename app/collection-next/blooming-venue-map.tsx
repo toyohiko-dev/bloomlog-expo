@@ -9,6 +9,7 @@ import {
   type VenueAreaPlacement,
 } from "./venue-map-config";
 import { VenueMapFrame } from "./venue-map-frame";
+import { VenueMapExport } from "./venue-map-export";
 
 type BloomingVenueMapProps = {
   areas: Area[];
@@ -655,6 +656,7 @@ export function BloomingVenueMap({
 
       <VenueMapFrame markers={points}>
         <svg
+          data-venue-map-source="true"
           aria-label="訪問済みと未訪問のパビリオンを示す白地図ベースの制覇マップ"
           className={[
             "relative z-0 h-auto w-full max-w-none",
@@ -677,6 +679,7 @@ export function BloomingVenueMap({
           ))}
         </svg>
       </VenueMapFrame>
+      <VenueMapExport markers={points} />
     </section>
   );
 }

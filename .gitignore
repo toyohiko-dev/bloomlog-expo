@@ -41,3 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 supabase/.temp/
+
+# Isolated local test artifacts
+/.next-test/
+/testing/supabase/.temp/
+/testing/supabase/.branches/
+/.codex-remote-attachments/

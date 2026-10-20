@@ -206,3 +206,7 @@ begin
   end if;
 end
 $$;
+
+-- Table privileges and the ownership policies above are both required.
+grant select, insert, update, delete on table public.visit_sessions to authenticated;
+grant select, insert, update, delete on table public.activity_logs to authenticated;

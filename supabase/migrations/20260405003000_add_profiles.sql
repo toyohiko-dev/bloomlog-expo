@@ -67,3 +67,6 @@ begin
   end if;
 end
 $$;
+
+-- Match the existing profile policies: no anonymous access or delete policy.
+grant select, insert, update on table public.profiles to authenticated;

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cleanupUncommittedActivityPhoto } from "@/lib/activity-photo-cleanup";
 import { requireUser } from "@/lib/auth";
 import type {
   ActivityLogFieldErrors,
@@ -353,7 +354,7 @@ export async function createSessionAction(
   if (error) {
     return {
       status: "error",
-      message: `髫ｪ・ｪ陜荳翫・闖ｴ諛医・邵ｺ・ｫ陞滂ｽｱ隰ｨ蜉ｱ・邵ｺ・ｾ邵ｺ蜉ｱ笳・ ${error.message}`,
+      message: "\u6765\u5834\u65e5\u306e\u4fdd\u5b58\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002",
       fieldErrors,
     };
   }
@@ -427,7 +428,7 @@ export async function updateSessionAction(
     if (error) {
       return {
         status: "error",
-        message: `髫ｪ・ｪ陜荳翫・隴厄ｽｴ隴・ｽｰ邵ｺ・ｫ陞滂ｽｱ隰ｨ蜉ｱ・邵ｺ・ｾ邵ｺ蜉ｱ笳・ ${error.message}`,
+        message: "\u6765\u5834\u65e5\u306e\u4fdd\u5b58\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002",
         fieldErrors,
       };
     }
@@ -464,14 +465,19 @@ export async function deleteSessionAction(formData: FormData) {
     throw new Error("\u524a\u9664\u5bfe\u8c61\u306e\u30bb\u30c3\u30b7\u30e7\u30f3ID\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002");
   }
 
-  const { error: logsError } = await supabase
+  const { data: deletedLogs, error: logsError } = await supabase
     .from("activity_logs")
     .delete()
     .eq("session_id", sessionId)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .select("photo_path");
 
   if (logsError) {
-    throw new Error(`闖ｴ鬥ｴ・ｨ阮吶・陷台ｼ∝求邵ｺ・ｫ陞滂ｽｱ隰ｨ蜉ｱ・邵ｺ・ｾ邵ｺ蜉ｱ笳・ ${logsError.message}`);
+    throw new Error("\u524a\u9664\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002");
+  }
+
+  for (const log of deletedLogs ?? []) {
+    await cleanupUncommittedActivityPhoto(supabase, user.id, log.photo_path);
   }
 
   const { error: sessionError } = await supabase
@@ -481,7 +487,7 @@ export async function deleteSessionAction(formData: FormData) {
     .eq("user_id", user.id);
 
   if (sessionError) {
-    throw new Error(`髫ｪ・ｪ陜荳翫・陷台ｼ∝求邵ｺ・ｫ陞滂ｽｱ隰ｨ蜉ｱ・邵ｺ・ｾ邵ｺ蜉ｱ笳・ ${sessionError.message}`);
+    throw new Error("\u524a\u9664\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002");
   }
 
   revalidatePath("/sessions");
@@ -500,14 +506,19 @@ export async function deleteActivityLogAction(formData: FormData) {
     throw new Error("\u524a\u9664\u5bfe\u8c61\u306e\u4f53\u9a13ID\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002");
   }
 
-  const { error } = await supabase
+  const { data: deletedLogs, error } = await supabase
     .from("activity_logs")
     .delete()
     .eq("id", logId)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .select("photo_path");
 
   if (error) {
-    throw new Error(`闖ｴ鬥ｴ・ｨ阮吶・陷台ｼ∝求邵ｺ・ｫ陞滂ｽｱ隰ｨ蜉ｱ・邵ｺ・ｾ邵ｺ蜉ｱ笳・ ${error.message}`);
+    throw new Error("\u524a\u9664\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002");
+  }
+
+  for (const log of deletedLogs ?? []) {
+    await cleanupUncommittedActivityPhoto(supabase, user.id, log.photo_path);
   }
 
   revalidatePath(`/sessions/${sessionId}`);
@@ -517,6 +528,7 @@ export async function deleteActivityLogAction(formData: FormData) {
 export async function submitActivityLogAction(
   formData: FormData,
 ): Promise<ActivityLogFormState> {
+  let uploadedPhoto: Parameters<typeof cleanupUncommittedActivityPhoto> | undefined;
   try {
     const [supabase, user] = await Promise.all([
       createServerSupabaseClient(),
@@ -546,6 +558,7 @@ export async function submitActivityLogAction(
       photo && activityType !== "pavilion_visit"
         ? await uploadActivityPhoto(supabase, user.id, sessionId, logId, photo)
         : null;
+    if (photoPath) uploadedPhoto = [supabase, user.id, photoPath];
 
     const { error } = await supabase.from("activity_logs").insert({
       id: logId,
@@ -564,8 +577,11 @@ export async function submitActivityLogAction(
     });
 
     if (error) {
-      return activityErrorState(`闖ｴ鬥ｴ・ｨ阮吶・髫ｪ蛟ｬ鮖ｸ邵ｺ・ｫ陞滂ｽｱ隰ｨ蜉ｱ・邵ｺ・ｾ邵ｺ蜉ｱ笳・ ${error.message}`);
+      await cleanupUncommittedActivityPhoto(supabase, user.id, photoPath);
+      return activityErrorState("\u8a18\u9332\u306e\u4fdd\u5b58\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002");
     }
+
+    uploadedPhoto = undefined;
 
     revalidatePath(`/sessions/${sessionId}`);
     revalidatePath("/collection");
@@ -576,10 +592,11 @@ export async function submitActivityLogAction(
       fieldErrors: {},
     };
   } catch (error) {
+    if (uploadedPhoto) await cleanupUncommittedActivityPhoto(...uploadedPhoto);
     return activityErrorState(
       error instanceof Error
         ? `\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f: ${error.message}`
-        : "\u4f53\u9a13\u306e\u8a18\u9332\u306b\u5931\u6557\u3057\u307e\u3057"
+        : "記録の保存に失敗しました。"
     );
   }
 }
@@ -587,6 +604,7 @@ export async function submitActivityLogAction(
 export async function updateActivityLogAction(
   formData: FormData,
 ): Promise<ActivityLogFormState> {
+  let uploadedPhoto: Parameters<typeof cleanupUncommittedActivityPhoto> | undefined;
   try {
     const [supabase, user] = await Promise.all([
       createServerSupabaseClient(),
@@ -628,8 +646,9 @@ export async function updateActivityLogAction(
         : photo
           ? await uploadActivityPhoto(supabase, user.id, sessionId, logId, photo)
           : existingLog.photo_path;
+    if (photo && photoPath) uploadedPhoto = [supabase, user.id, photoPath];
 
-    const { error } = await supabase
+    const update = supabase
       .from("activity_logs")
       .update({
         user_id: user.id,
@@ -646,9 +665,24 @@ export async function updateActivityLogAction(
       })
       .eq("id", logId)
       .eq("user_id", user.id);
+    // Reject stale edits so we only reclaim the photo this update replaced.
+    const { data: updatedLog, error } = await (existingLog.photo_path === null
+      ? update.is("photo_path", null)
+      : update.eq("photo_path", existingLog.photo_path))
+      .select("id")
+      .maybeSingle();
 
-    if (error) {
-      return activityErrorState(`闖ｴ鬥ｴ・ｨ阮吶・隴厄ｽｴ隴・ｽｰ邵ｺ・ｫ陞滂ｽｱ隰ｨ蜉ｱ・邵ｺ・ｾ邵ｺ蜉ｱ笳・ ${error.message}`);
+    if (error || !updatedLog) {
+      if (photoPath !== existingLog.photo_path) {
+        await cleanupUncommittedActivityPhoto(supabase, user.id, photoPath);
+      }
+      return activityErrorState("\u8a18\u9332\u306e\u4fdd\u5b58\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002");
+    }
+
+    uploadedPhoto = undefined;
+
+    if (photoPath !== existingLog.photo_path) {
+      await cleanupUncommittedActivityPhoto(supabase, user.id, existingLog.photo_path);
     }
 
     revalidatePath(`/sessions/${sessionId}`);
@@ -661,6 +695,7 @@ export async function updateActivityLogAction(
       fieldErrors: {},
     };
   } catch (error) {
+    if (uploadedPhoto) await cleanupUncommittedActivityPhoto(...uploadedPhoto);
     return activityErrorState(
       error instanceof Error
         ? `\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f: ${error.message}`

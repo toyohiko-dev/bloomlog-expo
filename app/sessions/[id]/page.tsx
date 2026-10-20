@@ -16,6 +16,7 @@ import {
   listPavilions,
 } from "@/lib/sessions";
 import { getActivityPhotoUrl, getPavilionImageUrl } from "@/lib/supabase/shared";
+import { buildVisitDayReflection } from "@/lib/visit-day-reflection";
 
 function formatVisitDate(value: string) {
   return new Intl.DateTimeFormat("ja-JP", {
@@ -111,10 +112,8 @@ function getActivityTypeVisual(activityType: string | null) {
 }
 
 type PageProps = {
-  params: Promise<{ id: string }> | { id: string };
-  searchParams?:
-    | Promise<{ editLog?: string }>
-    | { editLog?: string | string[] | undefined };
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ editLog?: string | string[] | undefined }>;
 };
 
 export default async function SessionDetailPage({
@@ -151,6 +150,7 @@ export default async function SessionDetailPage({
       : null,
   }));
   const resetEditorHref = `/sessions/${sessionId}#experience-recorder`;
+  const reflection = buildVisitDayReflection(logs);
   const pavilionTone = getActivityTypeMeta("pavilion_visit");
   const foodTone = getActivityTypeMeta("food");
   const pinTone = getActivityTypeMeta("pin");
@@ -262,8 +262,9 @@ export default async function SessionDetailPage({
 
           <div className="mt-6">
             <ActivityLogForm
-              key={validEditingLog ? `edit:${validEditingLog.id}` : "create"}
+              key={`${session.user_id}:${sessionId}:${validEditingLog ? `edit:${validEditingLog.id}` : "create"}`}
               sessionId={sessionId}
+              draftOwnerId={session.user_id}
               pavilions={pavilions}
               mode={validEditingLog ? "edit" : "create"}
               logId={validEditingLog?.id}
@@ -296,11 +297,11 @@ export default async function SessionDetailPage({
             <div>
               <p className="text-sm font-medium text-slate-500">この日のサマリー</p>
               <h2 className="mt-1 text-xl font-semibold text-slate-900">
-                この来場日の思い出
+                {reflection.title}
               </h2>
             </div>
             <p className="text-sm text-slate-500">
-              入力した内容が、あとから見返しやすい形でまとまります。
+              {reflection.description}
             </p>
           </div>
 

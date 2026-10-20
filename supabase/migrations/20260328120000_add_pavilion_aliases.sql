@@ -22,3 +22,19 @@ begin
       unique (pavilion_id, alias);
   end if;
 end $$;
+
+-- Explicit Data API access; aliases are read-only to application roles.
+alter table public.pavilion_aliases enable row level security;
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'pavilion_aliases'
+      and policyname = 'pavilion_aliases_read_all'
+  ) then
+    create policy pavilion_aliases_read_all on public.pavilion_aliases
+      for select to anon, authenticated using (true);
+  end if;
+end
+$$;
+grant select on table public.pavilion_aliases to anon, authenticated;

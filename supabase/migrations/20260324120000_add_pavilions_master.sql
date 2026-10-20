@@ -54,3 +54,19 @@ where logs.activity_type = 'pavilion_visit'
   and logs.title is not null
   and trim(logs.title) <> ''
   and pavilions.name = trim(logs.title);
+
+-- Explicit Data API access; do not depend on Supabase default privileges.
+alter table public.pavilions enable row level security;
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'pavilions'
+      and policyname = 'pavilions_read_all'
+  ) then
+    create policy pavilions_read_all on public.pavilions
+      for select to anon, authenticated using (true);
+  end if;
+end
+$$;
+grant select on table public.pavilions to anon, authenticated;
