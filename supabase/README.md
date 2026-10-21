@@ -59,17 +59,10 @@ that baseline exists, including the four remote-only master tables.
 
 Run node --test tests/supabase-data-api-grants.test.cjs for static checks of the
 nine-table privilege matrix, app query coverage and prerequisite ordering.
-Also run npm run lint and git diff --check. DB execution verification remains
-pending until an independently identified disposable database is available.
+Also run npm run lint and git diff --check. The grants were executed against
+ephemeral PostgreSQL during validation. New provisioning with the complete
+Supabase API remains unverified; production grants were not changed.
 
 References:
 - https://github.com/orgs/supabase/discussions/45329
 - https://supabase.com/docs/guides/api/securing-your-api
-
-## Separate local test stack
-
-An independent metadata-only test snapshot now exists under testing/supabase.
-See docs/ops/test-environment.md. It does not repair the missing root baseline
-or authorize applying historical SQL to production. npm run test:db executes
-the grants and ownership checks in ephemeral PostgreSQL with service-schema
-stand-ins; real Supabase 17 / Auth / Storage verification remains pending.

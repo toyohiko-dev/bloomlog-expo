@@ -13,18 +13,7 @@ function applyCookies(from: NextResponse, to: NextResponse) {
 }
 
 export async function GET(request: NextRequest) {
-  const callbackURL = new URL(request.url);
-  const host = request.headers.get("host");
-  // Next.js の開発サーバーは request.url を localhost に正規化する。
-  // Cookie の接続先を変えないよう、ローカルでは実際の Host を維持する。
-  if (
-    ["localhost", "127.0.0.1"].includes(callbackURL.hostname) &&
-    host &&
-    /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host)
-  ) {
-    callbackURL.host = host;
-  }
-  const { origin, searchParams } = callbackURL;
+  const { origin, searchParams } = new URL(request.url);
   const code = searchParams.get("code");
 
   if (!code) {
