@@ -66,3 +66,15 @@ Supabase API remains unverified; production grants were not changed.
 References:
 - https://github.com/orgs/supabase/discussions/45329
 - https://supabase.com/docs/guides/api/securing-your-api
+
+## Profiles trigger rebuild parity (2026-10-24 JST)
+
+Read-only inspection of production confirmed public.set_profiles_updated_at()
+uses SECURITY INVOKER and SET search_path TO public. The original profiles-creation
+SQL now declares both explicitly, so a future rebuild preserves that definition.
+This follows the historical-source rebuild approach above; no new production
+migration is needed for a setting already present. Do not replay this historical
+migration, run db push, or repair history against production. This source edit has
+not been applied to any database. Static tests check the declaration and trigger
+binding; execution on a rebuilt database remains unverified, and the missing
+initial baseline limitation still applies.

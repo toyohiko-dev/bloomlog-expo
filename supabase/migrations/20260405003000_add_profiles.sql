@@ -8,6 +8,8 @@ create table if not exists public.profiles (
 create or replace function public.set_profiles_updated_at()
 returns trigger
 language plpgsql
+security invoker
+set search_path = public
 as $$
 begin
   new.updated_at := now();

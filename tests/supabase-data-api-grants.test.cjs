@@ -50,3 +50,15 @@ test('every literal application table query and nested alias read is covered', (
   assert.match(fs.readFileSync('lib/sessions.ts', 'utf8'), /pavilion_aliases\(alias\)/);
   assert.deepEqual(expected.pavilion_aliases, ['select', 'anon, authenticated']);
 });
+
+test('profile trigger rebuild source preserves reviewed invoker and fixed search path', () => {
+  const source = fs.readFileSync('supabase/migrations/20260405003000_add_profiles.sql', 'utf8');
+  const declaration = source.match(/create or replace function public\.set_profiles_updated_at\(\)([\s\S]*?)as \$\$/i)?.[1];
+  assert.ok(declaration, 'profile trigger function must exist');
+  assert.match(declaration, /returns trigger/i);
+  assert.match(declaration, /security invoker/i);
+  assert.match(declaration, /set search_path\s*=\s*public/i);
+  assert.doesNotMatch(declaration, /security definer/i);
+  assert.match(source, /new\.updated_at := now\(\);/);
+  assert.match(source, /before update on public\.profiles[\s\S]*?execute function public\.set_profiles_updated_at\(\);/i);
+});
