@@ -330,7 +330,8 @@ function VenueMapMarkerDetail({
 export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
   const [zoom, setZoom] = useState(DESKTOP_INITIAL_ZOOM);
   const [isDragging, setIsDragging] = useState(false);
-  const [selectedMarker, setSelectedMarker] = useState<VenueMapMarker | null>(null);
+  const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
+  const selectedMarker = markers.find((marker) => marker.id === selectedMarkerId) ?? null;
   const [mapSize, setMapSize] = useState<MapSize>({ height: 0, width: 0 });
   const [viewportSize, setViewportSize] = useState<MapSize>({ height: 0, width: 0 });
   const [offset, setOffset] = useState<MapOffset>({ x: 0, y: 0 });
@@ -650,7 +651,7 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
             <VenueMapMarkerView
               key={marker.id}
               marker={marker}
-              onSelect={setSelectedMarker}
+              onSelect={(marker) => setSelectedMarkerId(marker.id)}
               position={{
                 x: offset.x + mapSize.width * (marker.x / VENUE_MAP_ASSET.width) * zoom,
                 y: offset.y + mapSize.height * (marker.y / VENUE_MAP_ASSET.height) * zoom,
@@ -661,7 +662,7 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
         {selectedMarker ? (
           <VenueMapMarkerDetail
             marker={selectedMarker}
-            onClose={() => setSelectedMarker(null)}
+            onClose={() => setSelectedMarkerId(null)}
           />
         ) : null}
       </div>
