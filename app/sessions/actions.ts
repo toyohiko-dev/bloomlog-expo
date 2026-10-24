@@ -198,7 +198,7 @@ async function validateActivityLog(formData: FormData) {
   let pavilion = null;
   let title = titleInput;
 
-  if (activityType === "pavilion_visit") {
+  if (activityType === "pavilion_visit" || pavilionId) {
     if (!pavilionId) {
       fieldErrors.pavilionId = "\u30d1\u30d3\u30ea\u30aa\u30f3\u3092\u9078\u3093\u3067\u304f\u3060\u3055\u3044\u3002";
     } else {
@@ -207,10 +207,11 @@ async function validateActivityLog(formData: FormData) {
       if (!pavilion || !pavilion.is_active) {
         fieldErrors.pavilionId = "\u9078\u629e\u3057\u305f\u30d1\u30d3\u30ea\u30aa\u30f3\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002";
       } else {
-        title = pavilion.name;
+        if (activityType === "pavilion_visit") title = pavilion.name;
       }
     }
-  } else if (!title) {
+  }
+  if (activityType !== "pavilion_visit" && !title) {
     fieldErrors.title = "\u540d\u524d\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002";
   }
 
@@ -232,9 +233,6 @@ async function validateActivityLog(formData: FormData) {
     fieldErrors.acquisitionMethod = "\u5165\u624b\u65b9\u6cd5\u3092\u9078\u3093\u3067\u304f\u3060\u3055\u3044\u3002";
   }
 
-  if (activityType === "pavilion_visit" && photo) {
-    fieldErrors.photo = "\u3053\u306e\u7a2e\u985e\u3067\u306f\u5199\u771f\u3092\u8ffd\u52a0\u3067\u304d\u307e\u305b\u3093\u3002";
-  }
 
   if (photo && !getPhotoExtension(photo)) {
     fieldErrors.photo = "jpg / png / webp \u306e\u753b\u50cf\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044\u3002";
@@ -265,7 +263,7 @@ async function validateActivityLog(formData: FormData) {
       session,
       sessionId,
       activityType,
-      pavilionId: activityType === "pavilion_visit" ? pavilion?.id ?? null : null,
+      pavilionId: pavilion?.id ?? null,
       title,
       memo,
       occurredAt,
@@ -555,7 +553,7 @@ export async function submitActivityLogAction(
 
     const logId = crypto.randomUUID();
     const photoPath =
-      photo && activityType !== "pavilion_visit"
+      photo
         ? await uploadActivityPhoto(supabase, user.id, sessionId, logId, photo)
         : null;
     if (photoPath) uploadedPhoto = [supabase, user.id, photoPath];
@@ -565,7 +563,7 @@ export async function submitActivityLogAction(
       user_id: user.id,
       session_id: sessionId,
       activity_type: activityType,
-      pavilion_id: activityType === "pavilion_visit" ? pavilionId : null,
+      pavilion_id: pavilionId,
       title,
       memo,
       occurred_at: occurredAt,
@@ -641,11 +639,9 @@ export async function updateActivityLogAction(
     }
 
     const photoPath =
-      activityType === "pavilion_visit"
-        ? null
-        : photo
-          ? await uploadActivityPhoto(supabase, user.id, sessionId, logId, photo)
-          : existingLog.photo_path;
+      photo
+        ? await uploadActivityPhoto(supabase, user.id, sessionId, logId, photo)
+        : existingLog.photo_path;
     if (photo && photoPath) uploadedPhoto = [supabase, user.id, photoPath];
 
     const update = supabase
@@ -653,7 +649,7 @@ export async function updateActivityLogAction(
       .update({
         user_id: user.id,
         activity_type: activityType,
-        pavilion_id: activityType === "pavilion_visit" ? pavilionId : null,
+        pavilion_id: pavilionId,
         title,
         memo,
         occurred_at: occurredAt,

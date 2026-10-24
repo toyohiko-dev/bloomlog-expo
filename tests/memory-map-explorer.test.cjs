@@ -1,0 +1,58 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- Client rerender tests with dummy records and no network. */
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const ts = require('typescript');
+function load(file, dependencies = {}) {
+  const exports = {};
+  vm.runInNewContext(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 } }).outputText, { exports, require: name => {
+    if (!(name in dependencies)) throw Error(name); return dependencies[name];
+  } }); return exports;
+}
+const model = load('lib/memory-map.ts');
+const { createMemoryMapDemo } = load('lib/memory-map-demo.ts');
+function find(node, predicate) {
+  if (!node || typeof node !== 'object') return null;
+  if (predicate(node)) return node;
+  for (const child of [node.props?.children].flat(Infinity)) { const found = find(child, predicate); if (found) return found; }
+  return null;
+}
+function text(node) { if (typeof node === 'string' || typeof node === 'number') return String(node); if (!node || typeof node !== 'object') return ''; return [node.props?.children].flat(Infinity).map(text).join(' '); }
+function harness() {
+  let selectedDate = null;
+  const jsx = (type, props) => ({ type, props });
+  const dependencies = { react: { useState: () => [selectedDate, value => { selectedDate = value; }] },
+    'react/jsx-runtime': { jsx, jsxs: jsx }, 'next/link': 'Link', 'next/image': 'Image',
+    '@/lib/memory-map': model, './blooming-venue-map': { BloomingVenueMap: 'Map' } };
+  const { MemoryMapExplorer } = load('app/collection-next/memory-map-explorer.tsx', dependencies);
+  const pavilions = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }];
+  const data = createMemoryMapDemo(pavilions);
+  const props = { ...data, logs: data.logs.map(log => ({ ...log, photoUrl: '/dummy/' + log.id + '.jpg' })), areas: [], pavilions, demo: true };
+  return { props, render: () => MemoryMapExplorer(props), selectDate(tree, value) { find(tree, node => node.props?.['aria-label'] === '地図に表示する来場日').props.onChange({ target: { value } }); } };
+}
+
+test('explorer wires cumulative/day selection and place detail with all dates and all records', () => {
+  const h = harness(); let tree = h.render();
+  let map = find(tree, node => node.type === 'Map');
+  assert.equal(map.props.visitedItems.length, 1); assert.equal(map.props.visitedItems[0].count, 2);
+  let closed = false; let detail = map.props.renderPlaceDetail('a', () => { closed = true; });
+  assert.match(text(detail), /2027-04-10/); assert.match(text(detail), /2027-05-12/);
+  for (const entry of h.props.logs.filter(entry => entry.pavilion_id === 'a')) assert.ok(text(detail).includes(entry.title));
+  assert.equal(text(detail).includes('記録を見る'), false, 'demo cannot navigate into fake records');
+  find(detail, node => node.props?.['aria-label'] === '場所の思い出を閉じる').props.onClick(); assert.equal(closed, true);
+  h.selectDate(tree, '2027-04-10'); tree = h.render(); map = find(tree, node => node.type === 'Map');
+  assert.equal(map.props.visitedItems[0].count, 1); detail = map.props.renderPlaceDetail('a', () => {});
+  assert.match(text(detail), /フードの思い出 4/); assert.doesNotMatch(text(detail), /翌月のフード/);
+  h.selectDate(tree, '2027-05-12'); tree = h.render(); detail = find(tree, node => node.type === 'Map').props.renderPlaceDetail('b', () => {});
+  assert.match(text(detail), /訪問の記録なし/); assert.match(text(detail), /関連グッズだけの記録/);
+  assert.match(text(tree), /場所は後で決める思い出/);
+  h.selectDate(tree, ''); tree = h.render(); assert.equal(find(tree, node => node.type === 'Map').props.visitedItems[0].count, 2);
+});
+
+test('day changes and repeated clicks never mutate demo records or lose unplaced entries', () => {
+  const h = harness(); const before = JSON.stringify(h.props.logs);
+  for (const date of ['2027-05-12', '2027-04-10', '', '2027-05-12', '']) { const tree = h.render(); h.selectDate(tree, date); }
+  const tree = h.render(); assert.match(text(tree), /場所は後で決める思い出/);
+  assert.equal(JSON.stringify(h.props.logs), before);
+});

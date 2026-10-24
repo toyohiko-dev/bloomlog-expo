@@ -46,7 +46,7 @@ function parseDraft(raw: string | null, type: ActivityType): ActivityTypeDraft |
       occurredAt: data.occurredAt as string, price: data.price as string,
       acquisitionMethod: data.acquisitionMethod as string,
       pavilionId: data.pavilionId as string, pavilionSearch: data.pavilionSearch as string,
-      photo: null, photoNeedsReselect: data.hasPhoto && type !== "pavilion_visit",
+      photo: null, photoNeedsReselect: data.hasPhoto,
     };
   } catch {
     return null;
@@ -68,7 +68,7 @@ export function readActivityDrafts(storage: DraftStorage, userId: string, sessio
 export function writeActivityDraft(storage: DraftStorage, userId: string, sessionId: string, type: ActivityType, draft: ActivityTypeDraft) {
   const key = prefix(userId, sessionId) + type;
   const { photo, photoNeedsReselect, ...text } = draft;
-  const hasPhoto = type !== "pavilion_visit" && Boolean(photo || photoNeedsReselect);
+  const hasPhoto = Boolean(photo || photoNeedsReselect);
   if (Object.values(text).some(Boolean) || hasPhoto) {
     storage.setItem(key, JSON.stringify({ version: 1, activityType: type, ...text, hasPhoto }));
   } else {

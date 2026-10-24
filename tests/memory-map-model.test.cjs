@@ -69,3 +69,11 @@ test('ambiguous and coarse positions stay suggestions; verified isolated place c
   const crowded = suggestPhotoLocations({ permission: 'granted', position, places: Array.from({ length: 12 }, (_, i) => ({ ...places[0], id: String(i) })) });
   assert.equal(crowded.candidates.length, 3);
 });
+
+test('related place never overwrites food or pin names in shared display formatting', () => {
+  const { getActivityLogTitle } = load('lib/session-shared.ts');
+  const pavilion = { name: 'Garden' };
+  assert.equal(getActivityLogTitle({ activity_type: 'food', title: 'Curry', pavilion }), 'Curry');
+  assert.equal(getActivityLogTitle({ activity_type: 'pin', title: 'Badge', pavilion }), 'Badge');
+  assert.equal(getActivityLogTitle({ activity_type: 'pavilion_visit', title: 'Old name', pavilion }), 'Garden');
+});

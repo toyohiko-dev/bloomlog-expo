@@ -79,8 +79,10 @@ export type ActivityLog = {
   pavilion: ActivityLogPavilion | null;
 };
 
-export function getActivityLogTitle(log: Pick<ActivityLog, "title" | "pavilion">) {
-  return log.pavilion?.name ?? log.title ?? null;
+export function getActivityLogTitle(log: Pick<ActivityLog, "title" | "pavilion"> & Partial<Pick<ActivityLog, "activity_type">>) {
+  return log.activity_type && log.activity_type !== "pavilion_visit"
+    ? log.title ?? log.pavilion?.name ?? null
+    : log.pavilion?.name ?? log.title ?? null;
 }
 
 function normalizeSearchText(value: string) {

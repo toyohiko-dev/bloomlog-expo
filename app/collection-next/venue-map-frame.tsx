@@ -16,6 +16,7 @@ const MINIMIZED_PAN_MARGIN_RATIO = 0.42;
 type VenueMapFrameProps = {
   children: ReactNode;
   markers: VenueMapMarker[];
+  renderPlaceDetail?: (id: string, onClose: () => void) => ReactNode;
 };
 
 export type VenueMapMarker = {
@@ -327,7 +328,7 @@ function VenueMapMarkerDetail({
   );
 }
 
-export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
+export function VenueMapFrame({ children, markers, renderPlaceDetail }: VenueMapFrameProps) {
   const [zoom, setZoom] = useState(DESKTOP_INITIAL_ZOOM);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
@@ -659,13 +660,14 @@ export function VenueMapFrame({ children, markers }: VenueMapFrameProps) {
             />
           ))}
         </div>
-        {selectedMarker ? (
+      </div>
+
+        {selectedMarker && renderPlaceDetail ? renderPlaceDetail(selectedMarker.id, () => setSelectedMarkerId(null)) : selectedMarker ? (
           <VenueMapMarkerDetail
             marker={selectedMarker}
             onClose={() => setSelectedMarkerId(null)}
           />
         ) : null}
-      </div>
 
       <div className="pointer-events-none absolute bottom-4 right-4 z-20 sm:bottom-6 sm:left-6 sm:right-auto">
         <div className="w-[104px] overflow-hidden bg-white/82 p-1.5 shadow-sm ring-1 ring-slate-200/80 backdrop-blur sm:w-[132px]">

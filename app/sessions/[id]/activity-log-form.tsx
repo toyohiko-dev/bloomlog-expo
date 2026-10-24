@@ -208,7 +208,7 @@ export function ActivityLogForm({
   const showPrice = activityType === "food" || activityType === "pin";
   const showAcquisitionMethod = activityType === "pin";
   const showPavilionPicker = activityType === "pavilion_visit";
-  const showPhotoInput = activityType !== "pavilion_visit";
+  const showPhotoInput = true;
   const notesLength = memo.length;
   const filteredPavilions = searchPavilions(pavilions, deferredPavilionSearch);
   const hasPavilionSearch = deferredPavilionSearch.trim().length > 0;
@@ -315,14 +315,14 @@ export function ActivityLogForm({
   }
 
   function resetForm(savedActivityType: ActivityType) {
-    draftsRef.current[savedActivityType] = createEmptyDraft();
+    draftsRef.current[savedActivityType] = { ...createEmptyDraft(), pavilionId: selectedPavilionId, pavilionSearch: selectedPavilion?.name ?? "" };
     setTitle("");
     setMemo("");
     setOccurredAt("");
     setPrice("");
     setAcquisitionMethod("");
-    setPavilionSearch("");
-    setSelectedPavilionId("");
+    setPavilionSearch(selectedPavilion?.name ?? "");
+    setSelectedPavilionId(selectedPavilionId);
     setHasSelectedPhoto(false);
     setSelectedPhoto(null);
     setPhotoNeedsReselect(false);
@@ -333,7 +333,7 @@ export function ActivityLogForm({
     if (draftOwnerId) {
       try {
         removeActivityDraft(window.localStorage, draftOwnerId, sessionId, savedActivityType);
-        setDraftNotice("保存した思い出の下書きを消去しました。");
+        setDraftNotice("保存しました。選択中の場所は次の記録にも使えます。");
       } catch {
         setDraftNotice("思い出は保存されましたが、下書きを消去できませんでした。再読み込み後の重複保存にご注意ください。");
       }
@@ -492,6 +492,64 @@ export function ActivityLogForm({
           </div>
 
           <div className="space-y-5 px-5 py-5">
+            {showPhotoInput ? (
+              <div>
+                <label
+                  htmlFor="photo"
+                  className="mb-2 block text-sm font-medium text-slate-700"
+                >
+                  写真を撮る・選ぶ（任意）
+                </label>
+                <input
+                  ref={(input) => {
+                    photoInputRef.current = input;
+                    if (input && mode === "create") {
+                      // 種類を戻したときも、表示中のファイルと送信する File を一致させる。
+                      const files = new DataTransfer();
+                      if (selectedPhoto) files.items.add(selectedPhoto);
+                      input.files = files.files;
+                    }
+                  }}
+                  id="photo"
+                  name="photo"
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => {
+                    if (mode === "create") {
+                      setSelectedPhoto(event.target.files?.[0] ?? null);
+                      setPhotoNeedsReselect(false);
+                      persistDraft({ photo: event.target.files?.[0] ?? null, photoNeedsReselect: false });
+                    }
+                    setHasSelectedPhoto(Boolean(event.target.files?.length));
+                    clearFieldState("photo");
+                  }}
+                  className={fieldClass(Boolean(state.fieldErrors.photo))}
+                />
+                {selectedPhoto ? <p className="mt-2 text-sm text-slate-600">選択中: {selectedPhoto.name} · {activityTypeMeta.label}</p> : null}
+                {photoNeedsReselect && mode === "create" ? (
+                  <p className="mt-2 text-sm text-amber-700">
+                    写真はもう一度選択してください。写真本体は下書きに保存されません。
+                  </p>
+                ) : null}
+                {state.fieldErrors.photo ? (
+                  <p className="mt-2 text-sm text-rose-600">
+                    {state.fieldErrors.photo}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {!showPavilionPicker ? <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <label htmlFor="related-place" className="mb-2 block text-sm font-medium">関連する場所（任意）</label>
+              <p className="mb-2 text-xs text-slate-500">{selectedPavilion ? '選択中: ' + selectedPavilion.name : '場所は後から決められます。'} 関連グッズだけでは訪問済みになりません。</p>
+              <select id="related-place" value={selectedPavilionId} className={fieldClass(Boolean(state.fieldErrors.pavilionId))} onChange={event => {
+                const id = event.target.value; const place = pavilions.find(item => item.id === id);
+                setSelectedPavilionId(id); setPavilionSearch(place?.name ?? '');
+                persistDraft({ pavilionId: id, pavilionSearch: place?.name ?? '' }); clearFieldState('pavilionId');
+              }}><option value="">場所は後で</option>{pavilions.map(place => <option key={place.id} value={place.id}>{place.name}</option>)}</select>
+              {state.fieldErrors.pavilionId ? <p className="mt-2 text-sm text-rose-600">{state.fieldErrors.pavilionId}</p> : null}
+              <p className="mt-2 text-xs text-slate-500">現在地からの候補は準備中です。撮影地と購入店が違うときは、関連付けたい場所を選んでください。</p>
+            </div> : null}
             {showPavilionPicker ? (
               <div className="space-y-3">
                 <input type="hidden" name="title" value={title} />
@@ -727,52 +785,6 @@ export function ActivityLogForm({
                 {state.fieldErrors.acquisitionMethod ? (
                   <p className="mt-2 text-sm text-rose-600">
                     {state.fieldErrors.acquisitionMethod}
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
-
-            {showPhotoInput ? (
-              <div>
-                <label
-                  htmlFor="photo"
-                  className="mb-2 block text-sm font-medium text-slate-700"
-                >
-                  写真
-                </label>
-                <input
-                  ref={(input) => {
-                    photoInputRef.current = input;
-                    if (input && mode === "create") {
-                      // 種類を戻したときも、表示中のファイルと送信する File を一致させる。
-                      const files = new DataTransfer();
-                      if (selectedPhoto) files.items.add(selectedPhoto);
-                      input.files = files.files;
-                    }
-                  }}
-                  id="photo"
-                  name="photo"
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => {
-                    if (mode === "create") {
-                      setSelectedPhoto(event.target.files?.[0] ?? null);
-                      setPhotoNeedsReselect(false);
-                      persistDraft({ photo: event.target.files?.[0] ?? null, photoNeedsReselect: false });
-                    }
-                    setHasSelectedPhoto(Boolean(event.target.files?.length));
-                    clearFieldState("photo");
-                  }}
-                  className={fieldClass(Boolean(state.fieldErrors.photo))}
-                />
-                {photoNeedsReselect && mode === "create" ? (
-                  <p className="mt-2 text-sm text-amber-700">
-                    写真はもう一度選択してください。写真本体は下書きに保存されません。
-                  </p>
-                ) : null}
-                {state.fieldErrors.photo ? (
-                  <p className="mt-2 text-sm text-rose-600">
-                    {state.fieldErrors.photo}
                   </p>
                 ) : null}
               </div>

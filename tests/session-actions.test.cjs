@@ -59,6 +59,7 @@ function actions(errorTable, errorOperation, calls = [], options = {}) {
       storage: { from: () => ({ upload: async () => { calls.push('upload'); return { error: null }; }, remove: async paths => { calls.push(['remove', ...paths]); if (options.throwRemove) throw Error('offline'); return { error: options.removeError ? Error('denied') : null }; } }) } }) },
     '@/lib/supabase/shared': { createPublicSupabaseClient: () => ({ from: query }) },
     '@/lib/sessions': { getSessionByVisitDate: async () => null, getDefaultEventId: async () => 'event',
+      getPavilion: async id => id === 'missing' ? null : ({ id, name: 'Garden', is_active: true }),
       getSession: async () => ({ visit_date: '2026-10-18', event_id: 'event' }),
       getActivityLog: async () => ({ session_id: 'day', photo_path: 'owner/day/old.jpg' }) },
   });
@@ -165,3 +166,28 @@ if (process.env.BLOOMLOG_TIMEZONE_WORKER === '1') {
     }
   });
 }
+
+test('optional places preserve food names without counting as visits; missing locations fail before write', async () => {
+  for (const action of ['submitActivityLogAction', 'updateActivityLogAction']) {
+    const writes = []; const run = actions(null, null, [], { onWrite: (table, payload) => { if (table === 'activity_logs') writes.push(payload); } });
+    const f = form(); f.set('pavilionId', 'garden'); f.set('title', 'Curry');
+    assert.equal((await run[action](f)).status, 'success');
+    assert.equal(writes[0].pavilion_id, 'garden'); assert.equal(writes[0].activity_type, 'food'); assert.equal(writes[0].title, 'Curry');
+    f.set('pavilionId', ''); assert.equal((await run[action](f)).status, 'success'); assert.equal(writes[1].pavilion_id, null);
+    f.set('pavilionId', 'missing'); assert.equal((await run[action](f)).status, 'error'); assert.equal(writes.length, 2);
+  }
+});
+test('pavilion visits can store a photo while still requiring a valid place', async () => {
+  const writes = []; const run = actions(null, null, [], { onWrite: (table, payload) => { if (table === 'activity_logs') writes.push(payload); } });
+  const f = form(); f.set('activityType', 'pavilion_visit'); f.set('pavilionId', 'garden'); f.set('photo', new File(['photo'], 'visit.jpg', { type: 'image/jpeg' }));
+  assert.equal((await run.submitActivityLogAction(f)).status, 'success'); assert.equal(writes[0].title, 'Garden'); assert.ok(writes[0].photo_path);
+  f.set('pavilionId', ''); assert.equal((await run.submitActivityLogAction(f)).status, 'error'); assert.equal(writes.length, 1);
+});
+
+test('changing a record to pavilion without a new photo retains its existing photo', async () => {
+  const writes = [], calls = []; const run = actions(null, null, calls, { onWrite: (table, payload) => { if (table === 'activity_logs') writes.push(payload); } });
+  const f = form(); f.set('activityType', 'pavilion_visit'); f.set('pavilionId', 'garden');
+  assert.equal((await run.updateActivityLogAction(f)).status, 'success');
+  assert.equal(writes[0].photo_path, 'owner/day/old.jpg');
+  assert.equal(calls.some(call => Array.isArray(call) && call[0] === 'remove'), false);
+});

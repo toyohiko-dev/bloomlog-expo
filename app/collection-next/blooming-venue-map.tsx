@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { PavilionCollectionItem } from "@/lib/sessions";
 import type { Area, PavilionOption } from "@/lib/session-shared";
 import { getPavilionImageUrl } from "@/lib/supabase/shared";
@@ -15,6 +16,7 @@ type BloomingVenueMapProps = {
   areas: Area[];
   pavilions: PavilionOption[];
   visitedItems: PavilionCollectionItem[];
+  renderPlaceDetail?: (id: string, onClose: () => void) => ReactNode;
 };
 
 type PavilionMapPoint = {
@@ -447,6 +449,7 @@ export function BloomingVenueMap({
   areas,
   pavilions,
   visitedItems,
+  renderPlaceDetail,
 }: BloomingVenueMapProps) {
   const knownAreaIds = new Set(areas.map((area) => area.id));
   const hasUnassignedPavilions = pavilions.some(
@@ -654,7 +657,7 @@ export function BloomingVenueMap({
         </p>
       </div>
 
-      <VenueMapFrame markers={points}>
+      <VenueMapFrame markers={points} renderPlaceDetail={renderPlaceDetail}>
         <svg
           data-venue-map-source="true"
           aria-label="訪問済みと未訪問のパビリオンを示す白地図ベースの制覇マップ"

@@ -232,3 +232,13 @@ test('persistent scope separates users and sessions, handles corrupt data and st
   const edit = harness({ draftOwnerId: 'a', mode: 'edit', initialActivityType: 'food', initialTitle: '保存済み' }, storage);
   assert.equal(edit.value('title'), '保存済み');
 });
+
+test('photo-first food input keeps optional place on failure and after successful save, and can defer it', async () => {
+  const h = harness(); h.type('food'); h.change('related-place', 'garden'); h.change('title', 'Curry');
+  h.photo(new File(['photo'], 'food.jpg', { type: 'image/jpeg' }));
+  h.setAction(async () => ({ status: 'error', message: 'failed', fieldErrors: {} })); h.submit(); await h.settle();
+  assert.equal(h.value('related-place'), 'garden'); assert.equal(h.fileInput.files.length, 1);
+  h.setAction(async () => ({ status: 'success', message: 'saved', fieldErrors: {} })); h.submit(); await h.settle();
+  assert.equal(h.value('related-place'), 'garden'); assert.equal(h.value('title'), '');
+  h.change('related-place', ''); assert.equal(h.value('related-place'), '');
+});
