@@ -16,6 +16,8 @@ This version has breaking changes - APIs, conventions, and file structure may al
 
 ## Domain Rules
 
+- 開発開始前に [開発環境とNodeの区分](docs/ops/workflows.md) を確認し、アプリ用Nodeの実体・版を検証する。
+
 作業対象に応じて、近い階層の `AGENTS.md` も読む。
 
 - UI / UX / frontend / route / component / copy: `app/AGENTS.md`
