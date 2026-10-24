@@ -156,7 +156,7 @@ function buildOccurredAt(visitDate: string, occurredTime: string) {
     return null;
   }
 
-  const datetime = new Date(`${visitDate}T${occurredTime}`);
+  const datetime = new Date(`${visitDate}T${occurredTime}+09:00`);
 
   if (Number.isNaN(datetime.getTime())) {
     return undefined;

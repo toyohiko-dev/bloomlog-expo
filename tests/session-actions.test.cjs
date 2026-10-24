@@ -40,7 +40,7 @@ function actions(errorTable, errorOperation, calls = [], options = {}) {
   const query = table => {
     let operation = 'read';
     const q = {
-      insert() { operation = 'insert'; calls.push('insert'); return this; }, update() { operation = 'update'; calls.push('update'); return this; }, delete() { operation = 'delete'; calls.push('delete'); return this; },
+      insert(payload) { operation = 'insert'; calls.push('insert'); options.onWrite?.(table, payload); return this; }, update(payload) { operation = 'update'; calls.push('update'); options.onWrite?.(table, payload); return this; }, delete() { operation = 'delete'; calls.push('delete'); return this; },
       select() { return this; }, eq() { return this; }, is() { return this; }, or() { return this; },
       single() { return this; }, maybeSingle() { return this; },
       then(resolve, reject) {
@@ -109,3 +109,59 @@ test('stale or thrown database failures never reclaim the current old photo', as
     assert.equal(calls.filter(c => Array.isArray(c) && c[0] === 'claim').length, 1);
   }
 });
+
+// Each worker executes the real create/update actions with mocked DB writes.
+// TZ is set before Node starts; no real records or photos are touched.
+if (process.env.BLOOMLOG_TIMEZONE_WORKER === '1') {
+  test('JST payload worker', async () => {
+    const cases = [
+      ['00:15', '2026-10-17T15:15:00.000Z'],
+      ['09:30', '2026-10-18T00:30:00.000Z'],
+      ['18:45', '2026-10-18T09:45:00.000Z'],
+      ['23:50', '2026-10-18T14:50:00.000Z'],
+      ['', null],
+    ];
+    const format = value => value === null ? '' : new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', hour12: false,
+    }).format(new Date(value));
+    for (const action of ['submitActivityLogAction', 'updateActivityLogAction']) {
+      for (const [input, expected] of cases) {
+        const writes = [];
+        const run = actions(null, null, [], { onWrite: (table, payload) => {
+          if (table === 'activity_logs') writes.push(payload);
+        } });
+        const f = form(); f.set('occurredAt', input);
+        assert.equal((await run[action](f)).status, 'success');
+        assert.equal(writes.length, 1);
+        assert.equal(writes[0].occurred_at, expected, process.env.TZ + ' ' + action + ' ' + input);
+        assert.equal(format(writes[0].occurred_at), input);
+        // Reopening the edit form in JST and saving unchanged must preserve the instant.
+        f.set('occurredAt', format(writes[0].occurred_at));
+        assert.equal((await run.updateActivityLogAction(f)).status, 'success');
+        assert.equal(writes[1].occurred_at, expected);
+      }
+      const writes = [];
+      const run = actions(null, null, [], { onWrite: (...args) => writes.push(args) });
+      const f = form(); f.set('occurredAt', 'invalid-time');
+      const result = await run[action](f);
+      assert.equal(result.status, 'error');
+      assert.ok(result.fieldErrors.occurredAt);
+      assert.equal(writes.length, 0);
+    }
+  });
+} else {
+  test('create and update preserve JST input across UTC and Asia/Tokyo server timezones', () => {
+    const { spawnSync } = require('node:child_process');
+    for (const TZ of ['UTC', 'Asia/Tokyo']) {
+      const env = { ...process.env, TZ, BLOOMLOG_TIMEZONE_WORKER: '1' };
+      delete env.NODE_TEST_CONTEXT;
+      const result = spawnSync(process.execPath, ['--test', '--test-name-pattern=JST payload worker', __filename], {
+        env, encoding: 'utf8', timeout: 20000,
+      });
+      assert.ifError(result.error);
+      assert.equal(result.status, 0, TZ + '\n' + result.stdout + result.stderr);
+      assert.match(result.stdout, /JST payload worker/);
+      assert.match(result.stdout, /tests 1/);
+    }
+  });
+}
