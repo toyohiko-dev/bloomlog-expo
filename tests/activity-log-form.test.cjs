@@ -334,3 +334,19 @@ test('successful preparation sends only replacement pixels and keeps original fo
  h.type('food');h.change('title','Meal');h.photo(original);h.setAction(async()=>({status:'error',message:'offline',fieldErrors:{}}));h.submit();await h.settle();
  assert.equal(await h.calls[0].get('photo').text(),'PIXELS');assert.equal(h.fileInput.files[0],original);
 });
+
+test('photo conversion failure stops create and edit without sending original or discarding input',async()=>{
+ for(const props of [{},{mode:'edit',logId:'log',initialActivityType:'food',initialTitle:'Meal'}]){
+  const h=harness(props,memoryStorage(),async()=>{throw Error('cannot convert');});if(!props.mode){h.type('food');h.change('title','Meal');}
+  const original=new File(['GPS original'],'raw.heic',{type:'image/heic'});h.photo(original);h.submit();await h.settle();
+  assert.equal(h.calls.length,0);assert.equal(h.value('title'),'Meal');assert.equal(h.fileInput.files[0],original);
+ }
+});
+test('only sanitized pixels leave create and edit forms; original stays local on save failure',async()=>{
+ for(const props of [{},{mode:'edit',logId:'log',initialActivityType:'food',initialTitle:'Meal'}]){
+  const original=new File(['GPS original'],'raw.jpg',{type:'image/jpeg'}),clean=new File(['pixels'],'memory.png',{type:'image/png'});
+  const h=harness(props,memoryStorage(),async input=>{assert.equal(input,original);return clean;});if(!props.mode){h.type('food');h.change('title','Meal');}
+  h.photo(original);h.setAction(async()=>({status:'error',message:'offline',fieldErrors:{}}));h.submit();await h.settle();
+  assert.equal(await h.calls[0].get('photo').text(),'pixels');assert.equal(h.fileInput.files[0],original);
+ }
+});
