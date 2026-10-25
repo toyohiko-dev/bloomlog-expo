@@ -1,6 +1,12 @@
+import {decodePlaceContext,type PlaceContext} from './place-context';
 import { activityTypeOptions, type ActivityType } from "./activity-types";
 
 export type ActivityTypeDraft = {
+  recordingSessionId?: string;
+  saveAttemptId?:string;
+  photoSelectionId?:string;
+  saveAttemptSignature?:string;
+  placeContext?:PlaceContext|null;
   title: string;
   memo: string;
   occurredAt: string;
@@ -41,11 +47,17 @@ function parseDraft(raw: string | null, type: ActivityType): ActivityTypeDraft |
       if (typeof data[field] !== "string" || (data[field] as string).length > limit) return null;
     }
     if (data.occurredAt !== "" && !/^([01]\d|2[0-3]):[0-5]\d$/.test(data.occurredAt as string)) return null;
+    const context=decodePlaceContext(data.placeContext);
     return {
+      placeContext:context.ok?context.value:null,
+      photoSelectionId:typeof data.photoSelectionId==='string'&&data.photoSelectionId.length<=40?data.photoSelectionId:undefined,
+      saveAttemptId:typeof data.saveAttemptId==='string'&&/^[0-9a-f-]{36}$/i.test(data.saveAttemptId)?data.saveAttemptId:undefined,
+      saveAttemptSignature:typeof data.saveAttemptSignature==='string'&&data.saveAttemptSignature.length<=100?data.saveAttemptSignature:undefined,
       title: data.title as string, memo: data.memo as string,
       occurredAt: data.occurredAt as string, price: data.price as string,
       acquisitionMethod: data.acquisitionMethod as string,
       pavilionId: data.pavilionId as string, pavilionSearch: data.pavilionSearch as string,
+      recordingSessionId: typeof data.recordingSessionId === "string" && data.recordingSessionId.length <= 200 ? data.recordingSessionId : undefined,
       photo: null, photoNeedsReselect: data.hasPhoto,
     };
   } catch {

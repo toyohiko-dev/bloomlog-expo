@@ -2,15 +2,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppPrimaryNav } from "@/app/_components/app-primary-nav";
 import { ActivityLogForm } from "@/app/sessions/[id]/activity-log-form";
-import { getSession, listPavilions } from "@/lib/sessions";
+import { getSession, listPavilions, listSessions, listActivityLogs } from "@/lib/sessions";
 
 type NewActivityPageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{place?:string;return?:string}>;
 };
 
-export default async function NewActivityPage({ params }: NewActivityPageProps) {
+export default async function NewActivityPage({ params, searchParams }: NewActivityPageProps) {
   const { id } = await params;
-  const [session, pavilions] = await Promise.all([getSession(id), listPavilions()]);
+  const [session, pavilions, visitSessions, query, recentLogs] = await Promise.all([getSession(id), listPavilions(), listSessions(), searchParams, listActivityLogs(id)]);
+  const selectedPlace=pavilions.find(place=>place.id===query.place);
 
   if (!session) {
     notFound();
@@ -44,8 +46,15 @@ export default async function NewActivityPage({ params }: NewActivityPageProps) 
             <ActivityLogForm
               key={`${session.user_id}:${session.id}`}
               sessionId={session.id}
+              visitDate={session.visit_date}
+              visitEventId={session.event_id}
+              visitSessions={visitSessions.map(day=>({id:day.id,visit_date:day.visit_date,event_id:day.event_id}))}
+              recentPavilionIds={recentLogs.map(log=>log.pavilion_id).filter((id):id is string=>Boolean(id))}
+              initialPavilionId={selectedPlace?.id}
+              initialTitle={selectedPlace?.name}
               draftOwnerId={session.user_id}
               pavilions={pavilions}
+              returnToMap={query.return==='map'}
               successRedirectPath={`/sessions/${session.id}`}
               submitLabel="思い出を記録する"
             />

@@ -1,3 +1,4 @@
+import type {PlaceContext} from './place-context';
 export type VisitSession = {
   id: string;
   created_at: string;
@@ -63,6 +64,8 @@ export type ActivityLogPavilion = Pick<
 >;
 
 export type ActivityLog = {
+  place_context?:PlaceContext|null;
+  place_context_label?:string;
   id: string;
   created_at: string;
   user_id: string;

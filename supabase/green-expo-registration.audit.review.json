@@ -1,0 +1,3244 @@
+{
+  "event_id": "e60f2360-8147-4112-969a-00954596ceb6",
+  "packet_sha256": "b199e8f23c5e1028f78552ce85ea0a2e69d9b61ed65efcd8aa047fe9af1e343d",
+  "source_id_policy": "Internal versioned publication references, NOT authority-issued persistent IDs.",
+  "records": [
+    {
+      "source_id": "flower-20261009-p02-01",
+      "name": "株式会社 タカショー",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "94171aa9-1fd7-5133-a03d-8aca7332d53f"
+    },
+    {
+      "source_id": "flower-20261009-p02-02",
+      "name": "株式会社 ロスフィー、ドーハ日本人学校、株式会社 オズ・ワーク、 株式会社 ナフィアス",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "96f62ad4-e606-5c59-8aba-c02454f545db"
+    },
+    {
+      "source_id": "flower-20261009-p02-03",
+      "name": "イクエトコウリョク",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "a91d1214-4313-5605-9066-a00087362d40"
+    },
+    {
+      "source_id": "flower-20261009-p02-04",
+      "name": "一般財団法人 千葉県まちづくり公社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "099dd36f-1386-54ce-80e8-2b73b9cccc51"
+    },
+    {
+      "source_id": "flower-20261009-p02-05",
+      "name": "東京セキスイファミエス株式会社 ザ・シーズン営業部",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "701002ed-6ce7-5d58-afd9-c94ea5fe21c2"
+    },
+    {
+      "source_id": "flower-20261009-p02-06",
+      "name": "BAOBABLISS×MOTOMACHI花こ",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "7f383fb7-207b-5588-9522-dae0aba2d37e"
+    },
+    {
+      "source_id": "flower-20261009-p02-07",
+      "name": "株式会社 緑風舎",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "e4090af0-6300-5b95-8a88-ba4bfe67218b"
+    },
+    {
+      "source_id": "flower-20261009-p02-08",
+      "name": "日本ナチュロック株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "62985b40-9bf9-581c-a0e5-ed08e50d7cbb"
+    },
+    {
+      "source_id": "flower-20261009-p02-09",
+      "name": "JEJアステージ株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "d3e8a40d-5a13-525b-9902-c04605f3b939"
+    },
+    {
+      "source_id": "flower-20261009-p02-10",
+      "name": "イビデングリーンテック株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "8d50e744-1a1c-5d31-b89f-b41e04db5964"
+    },
+    {
+      "source_id": "flower-20261009-p02-11",
+      "name": "圓修造園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "291fdccb-7484-5e8b-8077-2f35bfaf219a"
+    },
+    {
+      "source_id": "flower-20261009-p02-12",
+      "name": "株式会社 内田緑化興業",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "1ba3cf90-2770-566c-80d8-7d22598fd156"
+    },
+    {
+      "source_id": "flower-20261009-p02-13",
+      "name": "株式会社 南神",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "5ddf7ef4-0ce9-514d-8332-05942621eaff"
+    },
+    {
+      "source_id": "flower-20261009-p02-14",
+      "name": "サカタのタネ グリーンサービス株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "d25c87b0-0354-5b0a-a20a-12a1429642d3"
+    },
+    {
+      "source_id": "flower-20261009-p02-15",
+      "name": "住友林業緑化株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "c0c32723-ce29-503f-bd99-c61884bf4bc9"
+    },
+    {
+      "source_id": "flower-20261009-p02-16",
+      "name": "内山緑地建設株式会社・東京農業大学∕内山緑地建設株式会社・東京都市大学",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "92981f4f-b261-5f1d-9a6a-47d96a556961"
+    },
+    {
+      "source_id": "flower-20261009-p02-17",
+      "name": "株式会社 杜若園芸",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "7eb80bec-4787-5185-ba26-c9cf183b3cd0"
+    },
+    {
+      "source_id": "flower-20261009-p02-18",
+      "name": "株式会社 ユニバーサル園芸社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "c0699248-8983-5ae3-9b3f-918cda6c006a"
+    },
+    {
+      "source_id": "flower-20261009-p02-19",
+      "name": "有限会社 アオキ・グリーン",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "54a7b571-392a-5e0e-b3b5-5daa02d3fab0"
+    },
+    {
+      "source_id": "flower-20261009-p02-20",
+      "name": "有限会社 細野植産",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "6a715938-bcdc-515c-aa47-2363a67abe82"
+    },
+    {
+      "source_id": "flower-20261009-p02-21",
+      "name": "有限会社 清水工業ガーデン",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "77d59e88-711f-50fb-8384-e306d368bf5a"
+    },
+    {
+      "source_id": "flower-20261009-p03-01",
+      "name": "石勝エクステリア（東急不動産グループ）",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "9b37fbcb-94df-5de4-bbf5-bb380827c77c"
+    },
+    {
+      "source_id": "flower-20261009-p03-02",
+      "name": "株式会社 TOI",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "317f77a1-1753-5dcd-a009-abc940e0f004"
+    },
+    {
+      "source_id": "flower-20261009-p04-01",
+      "name": "一般社団法人 日本造園組合連合会",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "02f6542b-7d44-577a-8ab1-41af086ef409"
+    },
+    {
+      "source_id": "flower-20261009-p04-02",
+      "name": "坪庭展合同組合",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "f8145f1e-381d-572f-ae85-1604552985f6"
+    },
+    {
+      "source_id": "flower-20261009-p04-03",
+      "name": "高梨庭園 谷山庭苑",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "5727d9ce-b9ed-5ddf-94cb-b876c7da173f"
+    },
+    {
+      "source_id": "flower-20261009-p04-04",
+      "name": "株式会社 泰山園・北沢建設株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "411faa64-ca4d-5a0f-8950-0a8ccfc4207c"
+    },
+    {
+      "source_id": "flower-20261009-p04-05",
+      "name": "一般社団法人 神奈川県造園業協会",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "860a5617-6a75-51b1-8189-a61acc55dd28"
+    },
+    {
+      "source_id": "flower-20261009-p04-06",
+      "name": "株式会社 富士植木",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "7367a35c-9d45-594d-933c-1e4cfa3262ef"
+    },
+    {
+      "source_id": "flower-20261009-p04-07",
+      "name": "CLASS EARTH株式会社・プランティオ株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "cd5560c8-3d9e-575f-a17c-358a9d8d0292"
+    },
+    {
+      "source_id": "flower-20261009-p04-08",
+      "name": "東海園株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "5b15b894-1a95-5f81-b43b-4522ae6f9efa"
+    },
+    {
+      "source_id": "flower-20261009-p04-09",
+      "name": "有限会社 幸徳園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "b37fbe14-06eb-579e-8c71-9c47fdde7cb4"
+    },
+    {
+      "source_id": "flower-20261009-p04-10",
+      "name": "小杉造園株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "e91dae5a-e68b-5617-9dca-88748c75b1a0"
+    },
+    {
+      "source_id": "flower-20261009-p04-11",
+      "name": "一般社団法人 横浜市造園協会",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "3fe9b834-b420-571c-974a-9b4753682b59"
+    },
+    {
+      "source_id": "flower-20261009-p04-12",
+      "name": "株式会社 米山庭苑",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "3b2be4ab-5285-5b0e-b1f7-c87c468c23b7"
+    },
+    {
+      "source_id": "flower-20261009-p05-01",
+      "name": "岩間造園株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "2ac79dd7-4302-5344-a04b-cf09dee4839e"
+    },
+    {
+      "source_id": "flower-20261009-p05-02",
+      "name": "カレンフジ株式会社（おにわさん）",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "8934a929-bd40-53a4-a213-8aaec7f417f3"
+    },
+    {
+      "source_id": "flower-20261009-p05-03",
+      "name": "一般社団法人 日本造園建設業協会 神奈川県支部",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "351cc8e2-31c6-5e6b-a11f-ac9df64d8979"
+    },
+    {
+      "source_id": "flower-20261009-p05-04",
+      "name": "東京都",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "124db066-ee70-57ce-8d97-6cbb108ade9b"
+    },
+    {
+      "source_id": "flower-20261009-p05-05",
+      "name": "千葉市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "c680bfc9-dac9-5c7a-ba4e-8474b4590112"
+    },
+    {
+      "source_id": "flower-20261009-p05-06",
+      "name": "千葉県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "701fe77b-8f3d-578f-bd1f-aeef2be98953"
+    },
+    {
+      "source_id": "flower-20261009-p05-07",
+      "name": "埼玉県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "1d5d0cf8-b1dc-5d43-b39f-053310e23d33"
+    },
+    {
+      "source_id": "flower-20261009-p05-08",
+      "name": "さいたま市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "f41b9b1d-3d55-5a46-98eb-3d90b03d2f36"
+    },
+    {
+      "source_id": "flower-20261009-p05-09",
+      "name": "川崎市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "2555b0d9-5e95-5714-a624-2662d3a77e34"
+    },
+    {
+      "source_id": "flower-20261009-p05-10",
+      "name": "相模原市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "83d5278c-f308-5947-9a9b-04a4f4c4fbbc"
+    },
+    {
+      "source_id": "flower-20261009-p05-11",
+      "name": "横浜植木株式会社",
+      "status": "hold-source-conflict",
+      "reason": "Map/list block labels conflict; manual reference only.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": null
+    },
+    {
+      "source_id": "flower-20261009-p05-12",
+      "name": "TEAM OSAKA",
+      "status": "hold-source-conflict",
+      "reason": "Map/list block labels conflict; manual reference only.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": null
+    },
+    {
+      "source_id": "flower-20261009-p06-01",
+      "name": "一般社団法人 ランドスケープコンサルタンツ協会",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "688485f4-ae1d-5061-b06a-0b61ac6187cf"
+    },
+    {
+      "source_id": "flower-20261009-p06-02",
+      "name": "沖縄美ら海水族館（一般財団法人 沖縄美ら島財団）",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "a8c72c65-7697-5fce-9c91-6dc6a5b2e3f9"
+    },
+    {
+      "source_id": "flower-20261009-p06-03",
+      "name": "中川造園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "a4684418-aab3-5ce4-8e3d-14927bc1e590"
+    },
+    {
+      "source_id": "flower-20261009-p07-01",
+      "name": "有限会社 アミノ・今井ナーセリー",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "7f5f99c4-dad4-5036-8c29-e8ec6dbc7d7f"
+    },
+    {
+      "source_id": "flower-20261009-p07-02",
+      "name": "生きる庭",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "12832cec-323e-5d63-94a0-b460259c4eea"
+    },
+    {
+      "source_id": "flower-20261009-p07-03",
+      "name": "三ヶ日みかん狩り つづさき観光",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "aefeab0f-0a41-5eca-8a12-7eb82943f930"
+    },
+    {
+      "source_id": "flower-20261009-p07-04",
+      "name": "株式会社 ハイポネックスジャパン",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "684341f3-1aa1-5759-8290-274c4304ad08"
+    },
+    {
+      "source_id": "flower-20261009-p07-05",
+      "name": "株式会社 サカタのタネ",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "10e7b972-71f3-58fb-bfbf-49e93906442a"
+    },
+    {
+      "source_id": "flower-20261009-p07-06",
+      "name": "Lier.succulent株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "a967a1f3-9d93-5670-b18e-8958d7922306"
+    },
+    {
+      "source_id": "flower-20261009-p07-07",
+      "name": "株式会社 竹藤商店",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "570e5d56-d6f9-53f1-8501-3790ccebcef0"
+    },
+    {
+      "source_id": "flower-20261009-p07-08",
+      "name": "庭咲桜（にわざくら）",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "86e7cfaf-c51d-5cf5-8d76-e7786f1bb72a"
+    },
+    {
+      "source_id": "flower-20261009-p07-09",
+      "name": "株式会社 都実業",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "47757db0-bb74-52f4-b632-64b9864d3d8c"
+    },
+    {
+      "source_id": "flower-20261009-p07-10",
+      "name": "立命館大学産業社会学部永野聡ゼミナール",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "5af69fad-b538-5035-baca-a7d0373e65c5"
+    },
+    {
+      "source_id": "flower-20261009-p07-11",
+      "name": "株式会社 小島庭園工務所",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "ebf87ecd-171d-535b-aefd-17f6bcfbabda"
+    },
+    {
+      "source_id": "flower-20261009-p07-12",
+      "name": "天龍造園建設株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "ec237bcb-c441-576d-8afb-6c9e7c1c7905"
+    },
+    {
+      "source_id": "flower-20261009-p07-13",
+      "name": "株式会社 竹内庭苑",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "c6341aaf-872e-5784-8e92-bb5c1da20885"
+    },
+    {
+      "source_id": "flower-20261009-p07-14",
+      "name": "食べるバラ農園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "fa1206b4-8ee4-510f-89ea-f015e246a8bb"
+    },
+    {
+      "source_id": "flower-20261009-p07-15",
+      "name": "湘南造園グループ 湘南造園（株）/（株）ファームビレッジ湘南",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "4f95f580-400b-555d-a2be-aa56e72a7bc9"
+    },
+    {
+      "source_id": "flower-20261009-p07-16",
+      "name": "横浜農と緑の会（はま農楽）",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "ab48e4b3-0f8d-5762-bf72-fcd81f04e04b"
+    },
+    {
+      "source_id": "flower-20261009-p07-17",
+      "name": "一造園土木株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "aa66b62e-b597-54de-8789-6593f25d9afc"
+    },
+    {
+      "source_id": "flower-20261009-p07-18",
+      "name": "株式会社 内田造園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "4fb3b30c-cd4e-5caf-9c28-2b155c3d78f1"
+    },
+    {
+      "source_id": "flower-20261009-p07-19",
+      "name": "ワクワクプラント株式会社・株式会社 キリガヤ",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "2e91ff30-5c98-59f6-a957-b62615728350"
+    },
+    {
+      "source_id": "flower-20261009-p07-20",
+      "name": "TEAM EARTHLINGS",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "ac5fde5a-d877-5b53-875c-29752c3e593c"
+    },
+    {
+      "source_id": "flower-20261009-p07-21",
+      "name": "株式会社 春峰園・株式会社 貝塚造園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "6c9a07b0-5a36-5730-8275-775d4bf668a2"
+    },
+    {
+      "source_id": "flower-20261009-p07-22",
+      "name": "やまやす呉藤",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "ced30d7e-be02-5409-92ab-019fd5171d13"
+    },
+    {
+      "source_id": "flower-20261009-p07-23",
+      "name": "株式会社 鈴木造園土木",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "9d9f29e0-25ba-50e7-869d-9ae79ddceaa6"
+    },
+    {
+      "source_id": "flower-20261009-p07-24",
+      "name": "ベルグアースグループ",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "fbcd4a23-ea05-5fa8-8b24-c121e55d4846"
+    },
+    {
+      "source_id": "flower-20261009-p08-01",
+      "name": "玉川大学・玉川学園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "08a52fd0-6f16-5317-83f6-96a5e4766758"
+    },
+    {
+      "source_id": "flower-20261009-p08-02",
+      "name": "柏木学園高等学校",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "9d5c30ae-e0f4-5ff4-8bb6-a1c8fafbf918"
+    },
+    {
+      "source_id": "flower-20261009-p08-03",
+      "name": "一般社団法人 日本造園建設業協会",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "8e739d03-5de5-5170-b28a-8ba1a07e6828"
+    },
+    {
+      "source_id": "flower-20261009-p08-04",
+      "name": "明治大学農学部アグリサイエンス研究室",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "ddde1db6-ae36-5647-8f75-6d1c1e044352"
+    },
+    {
+      "source_id": "flower-20261009-p08-05",
+      "name": "株式会社 ミスティックフラワー",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "4d3f8c86-8b1e-5791-badc-117ec6d9dc4f"
+    },
+    {
+      "source_id": "flower-20261009-p08-06",
+      "name": "株式会社 髙山煉瓦建築デザイン/YKK AP LANDSCAPE株式会社/ 株式会社ANDO Imagineering Group",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "449136fd-86e7-5256-9800-405c2473a2a8"
+    },
+    {
+      "source_id": "flower-20261009-p08-07",
+      "name": "東光園緑化株式会社・株式会社 スタジオテラ",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "994d393a-42de-5f1e-a845-40b0cf020ca0"
+    },
+    {
+      "source_id": "flower-20261009-p08-08",
+      "name": "特定非営利活動法人 藪会",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "f6345d95-3eb6-5d06-903a-7c031286bfce"
+    },
+    {
+      "source_id": "flower-20261009-p08-09",
+      "name": "相模庭苑株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "e0e79c5e-92c3-5e88-b0f6-c8751e8de063"
+    },
+    {
+      "source_id": "flower-20261009-p08-10",
+      "name": "果樹あるオフィス株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "22011afb-f6e3-5cfb-8b82-6fea20188706"
+    },
+    {
+      "source_id": "flower-20261009-p09-01",
+      "name": "庭屋遠舟",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "d740267d-706e-5cd3-8205-8363302e0446"
+    },
+    {
+      "source_id": "flower-20261009-p09-02",
+      "name": "三楽衆",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "68d4a485-457b-5937-aa2f-feb4b758ec0b"
+    },
+    {
+      "source_id": "flower-20261009-p09-03",
+      "name": "アライグリーン株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "67a5fa2c-702c-5991-9af2-76f719e9ae4a"
+    },
+    {
+      "source_id": "flower-20261009-p09-04",
+      "name": "株式会社 庭屋の関",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "41096658-3f4a-513d-8294-e6fe90c59f64"
+    },
+    {
+      "source_id": "flower-20261009-p09-05",
+      "name": "株式会社 LAND-H.A.G",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "fe17e431-b439-53f3-a6f5-0632f99f27a1"
+    },
+    {
+      "source_id": "flower-20261009-p09-06",
+      "name": "とう美緑化株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "7939a39e-c867-55cd-bc19-9c50c7d9c31a"
+    },
+    {
+      "source_id": "flower-20261009-p09-07",
+      "name": "足立原造園土木株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "84f3ba9b-9554-5159-86e5-443907ed819d"
+    },
+    {
+      "source_id": "flower-20261009-p09-08",
+      "name": "横浜庭苑株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "e5fb1df5-f86f-552c-9bfd-4a4edec3279d"
+    },
+    {
+      "source_id": "flower-20261009-p09-09",
+      "name": "港南植木ガーデン・福岡造園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "226dc8b7-f3c9-5b1b-8029-f4cb78970349"
+    },
+    {
+      "source_id": "flower-20261009-p09-10",
+      "name": "庭工荒川・霧が丘緑舎",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "3a2ad169-71fe-5f51-a6e8-7d5642b36d52"
+    },
+    {
+      "source_id": "flower-20261009-p09-11",
+      "name": "株式会社 金沢臨海サービス",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "4c895e57-990d-5e15-8b08-7996261bb08d"
+    },
+    {
+      "source_id": "flower-20261009-p09-12",
+      "name": "堀江造園株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "81bda2c2-5261-5c05-8e85-ad15d18ec86d"
+    },
+    {
+      "source_id": "flower-20261009-p09-13",
+      "name": "庭祥 清水庵",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "48b3da92-831b-57ef-aa6d-e024a0eb1d39"
+    },
+    {
+      "source_id": "flower-20261009-p09-14",
+      "name": "株式会社 岩崎造園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "d3ec7f04-a224-529c-8dc9-bc0e59b98e2f"
+    },
+    {
+      "source_id": "flower-20261009-p09-15",
+      "name": "相武造園土木株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "f66dc5cd-ac6b-5148-b0e1-f50da9588391"
+    },
+    {
+      "source_id": "flower-20261009-p09-16",
+      "name": "奈良造園土木株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "a17a4b9b-57d6-511a-91ee-765582591bbf"
+    },
+    {
+      "source_id": "flower-20261009-p09-17",
+      "name": "株式会社 グリーンアンドアーツ",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "d7b05416-ed6d-5efc-af27-8e2ad14e5927"
+    },
+    {
+      "source_id": "flower-20261009-p09-18",
+      "name": "地域共創 造園有志チーム",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "f7656ba4-970b-5ead-91ee-903c36cb80af"
+    },
+    {
+      "source_id": "flower-20261009-p09-19",
+      "name": "株式会社 小林園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "5f073494-e765-5f7b-8b97-aa8e5ee9af46"
+    },
+    {
+      "source_id": "flower-20261009-p09-20",
+      "name": "株式会社 庭作す森",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "4a8ca8f8-a674-5cd1-a158-41a03c173eff"
+    },
+    {
+      "source_id": "flower-20261009-p09-21",
+      "name": "岸田園芸株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "82fc6833-dfc2-5b35-b59e-abfb364a8e23"
+    },
+    {
+      "source_id": "flower-20261009-p09-22",
+      "name": "公益財団法人 日本花の会",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "8c009e56-47e8-5c94-ad19-84f5ab3a9792"
+    },
+    {
+      "source_id": "flower-20261009-p09-23",
+      "name": "日本中央競馬会",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "b91cea67-193d-5599-9fba-ea03b5283a9f"
+    },
+    {
+      "source_id": "flower-20261009-p09-24",
+      "name": "株式会社 kinoiro",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "eb51af1b-fcbf-5e8b-bc5b-f3685b214d93"
+    },
+    {
+      "source_id": "flower-20261009-p09-25",
+      "name": "生駒造園土木株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "2eb65636-7f96-56e8-964d-78ec73c9e9f1"
+    },
+    {
+      "source_id": "flower-20261009-p09-26",
+      "name": "株式会社 HIRO GARDENING",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "46b8428c-1bfb-5d68-acfa-eb1a47c19102"
+    },
+    {
+      "source_id": "flower-20261009-p09-27",
+      "name": "作庭志稲田株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "74daa2b4-fddd-57ad-9fc3-31e0aace7ce0"
+    },
+    {
+      "source_id": "flower-20261009-p09-28",
+      "name": "横濱花博連絡協議会",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "61bcb56b-d309-5655-8ae6-a718314513e2"
+    },
+    {
+      "source_id": "flower-20261009-p09-29",
+      "name": "一般社団法人 日本植木協会",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "46514529-c122-5ad5-99ca-54df8a90ad30"
+    },
+    {
+      "source_id": "flower-20261009-p09-30",
+      "name": "株式会社 濱田園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "17395293-bb8e-5633-962d-294c438d3979"
+    },
+    {
+      "source_id": "flower-20261009-p09-31",
+      "name": "東都造園株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "7d760c6a-6e3b-593a-b8af-706d503bb5e1"
+    },
+    {
+      "source_id": "flower-20261009-p09-32",
+      "name": "四国庭石株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "7c20700d-b026-5a9d-b114-7056affd69b4"
+    },
+    {
+      "source_id": "flower-20261009-p09-33",
+      "name": "藤造園建設株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "89889e61-1548-507b-808c-562a68bb1c90"
+    },
+    {
+      "source_id": "flower-20261009-p09-34",
+      "name": "株式会社 田澤園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "29119265-eecc-5ae3-b0ad-c988407ff903"
+    },
+    {
+      "source_id": "flower-20261009-p09-35",
+      "name": "株式会社 鈴鍵",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "64e90bf6-cc9e-5d12-9a7c-fa049df18c31"
+    },
+    {
+      "source_id": "flower-20261009-p09-36",
+      "name": "もちづき植木株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "8a796cda-b4bf-5d28-bcc1-547d83e6d94f"
+    },
+    {
+      "source_id": "flower-20261009-p09-37",
+      "name": "株式会社 並木園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "fcb63aab-008f-5e89-9bac-6aa3c40ddcca"
+    },
+    {
+      "source_id": "flower-20261009-p09-38",
+      "name": "大島造園土木株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "a53063d2-b690-530b-a84c-bbff066e53c0"
+    },
+    {
+      "source_id": "flower-20261009-p09-39",
+      "name": "株式会社 岐阜造園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "f7c5e988-e3c4-53c8-8138-6a9147478e16"
+    },
+    {
+      "source_id": "flower-20261009-p10-01",
+      "name": "株式会社 サカタのタネ",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "0d4f3cfa-1c16-5aac-87d2-76b39364d169"
+    },
+    {
+      "source_id": "flower-20261009-p10-02",
+      "name": "株式会社 ハクサン",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "034b34e2-c41f-5353-9e7b-945ca783efc5"
+    },
+    {
+      "source_id": "flower-20261009-p10-03",
+      "name": "赤塚植物園グループ",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "7f170ef7-db10-50f8-84f6-1d1b9a215752"
+    },
+    {
+      "source_id": "flower-20261009-p10-04",
+      "name": "株式会社 ハルディン",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "a07a7d2f-d3b9-5bb8-9a98-afb131d0052c"
+    },
+    {
+      "source_id": "flower-20261009-p10-05",
+      "name": "サントリーフラワーズ株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "f339a37f-1246-589c-97b7-eb332c5597ab"
+    },
+    {
+      "source_id": "flower-20261009-p10-06",
+      "name": "株式会社 ミヨシグループ",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "c3fc411f-97f9-54dc-b2e9-e8027e13c714"
+    },
+    {
+      "source_id": "flower-20261009-p10-07",
+      "name": "FSブルーム株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "18036bbe-e14f-516a-b709-04ca388451d6"
+    },
+    {
+      "source_id": "flower-20261009-p10-08",
+      "name": "京成バラ園芸株式会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "56167c77-7522-5285-8da6-51fa2931334f"
+    },
+    {
+      "source_id": "flower-20261009-p10-09",
+      "name": "花鏡",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "018deb2c-5312-540d-bc14-b0d1b7119022"
+    },
+    {
+      "source_id": "flower-20261009-p10-10",
+      "name": "Temple Japan",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "1c9321f5-ab7a-5664-8bb6-01edd883a415"
+    },
+    {
+      "source_id": "flower-20261009-p10-11",
+      "name": "NICOガーデン",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "ad4ade02-4996-5fa8-991d-0350942b08de"
+    },
+    {
+      "source_id": "flower-20261009-p10-12",
+      "name": "NIWAIKU GARDENS合同会社",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "ad474935-dad7-514a-b4dc-f32d2b857b4d"
+    },
+    {
+      "source_id": "flower-20261009-p10-13",
+      "name": "晴照造園",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "0fca06ec-73e1-51a3-b9e6-f8d67f2b6a74"
+    },
+    {
+      "source_id": "flower-20261009-p10-14",
+      "name": "株式会社 フィーカ",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "8ab6777e-a2b3-572f-9d30-1568e2f159dc"
+    },
+    {
+      "source_id": "flower-20261009-p10-15",
+      "name": "株式会社 HAMART Indonesia",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "304fad77-7450-5ea7-9842-3dde6e31f3fe"
+    },
+    {
+      "source_id": "flower-20261009-p10-16",
+      "name": "John Eduardo Nieto",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "0d69e6e4-1012-525a-b4fc-5613a16579c8"
+    },
+    {
+      "source_id": "flower-20261009-p11-01",
+      "name": "青森県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "bb900eb9-69a1-5fc0-b232-14fdbe9a3f97"
+    },
+    {
+      "source_id": "flower-20261009-p11-02",
+      "name": "仙台市・（一社）宮城県造園建設業協会",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "288a531b-b454-570a-b79a-a9f3c53fd64f"
+    },
+    {
+      "source_id": "flower-20261009-p11-03",
+      "name": "北海道・（一社）北海道造園緑化建設業協会・（一社）日本造園建設業協会北海道総支部",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "3179549e-d5b2-5872-bda2-6826d5c90ccd"
+    },
+    {
+      "source_id": "flower-20261009-p11-04",
+      "name": "札幌市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "10107c6e-e6de-5024-8f21-37f8ecddc16b"
+    },
+    {
+      "source_id": "flower-20261009-p11-05",
+      "name": "栃木県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "9632798a-70a5-5eaf-96b7-62730c5aaaa7"
+    },
+    {
+      "source_id": "flower-20261009-p11-06",
+      "name": "群馬県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "d0acf988-9d3d-5217-9967-74e5899f05a5"
+    },
+    {
+      "source_id": "flower-20261009-p11-07",
+      "name": "静岡市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "c80c724d-ad18-5215-b5c0-96d5e09494b7"
+    },
+    {
+      "source_id": "flower-20261009-p11-08",
+      "name": "長野県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "fd5437bb-8299-5b33-94e0-9bee344381ba"
+    },
+    {
+      "source_id": "flower-20261009-p11-09",
+      "name": "茨城県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "0b0be89e-4f03-5670-a30b-f248a499b47a"
+    },
+    {
+      "source_id": "flower-20261009-p11-10",
+      "name": "大和市（神奈川県）",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "d2494489-ea46-55e7-9ad9-f1c054cfc36d"
+    },
+    {
+      "source_id": "flower-20261009-p11-11",
+      "name": "山梨県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "5f76f8ca-8d35-55a0-9ebc-13f4f41e8157"
+    },
+    {
+      "source_id": "flower-20261009-p11-12",
+      "name": "岐阜県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "c97d12c0-0957-5868-8d16-0c0a0cd4881a"
+    },
+    {
+      "source_id": "flower-20261009-p11-13",
+      "name": "浜松市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "29890c86-be6f-5099-9af8-bd9bb427470c"
+    },
+    {
+      "source_id": "flower-20261009-p11-14",
+      "name": "神戸市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "78056d71-aff7-5ded-bb65-70ead1aa0a89"
+    },
+    {
+      "source_id": "flower-20261009-p11-15",
+      "name": "大阪府・大阪市・堺市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "211880b2-ca9d-5c40-af2a-c12ef0b34bca"
+    },
+    {
+      "source_id": "flower-20261009-p11-16",
+      "name": "京都府・京都市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "673030fc-26b7-5bdd-9480-ee3530983dbe"
+    },
+    {
+      "source_id": "flower-20261009-p11-17",
+      "name": "奈良県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "a9e5628f-a866-5702-87f0-5e312376a8e0"
+    },
+    {
+      "source_id": "flower-20261009-p11-18",
+      "name": "滋賀県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "05f05487-c524-5804-a271-f789b33cde15"
+    },
+    {
+      "source_id": "flower-20261009-p11-19",
+      "name": "名古屋市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "b41987db-351f-581d-a3f5-ce6bd5dab809"
+    },
+    {
+      "source_id": "flower-20261009-p11-20",
+      "name": "山口県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "b9f5ecce-4a0a-5de3-b581-6fce2f1a5c66"
+    },
+    {
+      "source_id": "flower-20261009-p11-21",
+      "name": "広島市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "88e2ac40-0050-52ec-ae25-76888919c9d9"
+    },
+    {
+      "source_id": "flower-20261009-p11-22",
+      "name": "鳥取県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "54494345-c93c-5dbd-8424-306e0f7f2c38"
+    },
+    {
+      "source_id": "flower-20261009-p11-23",
+      "name": "三重県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "8ef18af1-bf32-5756-a37d-1fdbc6a11330"
+    },
+    {
+      "source_id": "flower-20261009-p11-24",
+      "name": "兵庫県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "ddd074d1-279f-5b23-bbb6-7819dd5f851c"
+    },
+    {
+      "source_id": "flower-20261009-p11-25",
+      "name": "佐賀県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "600f926c-d9dc-540a-ad30-f2ec5ca84491"
+    },
+    {
+      "source_id": "flower-20261009-p11-26",
+      "name": "福岡市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "54ee6d70-c690-5f0d-b0e4-87c85aff9ffb"
+    },
+    {
+      "source_id": "flower-20261009-p11-27",
+      "name": "和歌山県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "3e377a55-8fa9-559c-9b0e-9a9ccb6aecaa"
+    },
+    {
+      "source_id": "flower-20261009-p11-28",
+      "name": "徳島県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "e4772965-7864-5596-af3b-1fa7613b2dae"
+    },
+    {
+      "source_id": "flower-20261009-p11-29",
+      "name": "北九州市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "609f0bfa-7bd3-521e-873c-731c8528d702"
+    },
+    {
+      "source_id": "flower-20261009-p11-30",
+      "name": "大分県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "27c13510-17f6-5926-9afa-f08fb370668a"
+    },
+    {
+      "source_id": "flower-20261009-p11-31",
+      "name": "宮崎県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "8bca20c5-5987-59b9-aa3e-ddb262dd30e1"
+    },
+    {
+      "source_id": "flower-20261009-p11-32",
+      "name": "長崎県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "fe5322ff-1723-5c3e-a12c-c1898202ce87"
+    },
+    {
+      "source_id": "flower-20261009-p11-33",
+      "name": "熊本市",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "f0e0e1d8-669b-5ff3-a837-b5828d78b397"
+    },
+    {
+      "source_id": "flower-20261009-p11-34",
+      "name": "福岡県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "fd31306d-0823-541d-b424-ac1b2d1a90c0"
+    },
+    {
+      "source_id": "flower-20261009-p11-35",
+      "name": "鹿児島県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "0b69cf58-c599-566d-98ff-243489089ee3"
+    },
+    {
+      "source_id": "flower-20261009-p11-36",
+      "name": "沖縄県",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "5a777adc-d7cb-5054-9515-980ad0acea06"
+    },
+    {
+      "source_id": "flower-20261009-p12-01",
+      "name": "2027年国際園芸博 東北ガーデンプロジェクト",
+      "status": "hold-source-conflict",
+      "reason": "Map/list block labels conflict; manual reference only.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": null
+    },
+    {
+      "source_id": "expo2027-village-tokyu",
+      "name": "とうきゅうグループ館",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://www.city.yokohama.lg.jp/kurashi/machizukuri-kankyo/toshiseibi/jokyo/kukakuseiri/kamiseya/pr/kouji_oshirase.files/0010_20250521.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "610b1e22-957e-5a55-9d71-b4983b3e7cd5"
+    },
+    {
+      "source_id": "expo2027-village-kt",
+      "name": "KT GROUP Mobi+",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://www.ktgroup.jp/wp-content/uploads/76d992dcff631d69631627e1692b40fb-1-1024x692.png"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "670f57a3-ef9c-5224-9349-ed99908b0bbb"
+    },
+    {
+      "source_id": "expo2027-village-ntt-east",
+      "name": "NTT EAST館「well」",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://www.ntt-east.co.jp/greenexpo2027/assets/photo/map.webp"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "f3ea8fec-97f7-53ea-981d-eaa5febb01c6"
+    },
+    {
+      "source_id": "expo2027-village-obayashi",
+      "name": "大林組 モリソラミライ",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://expo2027yokohama.obayashi.co.jp/assets/img/map_zoom.webp"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "35a44230-5a9b-5fe5-b94f-dea4c373b0d2"
+    },
+    {
+      "source_id": "expo2027-village-mitsubishi",
+      "name": "三菱みんなの未来館",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://www.city.yokohama.lg.jp/kurashi/machizukuri-kankyo/toshiseibi/jokyo/kukakuseiri/kamiseya/pr/kouji_oshirase.files/0010_20250521.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "6417dfb9-9cf9-5ee1-a26e-3afd99691ce6"
+    },
+    {
+      "source_id": "expo2027-village-kajima",
+      "name": "KAJIMA TREE",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://www.city.yokohama.lg.jp/kurashi/machizukuri-kankyo/toshiseibi/jokyo/kukakuseiri/kamiseya/pr/kouji_oshirase.files/0010_20250521.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "c9047f43-5deb-549b-aa6b-f7c2ac040312"
+    },
+    {
+      "source_id": "expo2027-village-daiwa-house",
+      "name": "大和ハウスグループ エンドレスハートパーク",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://www.daiwahouse.co.jp/greenexpo2027/images/modal/04_img01.png"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "eae71c07-f4df-53d9-afa2-49e6e4c6568e"
+    },
+    {
+      "source_id": "expo2027-village-toho-leo",
+      "name": "やさしくなりたい。STUDIO",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://www.city.yokohama.lg.jp/kurashi/machizukuri-kankyo/toshiseibi/jokyo/kukakuseiri/kamiseya/pr/kouji_oshirase.files/0010_20250521.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "58249420-98a8-5a71-849d-5aecf2f53aa7"
+    },
+    {
+      "source_id": "expo2027-village-takenaka",
+      "name": "竹中グループ くるくるく",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://www.city.yokohama.lg.jp/kurashi/machizukuri-kankyo/toshiseibi/jokyo/kukakuseiri/kamiseya/pr/kouji_oshirase.files/0010_20250521.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "1736d4ca-7e13-5ef7-8aa5-9a030fe48ec8"
+    },
+    {
+      "source_id": "expo2027-village-sumitomo-forestry",
+      "name": "住友林業館「ひゃくの森」",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://sfc.jp/expo2027/img/map_img_large.jpg"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "34684db6-bb72-5dcf-940f-d7613946154e"
+    },
+    {
+      "source_id": "expo2027-village-sotetsu",
+      "name": "SOTETSU PARK（そうてつぱーく）",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://www.city.yokohama.lg.jp/kurashi/machizukuri-kankyo/toshiseibi/jokyo/kukakuseiri/kamiseya/pr/kouji_oshirase.files/0010_20250521.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "392768d2-90bd-5683-9f3d-bec0e4b0d863"
+    },
+    {
+      "source_id": "expo2027-village-shimizu",
+      "name": "シミズ 森のまち",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://www.shimz.co.jp/special/greenexpo2027/common/images/location_map_sp.png"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "2942c7e5-2ae8-5339-9fba-72630e00653e"
+    },
+    {
+      "source_id": "expo2027-theme-commercial-ja",
+      "name": "「いただきます」を生むチカラ",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://greenexpo2027.ja-group.jp/wp/wp-content/themes/public-v3/img/fv/map.png"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "822410af-4c51-505c-befe-7a535cfaf2ef"
+    },
+    {
+      "source_id": "expo2027-theme-commercial-marucho",
+      "name": "HONEY HARMONY GARDEN",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://www.city.yokohama.lg.jp/kurashi/machizukuri-kankyo/toshiseibi/jokyo/kukakuseiri/kamiseya/pr/kouji_oshirase.files/0010_20250521.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "17dada42-3deb-5b19-871b-e217038f690c"
+    },
+    {
+      "source_id": "expo2027-theme-commercial-meiji",
+      "name": "明治グループ「ORAGA VILLAGE 未来のふるさと」",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://www.city.yokohama.lg.jp/kurashi/machizukuri-kankyo/toshiseibi/jokyo/kukakuseiri/kamiseya/pr/kouji_oshirase.files/0010_20250521.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "f481ce0c-6e2d-5747-90e6-3e9238aa6e33"
+    },
+    {
+      "source_id": "expo2027-theme-commercial-yamazaki",
+      "name": "ヤマザキ「明日の明るい食卓」館",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/village-theme/",
+        "https://www.yamazakipan.co.jp/greenexpo2027/assets/images/fig_map_sp_02.webp"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "50e1c269-92f2-5515-b84f-bc597a30fc08"
+    },
+    {
+      "source_id": "organizer-nekko",
+      "name": "テーマ館「ねっこ」",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/themes/",
+        "https://expo2027yokohama.or.jp/news/detail/001571.html",
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "d1686c89-ae48-589f-96d7-f093c62d6ef8"
+    },
+    {
+      "source_id": "organizer-irohaniwa",
+      "name": "園芸文化館「いろはにわ」",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/horticulturalpavilion/",
+        "https://expo2027yokohama.or.jp/news/detail/001571.html",
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "d74ba0d7-127c-52f2-bf8a-2b6ce7f5b904"
+    },
+    {
+      "source_id": "organizer-hanameguri",
+      "name": "屋内出展施設「はなめぐり」",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/news/detail/001571.html",
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "6d66171a-a4d3-5395-bdc0-e1b4121e9b60"
+    },
+    {
+      "source_id": "government-japan",
+      "name": "日本政府苑",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/japan-gov-garden/",
+        "https://expo2027-japan.go.jp/",
+        "https://expo2027-japan.go.jp/news/83/",
+        "https://www.mlit.go.jp/report/press/content/001974530.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "9470d1ce-a64b-5f16-ad11-cd97ebbb61a2"
+    },
+    {
+      "source_id": "project-null4",
+      "name": "null⁴（テトラヌル）",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/null4/",
+        "https://expo2027.digitalnatureandarts.or.jp/expo2027/images/expo2027_map_null4.png"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "9635b0da-9745-58bc-8e6e-227530fbfd3b"
+    },
+    {
+      "source_id": "host-yokohama-hub",
+      "name": "つなぐ横浜館",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/yokohama-kanagawa/",
+        "https://www.city.yokohama.lg.jp/city-info/koho-kocho/press/green/2026/0929halfayearago.html",
+        "https://www.city.yokohama.lg.jp/city-info/koho-kocho/press/green/2026/1020kyousan1.html",
+        "https://www.city.yokohama.lg.jp/city-info/seisaku/torikumi/engeihaku/greenexpo-pavilion.images/0051_20260928.jpg"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "1109c760-09c7-515a-91b5-090a85d87b51"
+    },
+    {
+      "source_id": "host-yokohama-field",
+      "name": "つなぐ横浜フィールド",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/yokohama-kanagawa/",
+        "https://www.city.yokohama.lg.jp/city-info/koho-kocho/press/green/2026/0929halfayearago.html",
+        "https://www.city.yokohama.lg.jp/city-info/seisaku/torikumi/engeihaku/greenexpo-pavilion.images/0052_20260928.jpg"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "5e1b00fe-e6f6-5b9c-b45d-39676c414e23"
+    },
+    {
+      "source_id": "host-kanagawa",
+      "name": "Vibrant INOCHI Forest かながわ館",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/yokohama-kanagawa/",
+        "https://www.pref.kanagawa.jp/docs/rn7/prs/r8241660.html",
+        "https://www.pref.kanagawa.jp/docs/rn7/prs/r2449480.html"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "8b53e72b-5af2-54cc-b435-56413242fb04"
+    },
+    {
+      "source_id": "public-ur",
+      "name": "UR GREEN TABLE",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/ur/",
+        "https://expo2027yokohama.or.jp/assets/docs/news/press_20260319_2.pdf",
+        "https://www.ur-net.go.jp/greenexpo2027/img/img_map.png"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "5503865b-ebf2-51a5-b1fe-c1147dee85ef"
+    },
+    {
+      "source_id": "partner-taisei",
+      "name": "TAISEI GREEN TERRACE",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/partner/",
+        "https://expo2027yokohama.or.jp/assets/docs/news/press_20260319_2.pdf",
+        "https://greenexpo2027.taisei.co.jp/files/images/home/imgmap.webp"
+      ],
+      "gps_candidate": true,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "c78b422e-d799-5562-9ee6-90991d05b477"
+    },
+    {
+      "source_id": "partner-meijiyasuda",
+      "name": "明治安田「健活パーク」",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/partner/",
+        "https://expo2027yokohama.or.jp/assets/docs/news/press_20260319_2.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "41bbcfdd-c66f-57d9-bdbc-f8e02da2a439"
+    },
+    {
+      "source_id": "partner-yokohamabank",
+      "name": "横浜銀行 GREEN WALL",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/partner/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "aa76c125-51c4-5263-9741-5b0c38c3b2ef"
+    },
+    {
+      "source_id": "partner-nissay",
+      "name": "日本生命 未来に残したい植物園",
+      "status": "parent-context",
+      "reason": "Subplace of organizer-nekko; no independent master row.",
+      "parent_source_id": "organizer-nekko",
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/partner/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": null
+    },
+    {
+      "source_id": "partner-macnica",
+      "name": "MACNICA Green Tech Messe（マクニカ グリーンテック メッセ）",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/partner/",
+        "https://expo2027yokohama.or.jp/learn-enjoy/event/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "2e906174-7cce-542f-95b5-5f4812c2fa9c"
+    },
+    {
+      "source_id": "partner-suntory",
+      "name": "サントリー 水素調理レストラン",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/partner/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "3ea0ba12-cc7e-5d20-9c35-6f8a5d8b45a9"
+    },
+    {
+      "source_id": "events-mainhall",
+      "name": "メインホール",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/event/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "c1bb63a7-69f9-5c0e-b61a-e6859dc11536"
+    },
+    {
+      "source_id": "events-festival",
+      "name": "フェスティバルステージ",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/event/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "d1219ea0-f1f1-5544-a96b-df2d0d661a6c"
+    },
+    {
+      "source_id": "events-plaza",
+      "name": "イベントプラザ",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/event/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "a6ac1779-1ee4-5b03-90c4-ccd00b5555b8"
+    },
+    {
+      "source_id": "organizer-craft",
+      "name": "クラフト館",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/sponsorship/craft-events/",
+        "https://expo2027yokohama.or.jp/assets/docs/news/press_20261019.pdf",
+        "https://expo2027yokohama.or.jp/learn-enjoy/outdoor/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "e7e9c838-9888-5b2b-b4b8-f5118faeb91d"
+    },
+    {
+      "source_id": "craft-a",
+      "name": "クラフト館・Ａ",
+      "status": "parent-context",
+      "reason": "Subplace of organizer-craft; no independent master row.",
+      "parent_source_id": "organizer-craft",
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/sponsorship/craft-events/",
+        "https://expo2027yokohama.or.jp/assets/docs/news/press_20261019.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": null
+    },
+    {
+      "source_id": "government-event-space",
+      "name": "日本政府苑 イベントスペース",
+      "status": "parent-context",
+      "reason": "Subplace of government-japan; no independent master row.",
+      "parent_source_id": "government-japan",
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/event/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": null
+    },
+    {
+      "source_id": "government-reiwa-garden",
+      "name": "令和日本の庭",
+      "status": "parent-context",
+      "reason": "Subplace of government-japan; no independent master row.",
+      "parent_source_id": "government-japan",
+      "source_urls": [
+        "https://expo2027-japan.go.jp/",
+        "https://expo2027-japan.go.jp/news/83/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": null
+    },
+    {
+      "source_id": "kanagawa-spot",
+      "name": "スポット展示",
+      "status": "parent-context",
+      "reason": "Subplace of host-kanagawa; no independent master row.",
+      "parent_source_id": "host-kanagawa",
+      "source_urls": [
+        "https://www.pref.kanagawa.jp/docs/rn7/prs/r2449480.html"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": null
+    },
+    {
+      "source_id": "medical-central",
+      "name": "中央診療所",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/docs/news/ge_iryoukyuugojissikeikaku_202610.pdf",
+        "https://expo2027yokohama.or.jp/news/detail/001610.html"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "08caae15-6b10-59ce-8867-d1ac20ced93e"
+    },
+    {
+      "source_id": "medical-gate",
+      "name": "メインゲート診療所",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/docs/news/ge_iryoukyuugojissikeikaku_202610.pdf",
+        "https://expo2027yokohama.or.jp/news/detail/001610.html"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "a2f7bda3-06b3-5a6b-b512-a35d411e21ab"
+    },
+    {
+      "source_id": "medical-firstaid",
+      "name": "応急手当所",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/docs/news/ge_iryoukyuugojissikeikaku_202610.pdf",
+        "https://expo2027yokohama.or.jp/news/detail/001610.html"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "118b1979-e7ad-5305-8237-f1d51367bca4"
+    },
+    {
+      "source_id": "service-baby",
+      "name": "迷子＆ベビーセンター",
+      "status": "hold-instance-count",
+      "reason": "FAQ confirms service name, not physical instance count or identity.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/faq/guide/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": null
+    },
+    {
+      "source_id": "service-accessibility",
+      "name": "アクセシビリティセンター",
+      "status": "hold-instance-count",
+      "reason": "FAQ confirms service name, not physical instance count or identity.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/faq/guide/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": null
+    },
+    {
+      "source_id": "gate-main",
+      "name": "入場ゲート",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/faq/tickets"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "995adb66-9a4d-53bb-9e13-bf0420194f4b"
+    },
+    {
+      "source_id": "expo2027-organizer-aizawa-river",
+      "name": "相沢川",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/outdoor/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "791f0635-818e-5a2f-bd43-c59eb7b63b0a"
+    },
+    {
+      "source_id": "expo2027-organizer-mitsubachi-farm",
+      "name": "みつばちファーム",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/outdoor/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "a3e68b1b-30b6-59a5-92cf-611a078747b2"
+    },
+    {
+      "source_id": "expo2027-organizer-craft-garden",
+      "name": "クラフトガーデン",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/outdoor/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "0d428898-1acf-5f29-93f9-c704bdf42dd0"
+    },
+    {
+      "source_id": "expo2027-organizer-kids-garden",
+      "name": "キッズガーデン",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/outdoor/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "b955a678-0250-5b46-8ea8-90071d7c1a6a"
+    },
+    {
+      "source_id": "expo2027-organizer-adventure-garden",
+      "name": "アドベンチャーガーデン",
+      "status": "parent-context",
+      "reason": "Subplace of expo2027-organizer-kids-garden; no independent master row.",
+      "parent_source_id": "expo2027-organizer-kids-garden",
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/outdoor/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": null
+    },
+    {
+      "source_id": "expo2027-organizer-komorebi-plaza",
+      "name": "こもれび広場",
+      "status": "parent-context",
+      "reason": "Subplace of expo2027-organizer-kids-garden; no independent master row.",
+      "parent_source_id": "expo2027-organizer-kids-garden",
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/learn-enjoy/outdoor/"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": null
+    },
+    {
+      "source_id": "organizer-symbol-garden",
+      "name": "シンボルガーデン",
+      "status": "register-place",
+      "reason": "Published distinct named place or numbered plot; no entrance/boundary accuracy claim.",
+      "parent_source_id": null,
+      "source_urls": [
+        "https://expo2027yokohama.or.jp/assets/images/learn-enjoy/flowergreen-okugai_all_261009r.pdf"
+      ],
+      "gps_candidate": false,
+      "completion_eligible": false,
+      "coordinate_uncertainty_m": null,
+      "proposed_pavilion_id": "1ef5ac39-98f7-5e69-b626-be8e64b7075e"
+    }
+  ]
+}

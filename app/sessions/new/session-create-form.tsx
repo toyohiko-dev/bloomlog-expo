@@ -18,8 +18,12 @@ function fieldClass(hasError: boolean) {
 
 export function SessionCreateForm({
   initialVisitDate,
+  events = [],
+  initialEventId = "",
 }: {
   initialVisitDate: string;
+  events?:{id:string;name:string}[];
+  initialEventId?:string;
 }) {
   const [pending, startTransition] = useTransition();
   const [state, setState] = useState<SessionFormState>(initialSessionFormState);
@@ -65,6 +69,8 @@ export function SessionCreateForm({
         </div>
       ) : null}
 
+      <label className="block text-sm font-medium">イベント<select name="eventId" aria-label="来場日のイベント" defaultValue={initialEventId} disabled={pending} className="mt-2 block w-full rounded-2xl border bg-white p-3"><option value="">未分類</option>{events.map(event=><option key={event.id} value={event.id}>{event.name}</option>)}</select></label>
+      {state.fieldErrors.eventId?<p className="text-sm text-rose-600">{state.fieldErrors.eventId}</p>:null}
       <fieldset
         disabled={pending}
         className={pending ? "space-y-5 opacity-70" : "space-y-5"}

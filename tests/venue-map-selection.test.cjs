@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const ts = require('typescript');
 
+const symbols={};vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/memory-map-symbols.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports:symbols});
 function harness() {
   const slots = [];
   let cursor = 0;
@@ -20,7 +21,7 @@ function harness() {
   const jsx = (type, props) => ({ type, props });
   const exports = {};
   const dependencies = {
-    react, 'react/jsx-runtime': { jsx, jsxs: jsx }, 'next/link': { default: 'Link' },
+    '@/lib/memory-map-symbols':symbols,react, 'react/jsx-runtime': { jsx, jsxs: jsx }, 'next/link': { default: 'Link' },
     './venue-map-config': { VENUE_MAP_ASSET: { width: 1000, height: 1000 } },
   };
   vm.runInNewContext(ts.transpileModule(fs.readFileSync('app/collection-next/venue-map-frame.tsx', 'utf8'), {
@@ -40,7 +41,8 @@ function harness() {
     return null;
   }
   return {
-    render(markers) { cursor = 0; tree = exports.VenueMapFrame({ markers, children: null }); },
+    render(markers, options = {}) { cursor = 0; tree = exports.VenueMapFrame({ markers, children: null, ...options }); },
+    badge(id) { const view = find(tree, node => node.props?.marker?.id === id && typeof node.props?.onSelect === "function"); return view.type(view.props); },
     select(id) {
       const view = find(tree, node => node.props?.marker?.id === id && typeof node.props?.onSelect === 'function');
       assert.ok(view, 'marker selection control exists');
@@ -83,4 +85,13 @@ test('closing selection stays closed when marker data refreshes and allows a new
   const updated = marker('a', { visitCount: 2 });
   h.render([updated]); assert.equal(h.detail(), null);
   h.select('a'); h.render([updated]); assert.equal(h.detail().marker, updated);
+});
+
+test('illustrated markers receive badge mode and retain unlimited counts without declaring related goods a visit', () => {
+ const h=harness();const a=marker('a',{memoryCount:123});const b=marker('b',{visited:false,visitCount:0,memoryCount:9});
+ h.render([a,b],{badgeMarkers:true});
+ const badge=h.badge('a'); assert.equal(badge.type,'button');
+ const count=badge.props.children[1]; assert.equal(count.props.children,'123件');
+ const related=h.badge('b'); assert.match(related.props['aria-label'],/未訪問/);
+ assert.equal(related.props.children[1].props.children,'9件');
 });

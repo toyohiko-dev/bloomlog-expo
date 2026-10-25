@@ -448,6 +448,7 @@ export function CollectionFilters({ logs }: CollectionFiltersProps) {
                             <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-slate-900 sm:mt-3 sm:text-base sm:leading-6">
                               {getActivityLogTitle(log) || "名前未設定"}
                             </h3>
+                            {log.place_context_label?<p className="mt-2 text-xs text-slate-600">{log.place_context_label}</p>:null}
                           </div>
                           <span className="hidden shrink-0 text-sm font-medium text-slate-700 sm:inline">
                             来場日を見る

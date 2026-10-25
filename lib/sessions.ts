@@ -1,3 +1,8 @@
+import {describePlaceContext} from '@/lib/place-context';
+import {greenExpoResearch} from '@/lib/green-expo-research';
+import {placeContextStorageEnabled} from '@/lib/place-context-config';
+import {placeRegistry} from '@/lib/place-coordinate-catalog';
+import {summarizePavilionProgress} from '@/lib/place-registry';
 import { requireUser } from "@/lib/auth";
 import {
   type ActivityLog,
@@ -18,6 +23,9 @@ export { getActivityLogTitle } from "@/lib/session-shared";
 export type PavilionProgressSummary = {
   totalPavilions: number;
   visitedPavilions: number;
+  completedPavilions:number;
+  unverifiedVisitedPavilions:number;
+  completionRate:number|null;
   unvisitedPavilions: PavilionOption[];
 };
 
@@ -66,7 +74,7 @@ export type PavilionAlbumLayout = {
   collectionTiles: PavilionCollectionItem[];
 };
 
-const activityLogSelect = `
+const activityLogSelect: string = `
   id,
   created_at,
   user_id,
@@ -80,6 +88,7 @@ const activityLogSelect = `
   acquisition_method,
   photo_path,
   pavilion_id,
+  ${placeContextStorageEnabled?'place_context,':''}
   pavilion:pavilions (
     id,
     name,
@@ -90,6 +99,8 @@ const activityLogSelect = `
     spot_id
   )
 `;
+
+type ActivityLogRow=Omit<ActivityLog,"pavilion">&{pavilion:ActivityLogPavilion|ActivityLogPavilion[]|null};
 
 const publicSupabase = createPublicSupabaseClient();
 
@@ -109,6 +120,7 @@ function normalizeActivityLog(
 ): ActivityLog {
   return {
     ...log,
+    place_context_label:describePlaceContext(log.place_context,greenExpoResearch),
     pavilion: Array.isArray(log.pavilion) ? (log.pavilion[0] ?? null) : log.pavilion,
   };
 }
@@ -192,7 +204,7 @@ export async function listActivityLogs(sessionId: string) {
     .select(activityLogSelect)
     .eq("user_id", user.id)
     .eq("session_id", sessionId)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true }).returns<ActivityLogRow[]>();
 
   if (error) {
     throw new Error(error.message);
@@ -231,7 +243,7 @@ export async function getActivityLog(logId: string) {
     .select(activityLogSelect)
     .eq("user_id", user.id)
     .eq("id", logId)
-    .maybeSingle();
+    .returns<ActivityLogRow[]>().maybeSingle();
 
   if (error) {
     throw new Error(error.message);
@@ -253,7 +265,7 @@ export async function listCollectionActivityLogs() {
     .select(activityLogSelect)
     .eq("user_id", user.id)
     .order("occurred_at", { ascending: false })
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false }).returns<ActivityLogRow[]>();
 
   if (error) {
     throw new Error(error.message);
@@ -336,25 +348,9 @@ export async function getPavilion(pavilionId: string) {
   return data as Pavilion | null;
 }
 
-export async function getPavilionProgressSummary() {
-  const [pavilions, logs] = await Promise.all([
-    listPavilions(),
-    listCollectionActivityLogs(),
-  ]);
-
-  const visitedIds = new Set(
-    logs
-      .filter(
-        (log) => log.activity_type === "pavilion_visit" && Boolean(log.pavilion_id),
-      )
-      .map((log) => String(log.pavilion_id)),
-  );
-
-  return {
-    totalPavilions: pavilions.length,
-    visitedPavilions: visitedIds.size,
-    unvisitedPavilions: pavilions.filter((pavilion) => !visitedIds.has(pavilion.id)),
-  } satisfies PavilionProgressSummary;
+export async function getPavilionProgressSummary(eventId:string|null=null) {
+  const [pavilions,logs,sessions]=await Promise.all([listPavilions(),listCollectionActivityLogs(),listSessions()]);
+  return summarizePavilionProgress(pavilions,logs,sessions,eventId,placeRegistry) satisfies PavilionProgressSummary;
 }
 
 export async function getDefaultEventId() {

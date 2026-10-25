@@ -1,3 +1,4 @@
+import {memoryMapReturnHref} from '@/lib/memory-map-navigation';
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppPrimaryNav } from "@/app/_components/app-primary-nav";
@@ -6,14 +7,16 @@ import type { ActivityType } from "@/lib/activity-types";
 import { getActivityLog, getSession, listPavilions } from "@/lib/sessions";
 
 type ActivityLogEditPageProps = {
+  searchParams:Promise<{return?:string}>;
   params: Promise<{
     id: string;
     logId: string;
   }>;
 };
 
-export default async function ActivityLogEditPage({ params }: ActivityLogEditPageProps) {
+export default async function ActivityLogEditPage({ params,searchParams }: ActivityLogEditPageProps) {
   const { id, logId } = await params;
+  const query=await searchParams;
   const [session, log, pavilions] = await Promise.all([
     getSession(id),
     getActivityLog(logId),
@@ -43,11 +46,15 @@ export default async function ActivityLogEditPage({ params }: ActivityLogEditPag
 
           <ActivityLogForm
             sessionId={session.id}
+            draftOwnerId={session.user_id}
+              visitDate={session.visit_date}
+              visitEventId={session.event_id}
             pavilions={pavilions}
             mode="edit"
             logId={log.id}
             submitLabel="保存する"
-            cancelHref={`/sessions/${session.id}#experience-recorder`}
+            returnToMap={query.return==='map'}
+            cancelHref={query.return==='map'?memoryMapReturnHref(session.event_id,log.pavilion_id,session.visit_date):`/sessions/${session.id}#experience-recorder`}
             cancelLabel="入力画面に戻る"
             initialActivityType={(log.activity_type ?? "pavilion_visit") as ActivityType}
             initialTitle={log.title ?? ""}
@@ -56,6 +63,7 @@ export default async function ActivityLogEditPage({ params }: ActivityLogEditPag
             initialPrice={log.price}
             initialAcquisitionMethod={log.acquisition_method ?? "purchase"}
             initialPavilionId={log.pavilion_id ?? null}
+            initialPlaceContext={log.place_context??null}
           />
         </section>
       </div>

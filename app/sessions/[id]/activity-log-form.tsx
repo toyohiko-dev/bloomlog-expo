@@ -1,6 +1,16 @@
 "use client";
+import {prepareActivityPhoto,PhotoPreparationError} from "@/lib/prepare-activity-photo";
+import {memoryMapReturnHref} from '@/lib/memory-map-navigation';
+import {activityAttemptSignature} from '@/lib/activity-save-attempt';
+import {decodePlaceContext,type PlaceContext} from '@/lib/place-context';
+import {placeContextStorageEnabled} from '@/lib/place-context-config';
+
 
 import Link from "next/link";
+import { placeRegistry } from "@/lib/place-coordinate-catalog";
+import { scopedPavilions, canUsePavilionInEvent, isRegisteredEvent } from "@/lib/place-registry";
+import { readDraftPhoto, keepDraftPhoto } from "@/lib/activity-photo-cache";
+import { PhotoLocationSuggestions, SelectedPhotoPreview, PlaceContextSummary } from "./photo-location-suggestions";
 import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -51,13 +61,20 @@ function fieldClass(hasError: boolean) {
   }`;
 }
 
+const EMPTY_VISIT_SESSIONS: {id:string;visit_date:string;event_id?:string|null}[] = [];
+
 type ActivityLogFormProps = {
   sessionId: string;
+  visitDate?: string;
+  visitEventId?: string|null;
+  recentPavilionIds?: string[];
+  visitSessions?: {id:string;visit_date:string;event_id?:string|null}[];
   draftOwnerId?: string;
   pavilions: PavilionOption[];
   mode?: "create" | "edit";
   logId?: string;
   successRedirectPath?: string;
+  returnToMap?:boolean;
   submitLabel?: string;
   cancelHref?: string;
   cancelLabel?: string;
@@ -68,15 +85,21 @@ type ActivityLogFormProps = {
   initialPrice?: number | null;
   initialAcquisitionMethod?: string | null;
   initialPavilionId?: string | null;
+  initialPlaceContext?:PlaceContext|null;
 };
 
 export function ActivityLogForm({
   sessionId,
+  visitDate,
+  visitEventId = null,
+  recentPavilionIds = [],
+  visitSessions = EMPTY_VISIT_SESSIONS,
   draftOwnerId,
   pavilions,
   mode = "create",
   logId,
   successRedirectPath,
+  returnToMap=false,
   submitLabel,
   cancelHref,
   cancelLabel,
@@ -87,8 +110,11 @@ export function ActivityLogForm({
   initialPrice = null,
   initialAcquisitionMethod = "purchase",
   initialPavilionId = null,
+  initialPlaceContext = null,
 }: ActivityLogFormProps) {
   const router = useRouter();
+  const draftSessionKey = mode === "edit" ? `${sessionId}:edit:${logId ?? "unknown"}` : sessionId;
+  const [recordingSessionId, setRecordingSessionId] = useState(sessionId);
   const [pending, startTransition] = useTransition();
   const [state, setState] = useState<ActivityLogFormState>(
     initialActivityLogFormState,
@@ -107,19 +133,27 @@ export function ActivityLogForm({
   const initialSelectedPavilion =
     pavilions.find((pavilion) => pavilion.id === initialPavilionId) ?? null;
   const [pavilionSearch, setPavilionSearch] = useState(
-    initialSelectedPavilion?.name ?? initialTitle,
+    initialSelectedPavilion?.name ?? (initialActivityType === "pavilion_visit" ? initialTitle : ""),
   );
-  const [selectedPavilionId, setSelectedPavilionId] = useState(
+  const [placeContext,setPlaceContext]=useState<PlaceContext|null>(initialPlaceContext);
+  const [selectedPavilionId, updateSelectedPavilionId] = useState(
     initialSelectedPavilion?.id ?? "",
   );
+  function setSelectedPavilionId(id:string){updateSelectedPavilionId(id);setPlaceContext(null);}
   const [hasSelectedPhoto, setHasSelectedPhoto] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoNeedsReselect, setPhotoNeedsReselect] = useState(false);
-  const [draftReady, setDraftReady] = useState(mode !== "create" || !draftOwnerId);
+  const [draftReady, setDraftReady] = useState(!draftOwnerId);
   const [draftNotice, setDraftNotice] = useState("");
   const submittingRef = useRef(false);
+  const photoSelection=useRef<string|undefined>(undefined);
+  const saveAttempt=useRef<{id:string;signature:string}|null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const deferredPavilionSearch = useDeferredValue(pavilionSearch);
+  const selectedDay = visitSessions.find(day=>day.id===recordingSessionId);
+  const recordingEventId = selectedDay ? selectedDay.event_id ?? null : visitEventId;
+  const availablePavilions = scopedPavilions(pavilions,recordingEventId,placeRegistry);
+  const placeCompatible = !selectedPavilionId || canUsePavilionInEvent(placeRegistry,recordingEventId,selectedPavilionId) || (mode==="edit" && selectedPavilionId===initialPavilionId);
 
   const draftsRef = useRef<Record<ActivityType, ActivityTypeDraft>>({
     pavilion_visit:
@@ -170,12 +204,14 @@ export function ActivityLogForm({
   });
 
   useEffect(() => {
-    if (mode !== "create" || !draftOwnerId) return;
+    if (!draftOwnerId) return;
     try {
-      const saved = readActivityDrafts(window.localStorage, draftOwnerId, sessionId);
+      const saved = readActivityDrafts(window.localStorage, draftOwnerId, draftSessionKey);
+      if (!saved.restored) { setDraftNotice("下書きはこのブラウザに保存されます。"); setDraftReady(true); return; }
       draftsRef.current = saved.drafts;
       const draft = saved.drafts[saved.activeType];
       // Restore browser-owned state after hydration, before enabling the form.
+      if (draft.recordingSessionId === sessionId || visitSessions.some(day=>day.id===draft.recordingSessionId)) setRecordingSessionId(draft.recordingSessionId!);
       setActivityType(saved.activeType);
       setTitle(draft.title);
       setMemo(draft.memo);
@@ -184,9 +220,13 @@ export function ActivityLogForm({
       setAcquisitionMethod(draft.acquisitionMethod);
       setPavilionSearch(draft.pavilionSearch);
       setSelectedPavilionId(draft.pavilionId);
-      setSelectedPhoto(null);
-      setHasSelectedPhoto(false);
-      setPhotoNeedsReselect(draft.photoNeedsReselect);
+      setPlaceContext(draft.placeContext??null);
+      photoSelection.current=draft.photoSelectionId;
+      saveAttempt.current=draft.saveAttemptId&&draft.saveAttemptSignature?{id:draft.saveAttemptId,signature:draft.saveAttemptSignature}:null;
+      const retainedPhoto = draft.photoNeedsReselect ? readDraftPhoto(draftOwnerId, draftSessionKey) : null;
+      setSelectedPhoto(retainedPhoto);
+      setHasSelectedPhoto(Boolean(retainedPhoto));
+      setPhotoNeedsReselect(draft.photoNeedsReselect && !retainedPhoto);
       setDraftNotice(saved.restored
         ? "下書きを復元しました。このブラウザだけに保存されます。"
         : "下書きはこのブラウザに保存されます。");
@@ -194,7 +234,7 @@ export function ActivityLogForm({
       setDraftNotice("下書きを保存できません。画面を閉じると入力内容が失われます。");
     }
     setDraftReady(true);
-  }, [draftOwnerId, mode, sessionId]);
+  }, [draftOwnerId, draftSessionKey, sessionId, visitSessions]);
 
   const normalizedInitialMethod =
     normalizeAcquisitionMethod(initialAcquisitionMethod) ?? "";
@@ -210,7 +250,7 @@ export function ActivityLogForm({
   const showPavilionPicker = activityType === "pavilion_visit";
   const showPhotoInput = true;
   const notesLength = memo.length;
-  const filteredPavilions = searchPavilions(pavilions, deferredPavilionSearch);
+  const filteredPavilions = deferredPavilionSearch.trim() ? searchPavilions(availablePavilions, deferredPavilionSearch) : availablePavilions;
   const hasPavilionSearch = deferredPavilionSearch.trim().length > 0;
 
   const isDirty =
@@ -263,6 +303,11 @@ export function ActivityLogForm({
 
   function buildCurrentDraft(): ActivityTypeDraft {
     return {
+      recordingSessionId,
+      photoSelectionId:photoSelection.current,
+      saveAttemptId:saveAttempt.current?.id,
+      saveAttemptSignature:saveAttempt.current?.signature,
+      placeContext,
       memo,
       occurredAt,
       photo: selectedPhoto,
@@ -276,9 +321,9 @@ export function ActivityLogForm({
   }
 
   function persistDraft(patch: Partial<ActivityTypeDraft> = {}, type = activityType) {
-    if (mode !== "create" || !draftOwnerId || !draftReady) return;
+    if (!draftOwnerId || !draftReady) return;
     try {
-      writeActivityDraft(window.localStorage, draftOwnerId, sessionId, type,
+      writeActivityDraft(window.localStorage, draftOwnerId, draftSessionKey, type,
         { ...buildCurrentDraft(), ...patch });
       setDraftNotice("下書きをこのブラウザに保存しました。");
     } catch {
@@ -300,13 +345,14 @@ export function ActivityLogForm({
     setAcquisitionMethod(nextDraft.acquisitionMethod);
     setPavilionSearch(nextDraft.pavilionSearch);
     setSelectedPavilionId(nextDraft.pavilionId);
+    setPlaceContext(nextDraft.placeContext??null);
+    photoSelection.current=nextDraft.photoSelectionId;
+    saveAttempt.current=nextDraft.saveAttemptId&&nextDraft.saveAttemptSignature?{id:nextDraft.saveAttemptId,signature:nextDraft.saveAttemptSignature}:null;
     if (mode === "create") {
       setMemo(nextDraft.memo);
       setOccurredAt(nextDraft.occurredAt);
-      setSelectedPhoto(nextDraft.photo);
-      setPhotoNeedsReselect(nextDraft.photoNeedsReselect);
-      setHasSelectedPhoto(Boolean(nextDraft.photo));
-      persistDraft(nextDraft, nextActivityType);
+      // The chosen photo belongs to this recording attempt, not to a category.
+      persistDraft({ ...nextDraft, photo: selectedPhoto, photoNeedsReselect, recordingSessionId }, nextActivityType);
       setState(initialActivityLogFormState);
       return;
     }
@@ -315,6 +361,8 @@ export function ActivityLogForm({
   }
 
   function resetForm(savedActivityType: ActivityType) {
+    saveAttempt.current=null;
+    if(draftOwnerId)keepDraftPhoto(draftOwnerId,draftSessionKey,null);
     draftsRef.current[savedActivityType] = { ...createEmptyDraft(), pavilionId: selectedPavilionId, pavilionSearch: selectedPavilion?.name ?? "" };
     setTitle("");
     setMemo("");
@@ -332,7 +380,7 @@ export function ActivityLogForm({
     setState(initialActivityLogFormState);
     if (draftOwnerId) {
       try {
-        removeActivityDraft(window.localStorage, draftOwnerId, sessionId, savedActivityType);
+        removeActivityDraft(window.localStorage, draftOwnerId, draftSessionKey, savedActivityType);
         setDraftNotice("保存しました。選択中の場所は次の記録にも使えます。");
       } catch {
         setDraftNotice("思い出は保存されましたが、下書きを消去できませんでした。再読み込み後の重複保存にご注意ください。");
@@ -340,24 +388,51 @@ export function ActivityLogForm({
     }
   }
 
+  function choosePhoto(file:File) {
+    photoSelection.current=crypto.randomUUID();
+    if(draftOwnerId)keepDraftPhoto(draftOwnerId,draftSessionKey,file);
+    setSelectedPhoto(file); setHasSelectedPhoto(true); setPhotoNeedsReselect(false);
+    persistDraft({photo:file,photoNeedsReselect:false}); clearFieldState('photo');
+  }
+  function removeSelectedPhoto() {
+    photoSelection.current=crypto.randomUUID();
+    if(draftOwnerId)keepDraftPhoto(draftOwnerId,draftSessionKey,null);
+    setSelectedPhoto(null);setHasSelectedPhoto(false);setPhotoNeedsReselect(false);
+    if(photoInputRef.current)photoInputRef.current.value='';
+    persistDraft({photo:null,photoNeedsReselect:false});clearFieldState('photo');
+  }
+  function choosePlace(id:string) {
+    const place=availablePavilions.find(item=>item.id===id);
+    setSelectedPavilionId(place?.id??'');setPavilionSearch(place?.name??'');
+    const nextTitle=activityType==='pavilion_visit' ? place?.name??'' : title;
+    if(activityType==='pavilion_visit')setTitle(nextTitle);
+    persistDraft({placeContext:null,pavilionId:place?.id??'',pavilionSearch:place?.name??'',title:nextTitle});clearFieldState('pavilionId');
+  }
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!draftReady || submittingRef.current || pending) {
       return;
     }
+    if(photoNeedsReselect&&!selectedPhoto){setState({status:'error',message:'写真を選び直すか、写真なしに変更してください。ほかの入力は保持しています。',fieldErrors:{photo:'写真の再選択が必要です。'}});return;}
+    if(!placeCompatible){setState({status:"error",message:"この来場日の施設対応が未確認です。場所を選び直してください。",fieldErrors:{pavilionId:"イベントに対応する施設を選んでください。"}});return;}
+    if(mode==='create'){
+      const signature=activityAttemptSignature(JSON.stringify({recordingSessionId,activityType,title,memo,occurredAt,price,acquisitionMethod,selectedPavilionId,placeContext,hasPhoto:Boolean(selectedPhoto||photoNeedsReselect),photoSelection:photoSelection.current}));
+      if(!saveAttempt.current)saveAttempt.current={id:crypto.randomUUID(),signature};
+    }
     persistDraft();
     const formData = new FormData(event.currentTarget);
+    if(placeContextStorageEnabled)formData.set("placeContext",placeContext?JSON.stringify(placeContext):"");
+    if(mode==='create'&&saveAttempt.current){formData.set('saveAttemptId',saveAttempt.current.id);const signature=activityAttemptSignature(JSON.stringify({recordingSessionId,activityType,title,memo,occurredAt,price,acquisitionMethod,selectedPavilionId,placeContext,hasPhoto:Boolean(selectedPhoto||photoNeedsReselect),photoSelection:photoSelection.current}));formData.set('saveAttemptChanged',String(signature!==saveAttempt.current.signature));}
     const submittedActivityType = activityType;
-    if (mode === "create") {
-      formData.delete("photo");
-      if (showPhotoInput && selectedPhoto) {
-        formData.set("photo", selectedPhoto);
-      }
-    }
+    const submittedRecordId=mode==='edit'?logId??null:saveAttempt.current?.id??null;
+    formData.delete("photo");
+
     submittingRef.current = true;
 
     startTransition(async () => {
       try {
+        if(selectedPhoto){try{formData.set("photo",await prepareActivityPhoto(selectedPhoto));}catch{throw new PhotoPreparationError();}}
         const result =
           mode === "edit"
             ? await updateActivityLogAction(formData)
@@ -374,24 +449,27 @@ export function ActivityLogForm({
           setState(result);
         }
 
+        if(mode==='edit'&&draftOwnerId){keepDraftPhoto(draftOwnerId,draftSessionKey,null);try{for(const option of activityTypeOptions)removeActivityDraft(window.localStorage,draftOwnerId,draftSessionKey,option.value);}catch{ /* Saved record is authoritative; draft cleanup failure does not undo it. */ }}
+        if(returnToMap){router.push(memoryMapReturnHref(recordingEventId,selectedPavilionId||null,selectedDay?.visit_date??visitDate??null,submittedRecordId));router.refresh();return;}
         if (successRedirectPath) {
-          router.push(successRedirectPath);
+          router.push(recordingSessionId !== sessionId ? `/sessions/${recordingSessionId}` : successRedirectPath);
           router.refresh();
           return;
         }
 
         if (mode === "edit") {
+          if(draftOwnerId){keepDraftPhoto(draftOwnerId,draftSessionKey,null);try{for(const option of activityTypeOptions)removeActivityDraft(window.localStorage,draftOwnerId,draftSessionKey,option.value);}catch{ /* The record was saved; draft cleanup must not report a failed save. */ }}
           router.push(`/sessions/${sessionId}`);
           router.refresh();
           return;
         }
 
         router.refresh();
-      } catch {
+      } catch (error) {
         setState({
           status: "error",
-          message: "保存できませんでした。入力内容を確認して、もう一度お試しください。",
-          fieldErrors: {},
+          message: error instanceof PhotoPreparationError ? error.message : "保存できませんでした。入力内容を確認して、もう一度お試しください。",
+          fieldErrors: error instanceof PhotoPreparationError ? {photo:"写真を変換できません。写真を選び直すか、写真なしで保存してください。"} : {},
         });
       } finally {
         submittingRef.current = false;
@@ -405,7 +483,7 @@ export function ActivityLogForm({
       className="space-y-6"
       encType="multipart/form-data"
     >
-      <input type="hidden" name="sessionId" value={sessionId} />
+      <input type="hidden" name="sessionId" value={recordingSessionId} />
       {mode === "edit" && logId ? (
         <input type="hidden" name="logId" value={logId} />
       ) : null}
@@ -420,16 +498,69 @@ export function ActivityLogForm({
           }`}
         >
           {state.message}
+          {state.recoveryHref?<Link href={state.recoveryHref} className="mt-2 block underline">保存済みの記録を開いて確認・編集</Link>:null}
         </div>
       ) : null}
 
-      {mode === "create" && draftOwnerId ? (
+      {draftOwnerId ? (
         <p role="status" aria-live="polite" className="text-sm text-slate-500">
           {!draftReady ? "下書きを確認しています..." : pending ? "思い出を保存しています..." : draftNotice}
         </p>
       ) : null}
       <fieldset disabled={pending || !draftReady} className={pending ? "opacity-70" : undefined}>
         <section className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-50/80">
+          <div className="space-y-4 border-b border-slate-200 bg-[#fffcf5] px-5 py-5">
+            <p className="text-sm font-semibold">写真から記録を始める（省略可）</p>
+            {mode==="edit"?<p className="text-xs text-slate-500">保存済みの写真は、新しい写真を選んで保存するまで変更されません。</p>:null}
+            {showPhotoInput ? (
+              <div>
+                <label
+                  htmlFor="photo"
+                  className="mb-2 block text-sm font-medium text-slate-700"
+                >
+                  写真を撮る・選ぶ（任意）
+                </label>
+                <input
+                  ref={(input) => {
+                    photoInputRef.current = input;
+                    if (input) {
+                      // 種類を戻したときも、表示中のファイルと送信する File を一致させる。
+                      const files = new DataTransfer();
+                      if (selectedPhoto) files.items.add(selectedPhoto);
+                      input.files = files.files;
+                    }
+                  }}
+                  id="photo"
+                  name="photo"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(event) => { const file=event.target.files?.[0]; if(file) choosePhoto(file); }}
+                  className={fieldClass(Boolean(state.fieldErrors.photo))}
+                />
+                <label className="mt-3 inline-flex cursor-pointer rounded-full border bg-white px-4 py-2 text-sm">カメラで撮影
+                  <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="sr-only" aria-label="カメラで撮影" onChange={event=>{const file=event.target.files?.[0];if(file)choosePhoto(file);event.target.value='';}} />
+                </label>
+                <SelectedPhotoPreview photo={selectedPhoto} />
+                {selectedPhoto||photoNeedsReselect?<button type="button" onClick={removeSelectedPhoto} className="ml-3 rounded-full border px-4 py-2 text-sm">選択した写真を取り消す</button>:null}
+                {selectedPhoto ? <p className="mt-2 text-sm text-slate-600">選択中: {selectedPhoto.name} · {activityTypeMeta.label}</p> : null}
+                {photoNeedsReselect ? (
+                  <p className="mt-2 text-sm text-amber-700">
+                    写真はもう一度選択してください。写真本体は下書きに保存されません。
+                  </p>
+                ) : null}
+                {state.fieldErrors.photo ? (
+                  <p className="mt-2 text-sm text-rose-600">
+                    {state.fieldErrors.photo}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+
+            <label className="block text-sm font-medium">来場日
+              {mode==='create'&&visitSessions.length>0 ? <select id="recording-session" aria-label="記録する来場日" value={recordingSessionId} onChange={event=>{setRecordingSessionId(event.target.value);persistDraft({recordingSessionId:event.target.value});}} className="mt-2 block w-full rounded-xl border bg-white p-3">{visitSessions.map(day=><option key={day.id} value={day.id}>{day.visit_date}</option>)}</select> : <span className="ml-3">{visitDate??'この来場日'}</span>}
+            </label>
+          </div>
           <div className="border-b border-slate-200 bg-white/80 px-5 py-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -492,178 +623,27 @@ export function ActivityLogForm({
           </div>
 
           <div className="space-y-5 px-5 py-5">
-            {showPhotoInput ? (
-              <div>
-                <label
-                  htmlFor="photo"
-                  className="mb-2 block text-sm font-medium text-slate-700"
-                >
-                  写真を撮る・選ぶ（任意）
-                </label>
-                <input
-                  ref={(input) => {
-                    photoInputRef.current = input;
-                    if (input && mode === "create") {
-                      // 種類を戻したときも、表示中のファイルと送信する File を一致させる。
-                      const files = new DataTransfer();
-                      if (selectedPhoto) files.items.add(selectedPhoto);
-                      input.files = files.files;
-                    }
-                  }}
-                  id="photo"
-                  name="photo"
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => {
-                    if (mode === "create") {
-                      setSelectedPhoto(event.target.files?.[0] ?? null);
-                      setPhotoNeedsReselect(false);
-                      persistDraft({ photo: event.target.files?.[0] ?? null, photoNeedsReselect: false });
-                    }
-                    setHasSelectedPhoto(Boolean(event.target.files?.length));
-                    clearFieldState("photo");
-                  }}
-                  className={fieldClass(Boolean(state.fieldErrors.photo))}
-                />
-                {selectedPhoto ? <p className="mt-2 text-sm text-slate-600">選択中: {selectedPhoto.name} · {activityTypeMeta.label}</p> : null}
-                {photoNeedsReselect && mode === "create" ? (
-                  <p className="mt-2 text-sm text-amber-700">
-                    写真はもう一度選択してください。写真本体は下書きに保存されません。
-                  </p>
-                ) : null}
-                {state.fieldErrors.photo ? (
-                  <p className="mt-2 text-sm text-rose-600">
-                    {state.fieldErrors.photo}
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
-
-            {!showPavilionPicker ? <div className="rounded-xl border border-slate-200 bg-white p-4">
-              <label htmlFor="related-place" className="mb-2 block text-sm font-medium">関連する場所（任意）</label>
-              <p className="mb-2 text-xs text-slate-500">{selectedPavilion ? '選択中: ' + selectedPavilion.name : '場所は後から決められます。'} 関連グッズだけでは訪問済みになりません。</p>
-              <select id="related-place" value={selectedPavilionId} className={fieldClass(Boolean(state.fieldErrors.pavilionId))} onChange={event => {
-                const id = event.target.value; const place = pavilions.find(item => item.id === id);
-                setSelectedPavilionId(id); setPavilionSearch(place?.name ?? '');
-                persistDraft({ pavilionId: id, pavilionSearch: place?.name ?? '' }); clearFieldState('pavilionId');
-              }}><option value="">場所は後で</option>{pavilions.map(place => <option key={place.id} value={place.id}>{place.name}</option>)}</select>
-              {state.fieldErrors.pavilionId ? <p className="mt-2 text-sm text-rose-600">{state.fieldErrors.pavilionId}</p> : null}
-              <p className="mt-2 text-xs text-slate-500">現在地からの候補は準備中です。撮影地と購入店が違うときは、関連付けたい場所を選んでください。</p>
-            </div> : null}
-            {showPavilionPicker ? (
-              <div className="space-y-3">
-                <input type="hidden" name="title" value={title} />
-                <div className="flex items-center justify-between gap-3">
-                  <label
-                    htmlFor="pavilion-search"
-                    className="block text-sm font-medium text-slate-700"
-                  >
-                    パビリオン検索
-                  </label>
-                  <span className="text-xs text-slate-400">
-                    名前の一部でも検索できます
-                  </span>
-                </div>
-                <input
-                  id="pavilion-search"
-                  type="text"
-                  value={pavilionSearch}
-                  onChange={(event) => {
-                    setPavilionSearch(event.target.value);
-                    setSelectedPavilionId("");
-                    setTitle("");
-                    persistDraft({ pavilionSearch: event.target.value, pavilionId: "", title: "" });
-                    clearFieldState("pavilionId");
-                  }}
-                  placeholder="パビリオン名で検索"
-                  className={fieldClass(Boolean(state.fieldErrors.pavilionId))}
-                />
-
-                {selectedPavilion ? (
-                  <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-                    選択中: {selectedPavilion.name}
-                    {selectedPavilion.official_name &&
-                    selectedPavilion.official_name !== selectedPavilion.name
-                      ? ` (${selectedPavilion.official_name})`
-                      : ""}
-                  </div>
-                ) : null}
-
-                {hasPavilionSearch ? (
-                  <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-                    <div className="border-b border-slate-100 px-4 py-3 text-xs text-slate-500">
-                      候補から選択
-                    </div>
-                    <div className="max-h-72 overflow-y-auto p-2">
-                      {filteredPavilions.length === 0 ? (
-                        <p className="px-3 py-4 text-sm text-slate-500">
-                          条件に合うパビリオンが見つかりません。
-                        </p>
-                      ) : (
-                        <div className="space-y-2">
-                          {filteredPavilions.map((pavilion) => {
-                            const selected = selectedPavilionId === pavilion.id;
-                            const aliases = pavilion.aliases.slice(0, 3);
-
-                            return (
-                              <button
-                                key={pavilion.id}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedPavilionId(pavilion.id);
-                                  setPavilionSearch(pavilion.name);
-                                  setTitle(pavilion.name);
-                                  persistDraft({ pavilionId: pavilion.id, pavilionSearch: pavilion.name, title: pavilion.name });
-                                  clearFieldState("pavilionId");
-                                }}
-                                className={`flex w-full flex-col gap-2 rounded-2xl border px-4 py-3 text-left transition ${
-                                  selected
-                                    ? "border-slate-900 bg-slate-900 text-white"
-                                    : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100"
-                                }`}
-                              >
-                                <span className="text-sm font-semibold">
-                                  {pavilion.name}
-                                </span>
-                                {pavilion.official_name &&
-                                pavilion.official_name !== pavilion.name ? (
-                                  <span
-                                    className={`text-xs ${
-                                      selected ? "text-slate-200" : "text-slate-500"
-                                    }`}
-                                  >
-                                    {pavilion.official_name}
-                                  </span>
-                                ) : null}
-                                {aliases.length > 0 ? (
-                                  <span
-                                    className={`text-xs ${
-                                      selected ? "text-slate-300" : "text-slate-500"
-                                    }`}
-                                  >
-                                    別名: {aliases.join(" / ")}
-                                  </span>
-                                ) : null}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm text-slate-600">
-                    パビリオン名を入力すると候補が表示されます。
-                  </div>
-                )}
-
-                {state.fieldErrors.pavilionId ? (
-                  <p className="text-sm text-rose-600">
-                    {state.fieldErrors.pavilionId}
-                  </p>
-                ) : null}
-              </div>
-            ) : (
+            <div className="flex flex-wrap gap-2" aria-label="最近の場所">
+              {[...new Set([selectedPavilionId,...recentPavilionIds,...Object.values(draftsRef.current).map(draft=>draft.pavilionId)].filter(Boolean))].slice(0,5).map(id=>{const place=pavilions.find(p=>p.id===id);return place?<button type="button" key={id} onClick={()=>choosePlace(id)} className="rounded-full border border-[#c6d3c4] bg-[#f2f6ee] px-4 py-2 text-sm">{place.name}</button>:null;})}
+            </div>
+            {isRegisteredEvent(placeRegistry,recordingEventId)?<p className="text-xs text-slate-600">既存の施設も引き続き選べます。公式台帳との同一性が未確認の施設は、公式の達成対象へ自動的に割り当てません。</p>:null}
+            <PhotoLocationSuggestions photo={selectedPhoto} pavilions={availablePavilions} eventId={recordingEventId} visitDate={selectedDay?.visit_date??visitDate??''} onSelect={choosePlace} onContextSelect={(id,context)=>{const parsed=decodePlaceContext(context);if(!parsed.ok)return;const place=availablePavilions.find(p=>p.id===id);if(!place)return;choosePlace(id);setPlaceContext(parsed.value);persistDraft({pavilionId:id,pavilionSearch:place.name,title:activityType==='pavilion_visit'?place.name:title,placeContext:parsed.value});}} disabled={pending} />
+            {placeContext?<div className="rounded-xl border p-3"><PlaceContextSummary context={placeContext}/><button type="button" disabled={pending} onClick={()=>{setPlaceContext(null);persistDraft({placeContext:null});}} className="mt-2 text-sm underline">場所の詳細を取り消す</button></div>:null}
+            <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+              <label htmlFor="pavilion-search" className="block text-sm font-medium">場所を選ぶ・変更する{showPavilionPicker?'（訪問は必須）':'（任意）'}</label>
+              <p className="text-sm text-[#315e4b]">{selectedPavilion?'選択中: '+selectedPavilion.name:'場所はあとで指定できます。'} 関連グッズだけでは訪問済みになりません。{!placeCompatible?" この場所は選択したイベントの施設として未対応です。":null}</p>
+              <input id="pavilion-search" type="text" value={pavilionSearch} placeholder="場所の名前で絞り込む" onChange={event=>{setPavilionSearch(event.target.value);persistDraft({pavilionSearch:event.target.value});}} className={fieldClass(false)} />
+              <label htmlFor="related-place" className="sr-only">場所の一覧</label>
+              <select id="related-place" value={selectedPavilionId} className={fieldClass(Boolean(state.fieldErrors.pavilionId))} onChange={event=>choosePlace(event.target.value)}>
+                <option value="">場所は後で</option>
+                {selectedPavilion&&!filteredPavilions.some(p=>p.id===selectedPavilion.id)?<option value={selectedPavilion.id}>{selectedPavilion.name}</option>:null}
+                {filteredPavilions.map(place=><option key={place.id} value={place.id}>{place.name}</option>)}
+              </select>
+              {hasPavilionSearch&&filteredPavilions.length===0?<p className="text-xs text-slate-500">一致する場所はありません。名前を消すと一覧に戻れます。</p>:null}
+              {state.fieldErrors.pavilionId?<p className="text-sm text-rose-600">{state.fieldErrors.pavilionId}</p>:null}
+              {showPavilionPicker?<p className="text-xs text-slate-500">訪問の記録には場所が必要です。場所を後で決める場合は、フード・グッズ・イベントで記録してください。</p>:null}
+            </div>
+            {showPavilionPicker ? <input type="hidden" name="title" value={title} /> : (
               <div>
                 <label
                   htmlFor="title"
@@ -827,7 +807,7 @@ export function ActivityLogForm({
         </section>
       </fieldset>
 
-      <div className="flex flex-col gap-3">
+      <div className="sticky bottom-2 z-20 flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white/95 p-3 shadow-lg backdrop-blur">
         <button
           type="submit"
           disabled={!draftReady || pending || (mode === "edit" && !isDirty)}
@@ -845,6 +825,7 @@ export function ActivityLogForm({
         {cancelHref ? (
           <Link
             href={cancelHref}
+            onClick={()=>persistDraft()}
             className="inline-flex w-full items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
           >
             {cancelLabel ?? "キャンセル"}

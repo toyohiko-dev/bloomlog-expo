@@ -1,5 +1,6 @@
 "use client";
 
+import {separateMemorySymbols} from '@/lib/memory-map-symbols';
 import Link from "next/link";
 import type { CSSProperties, PointerEvent, ReactNode } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -13,13 +14,22 @@ const BUTTON_ZOOM_STEP = 0.28;
 const DOUBLE_CLICK_ZOOM_STEP = 0.5;
 const MINIMIZED_PAN_MARGIN_RATIO = 0.42;
 
+export type MapArtwork = { href: string; viewBox: string; width: number; height: number };
+
 type VenueMapFrameProps = {
+  mapAsset?: MapArtwork;
+  focusPlaceId?:string|null;
+  badgeMarkers?: boolean;
   children: ReactNode;
   markers: VenueMapMarker[];
   renderPlaceDetail?: (id: string, onClose: () => void) => ReactNode;
 };
 
 export type VenueMapMarker = {
+  memoryCount?: number;
+  memoryDayCount?:number;
+  paperMemory?:boolean;
+  previewUrl?: string | null;
   id: string;
   name: string;
   x: number;
@@ -61,17 +71,17 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-function getBaseMapSize(viewportElement: HTMLDivElement | null): MapSize {
+function getBaseMapSize(viewportElement: HTMLDivElement | null, asset: MapArtwork = VENUE_MAP_ASSET): MapSize {
   if (!viewportElement) {
     return { height: 0, width: 0 };
   }
 
   const viewportWidth = viewportElement.clientWidth;
-  const baseWidth = Math.max(viewportWidth, 980);
+  const baseWidth = asset === VENUE_MAP_ASSET ? Math.max(viewportWidth, 980) : Math.min(viewportWidth, (viewportElement.clientHeight - 24) * asset.width / asset.height);
 
   return {
     width: baseWidth,
-    height: baseWidth * (VENUE_MAP_ASSET.height / VENUE_MAP_ASSET.width),
+    height: baseWidth * (asset.height / asset.width),
   };
 }
 
@@ -202,7 +212,9 @@ function getMarkerCentroid(markers: VenueMapMarker[]) {
   };
 }
 
-function VenueMapMarkerView({ marker, position, onSelect }: {
+function VenueMapMarkerView({ marker, position, onSelect, badgeMarkers, disabled=false }: {
+  badgeMarkers?: boolean;
+  disabled?:boolean;
   marker: VenueMapMarker;
   position: { x: number; y: number };
   onSelect: (marker: VenueMapMarker) => void;
@@ -214,9 +226,27 @@ function VenueMapMarkerView({ marker, position, onSelect }: {
     transform: `translate(-50%, -50%) rotate(${marker.rotation}deg) scale(${marker.size})`,
   } as CSSProperties;
 
+  if(marker.paperMemory){
+    if(!marker.memoryCount)return <button disabled={disabled} type="button" aria-label={`${marker.name}（記録なし）`} title={marker.name} onClick={()=>onSelect(marker)} onPointerDown={event=>event.stopPropagation()} className="absolute z-10 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#6e9e83]/70 focus-visible:outline-2" style={{left:position.x,top:position.y}}/>;
+    return <button disabled={disabled} type="button" aria-label={`${marker.name}（${marker.visited?'訪問済み':'訪問の記録なし'}） ${marker.memoryCount}件`} title={marker.name} onClick={()=>onSelect(marker)} onPointerDown={event=>event.stopPropagation()} className="absolute z-10 h-[76px] w-[76px] -translate-x-1/2 -translate-y-1/2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ed7567]" style={{left:position.x,top:position.y}}>
+      {marker.previewUrl?<><span className="absolute left-2 top-0 h-14 w-14 -rotate-[12deg] rounded-xl border-[3px] border-white bg-[#e6bc84] shadow-md"/><span className="absolute left-3 top-0 h-14 w-14 rotate-[7deg] rounded-xl border-[3px] border-white bg-[#b5cec0] shadow-md"/><span className="absolute left-1 top-0 h-14 w-14 overflow-hidden rounded-xl border-[3px] border-white bg-[#e7e4d4] shadow-md" style={{backgroundImage:`url("${marker.previewUrl}")`,backgroundPosition:'center',backgroundSize:'cover'}}/></>:null}
+      <svg className={`absolute ${marker.previewUrl?'bottom-0 right-0 h-11 w-11':'inset-1 h-16 w-16'} drop-shadow-md`} viewBox="-36 -36 72 72" aria-hidden="true">{marker.visited?Array.from({length:6},(_,i)=><path key={i} d="M0 3 C-15 -4 -23 -23 -9 -32 L0 -26 L9 -32 C23 -23 15 -4 0 3Z" transform={`rotate(${i*60})`} fill={marker.visited?(i%2?'#f79a83':marker.bloom):'#d9e3c9'} stroke="#fff9ed" strokeWidth="2"/>):<path d="M0 28 L0 -22 M0 1 Q-30 -23 -23 -3 Q-18 18 0 10 M0 -8 Q26 -30 24 -9 Q15 7 0 1" fill="#dce7d4" stroke="#82a68c" strokeWidth="3"/>}<circle r="12" fill={marker.visited?'#f7d77a':'#fff9ed'}/><text textAnchor="middle" y="4" fontSize="11" fontWeight="700" fill="#35574b">{marker.memoryCount}</text></svg>
+      {(marker.memoryDayCount??0)>1?<span className="absolute -right-1 -top-2 rounded-full border-2 border-white bg-[#245b49] px-2 py-0.5 text-[10px] font-bold text-white">{marker.memoryDayCount}日</span>:null}
+    </button>;
+  }
+  if (badgeMarkers) {
+    return <button disabled={disabled} type="button" aria-label={`${marker.name}（${marker.visited ? "訪問済み" : "未訪問"}）`} title={marker.name}
+      onClick={() => onSelect(marker)} onPointerDown={event => event.stopPropagation()}
+      className="absolute z-10 flex min-h-11 min-w-11 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f46d60]"
+      style={{ left: position.x, top: position.y }}>
+      {marker.previewUrl ? <span className="mb-1 block h-14 w-14 overflow-hidden rounded-xl border-[3px] border-white bg-[#eee9dc] shadow-md" style={{ backgroundImage: `url("${marker.previewUrl}")`, backgroundSize: "cover", backgroundPosition: "center" }} /> : null}
+      <span className={marker.memoryCount ? `rounded-full border-2 border-white px-2.5 py-1 text-xs font-bold shadow-sm ${marker.visited ? "bg-[#226354] text-white" : "bg-[#fff9ec] text-[#875b42]"}` : "h-3 w-3 rounded-full border-2 border-white bg-[#89a494]/75 shadow-sm"}>{marker.memoryCount ? `${marker.memoryCount}件` : null}</span>
+    </button>;
+  }
+
   if (!marker.visited) {
     return (
-      <button
+      <button disabled={disabled}
         type="button"
         aria-label={`${marker.name}（未訪問）`}
         className="venue-map-marker venue-map-marker-button venue-map-marker-unvisited"
@@ -229,7 +259,7 @@ function VenueMapMarkerView({ marker, position, onSelect }: {
   }
 
   return (
-    <button
+    <button disabled={disabled}
       type="button"
       aria-label={`${marker.name}（訪問済み）`}
       className="venue-map-marker venue-map-marker-button venue-map-marker-visited"
@@ -328,16 +358,17 @@ function VenueMapMarkerDetail({
   );
 }
 
-export function VenueMapFrame({ children, markers, renderPlaceDetail }: VenueMapFrameProps) {
+export function VenueMapFrame({ children, markers, renderPlaceDetail, mapAsset = VENUE_MAP_ASSET, badgeMarkers = false, focusPlaceId=null }: VenueMapFrameProps) {
   const [zoom, setZoom] = useState(DESKTOP_INITIAL_ZOOM);
   const [isDragging, setIsDragging] = useState(false);
-  const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
+  const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(()=>markers.some(m=>m.id===focusPlaceId)?focusPlaceId:null);
   const selectedMarker = markers.find((marker) => marker.id === selectedMarkerId) ?? null;
   const [mapSize, setMapSize] = useState<MapSize>({ height: 0, width: 0 });
   const [viewportSize, setViewportSize] = useState<MapSize>({ height: 0, width: 0 });
   const [offset, setOffset] = useState<MapOffset>({ x: 0, y: 0 });
   const viewportRef = useRef<HTMLDivElement>(null);
   const hasInitializedViewportRef = useRef(false);
+  const measuredViewportRef = useRef({width:0,height:0});
   const activePointersRef = useRef(new Map<number, TrackedPointer>());
   const pinchStartRef = useRef<PinchStart | null>(null);
   const dragStartRef = useRef({
@@ -350,17 +381,19 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail }: VenueMap
   useLayoutEffect(() => {
     function syncMapSize() {
       const viewportElement = viewportRef.current;
-      const nextSize = getBaseMapSize(viewportElement);
+      const nextSize = getBaseMapSize(viewportElement, mapAsset);
       const nextViewportSize = {
         height: viewportElement?.clientHeight ?? 0,
         width: viewportElement?.clientWidth ?? 0,
       };
+      const viewportChanged = measuredViewportRef.current.width !== nextViewportSize.width || measuredViewportRef.current.height !== nextViewportSize.height;
+      measuredViewportRef.current = nextViewportSize;
       const shouldUseMobileStart =
         !hasInitializedViewportRef.current &&
         nextViewportSize.width < 640;
       const shouldInitializeViewport = !hasInitializedViewportRef.current;
       const nextZoom = shouldInitializeViewport
-        ? shouldUseMobileStart
+        ? badgeMarkers ? 1 : shouldUseMobileStart
           ? MOBILE_INITIAL_ZOOM
           : DESKTOP_INITIAL_ZOOM
         : clamp(zoom, MIN_ZOOM, MAX_ZOOM);
@@ -372,12 +405,12 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail }: VenueMap
       setViewportSize(nextViewportSize);
       setMapSize(nextSize);
       setOffset((currentOffset) => {
-        if (shouldUseMobileStart) {
-          const centroid = getMarkerCentroid(markers);
+        if ((badgeMarkers && (shouldInitializeViewport || viewportChanged)) || shouldUseMobileStart) {
+          const centroid = badgeMarkers ? { x: mapAsset.width / 2, y: mapAsset.height / 2 } : getMarkerCentroid(markers);
 
           return getViewportCenterOffset({
-            focusX: nextSize.width * (centroid.x / VENUE_MAP_ASSET.width),
-            focusY: nextSize.height * (centroid.y / VENUE_MAP_ASSET.height),
+            focusX: nextSize.width * (centroid.x / mapAsset.width),
+            focusY: nextSize.height * (centroid.y / mapAsset.height),
             size: nextSize,
             viewport: viewportElement,
             zoom: nextZoom,
@@ -398,7 +431,7 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail }: VenueMap
     window.addEventListener("resize", syncMapSize);
 
     return () => window.removeEventListener("resize", syncMapSize);
-  }, [markers, zoom]);
+  }, [markers, zoom, mapAsset, badgeMarkers]);
 
   const zoomTo = useCallback((
     nextZoomValue: number,
@@ -464,10 +497,10 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail }: VenueMap
 
   const minimapViewport = viewportSize.width > 0 && viewportSize.height > 0
     ? {
-        x: clamp((-offset.x / (mapSize.width * zoom)) * VENUE_MAP_ASSET.width, 0, VENUE_MAP_ASSET.width),
-        y: clamp((-offset.y / (mapSize.height * zoom)) * VENUE_MAP_ASSET.height, 0, VENUE_MAP_ASSET.height),
-        width: clamp((viewportSize.width / (mapSize.width * zoom)) * VENUE_MAP_ASSET.width, 0, VENUE_MAP_ASSET.width),
-        height: clamp((viewportSize.height / (mapSize.height * zoom)) * VENUE_MAP_ASSET.height, 0, VENUE_MAP_ASSET.height),
+        x: clamp((-offset.x / (mapSize.width * zoom)) * mapAsset.width, 0, mapAsset.width),
+        y: clamp((-offset.y / (mapSize.height * zoom)) * mapAsset.height, 0, mapAsset.height),
+        width: clamp((viewportSize.width / (mapSize.width * zoom)) * mapAsset.width, 0, mapAsset.width),
+        height: clamp((viewportSize.height / (mapSize.height * zoom)) * mapAsset.height, 0, mapAsset.height),
       }
     : null;
 
@@ -588,14 +621,20 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail }: VenueMap
     setIsDragging(false);
   }
 
+  const paperMode=markers.some(marker=>marker.paperMemory);
+  const visibleMarkers=markers.filter(marker=>!marker.paperMemory||Boolean(marker.memoryCount)||zoom>=2.2||marker.id===selectedMarkerId);
+  const anchorPositions=new Map(visibleMarkers.map(marker=>[marker.id,{x:offset.x+mapSize.width*(marker.x/mapAsset.width)*zoom,y:offset.y+mapSize.height*(marker.y/mapAsset.height)*zoom}]));
+  const separated=separateMemorySymbols(visibleMarkers.filter(marker=>marker.paperMemory&&Boolean(marker.memoryCount)).map(marker=>({id:marker.id,...anchorPositions.get(marker.id)!,radius:marker.previewUrl?38:34})),{left:offset.x,top:offset.y,right:offset.x+mapSize.width*zoom,bottom:offset.y+mapSize.height*zoom},70);
+  const displayPositions=new Map(separated.map(p=>[p.id,p]));
   return (
     <div className="relative">
+      {paperMode?<label className="block border-b border-[#e4ddca] bg-[#fffcf3] px-4 py-3 text-xs text-[#4e6a59]">場所を開く<select disabled={mapSize.width===0} aria-label="地図で場所を開く" value={selectedMarkerId??''} onChange={event=>{const marker=markers.find(m=>m.id===event.target.value);if(!marker)return;setSelectedMarkerId(marker.id);setOffset(getViewportCenterOffset({focusX:mapSize.width*marker.x/mapAsset.width,focusY:mapSize.height*marker.y/mapAsset.height,size:mapSize,viewport:viewportRef.current,zoom}));}} className="ml-2 max-w-[75%] rounded-full border border-[#dfd9c7] bg-white px-3 py-2"><option value="">記録のある場所、または施設を選ぶ</option>{markers.map(marker=><option key={marker.id} value={marker.id}>{marker.name}{marker.memoryCount?` · ${marker.memoryCount}件`:''}</option>)}</select></label>:null}
       <div className="absolute right-4 top-4 z-20 flex items-center gap-1 bg-white/75 px-2 py-1 shadow-sm ring-1 ring-slate-200/80 backdrop-blur sm:right-6 sm:top-6">
         <button
           type="button"
           aria-label="地図を縮小"
           className="grid h-8 w-8 place-items-center text-lg leading-none text-slate-600 transition hover:text-slate-950 disabled:cursor-default disabled:text-slate-300"
-          disabled={zoom <= MIN_ZOOM}
+          disabled={mapSize.width===0||zoom <= MIN_ZOOM}
           onClick={() => zoomBy(-BUTTON_ZOOM_STEP)}
         >
           -
@@ -605,7 +644,7 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail }: VenueMap
         </span>
         <button
           type="button"
-          aria-label="地図全体を表示"
+          disabled={mapSize.width===0} aria-label="地図全体を表示"
           className="grid h-8 min-w-10 place-items-center px-2 text-xs font-semibold text-slate-600 transition hover:text-slate-950"
           onClick={fitMap}
         >
@@ -615,7 +654,7 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail }: VenueMap
           type="button"
           aria-label="地図を拡大"
           className="grid h-8 w-8 place-items-center text-lg leading-none text-slate-600 transition hover:text-slate-950 disabled:cursor-default disabled:text-slate-300"
-          disabled={zoom >= MAX_ZOOM}
+          disabled={mapSize.width===0||zoom >= MAX_ZOOM}
           onClick={() => zoomBy(BUTTON_ZOOM_STEP)}
         >
           +
@@ -648,15 +687,15 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail }: VenueMap
           {children}
         </div>
         <div className="venue-map-marker-layer">
-          {markers.map((marker) => (
+          {paperMode?<svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">{separated.filter(p=>Math.hypot(p.x-p.anchorX,p.y-p.anchorY)>3).map(p=><g key={p.id}><path d={`M${p.anchorX},${p.anchorY} L${p.x},${p.y}`} stroke="#6a8d79" strokeWidth="1" strokeDasharray="2 3" opacity=".7"/><circle cx={p.anchorX} cy={p.anchorY} r="2.5" fill="#356751"/></g>)}</svg>:null}
+          {visibleMarkers.map((marker) => (
             <VenueMapMarkerView
               key={marker.id}
               marker={marker}
+              disabled={mapSize.width===0}
+              badgeMarkers={badgeMarkers}
               onSelect={(marker) => setSelectedMarkerId(marker.id)}
-              position={{
-                x: offset.x + mapSize.width * (marker.x / VENUE_MAP_ASSET.width) * zoom,
-                y: offset.y + mapSize.height * (marker.y / VENUE_MAP_ASSET.height) * zoom,
-              }}
+              position={displayPositions.get(marker.id)??anchorPositions.get(marker.id)!}
             />
           ))}
         </div>
@@ -669,20 +708,20 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail }: VenueMap
           />
         ) : null}
 
-      <div className="pointer-events-none absolute bottom-4 right-4 z-20 sm:bottom-6 sm:left-6 sm:right-auto">
+      {!badgeMarkers ? <div className="pointer-events-none absolute bottom-4 right-4 z-20 sm:bottom-6 sm:left-6 sm:right-auto">
         <div className="w-[104px] overflow-hidden bg-white/82 p-1.5 shadow-sm ring-1 ring-slate-200/80 backdrop-blur sm:w-[132px]">
           <svg
             aria-label="現在見ている地図範囲"
             className="block h-auto w-full"
-            viewBox={VENUE_MAP_ASSET.viewBox}
+            viewBox={mapAsset.viewBox}
             role="img"
           >
             <image
-              href={VENUE_MAP_ASSET.href}
+              href={mapAsset.href}
               x="0"
               y="0"
-              width={VENUE_MAP_ASSET.width}
-              height={VENUE_MAP_ASSET.height}
+              width={mapAsset.width}
+              height={mapAsset.height}
               preserveAspectRatio="xMidYMid meet"
               opacity="0.78"
             />
@@ -699,7 +738,7 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail }: VenueMap
             ) : null}
           </svg>
         </div>
-      </div>
+      </div> : null}
     </div>
   );
 }

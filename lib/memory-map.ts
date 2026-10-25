@@ -40,6 +40,6 @@ export function buildMemoryMap(entries: MemoryEntry[], sessions: Pick<VisitSessi
   return {
     places: Array.from(places.values()).sort((a, b) => a.id.localeCompare(b.id)), unplaced,
     entries: selected,
-    dates: Array.from(new Set(entries.map(entry => dates.get(entry.session_id)).filter((value): value is string => Boolean(value)))).sort().reverse(),
+    dates: Array.from(new Set(sessions.map(session => session.visit_date).filter(Boolean))).sort().reverse(),
   };
 }

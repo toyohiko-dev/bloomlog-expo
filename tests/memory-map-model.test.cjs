@@ -77,3 +77,10 @@ test('related place never overwrites food or pin names in shared display formatt
   assert.equal(getActivityLogTitle({ activity_type: 'pin', title: 'Badge', pavilion }), 'Badge');
   assert.equal(getActivityLogTitle({ activity_type: 'pavilion_visit', title: 'Old name', pavilion }), 'Garden');
 });
+
+test('visit days without any activity remain selectable with an empty result', () => {
+  const days = [...sessions, { id: 'empty', visit_date: '2027-06-01' }];
+  const result = buildMemoryMap([entry('one', 'first', 'food')], days, '2027-06-01');
+  assert.equal(result.entries.length, 0);
+  assert.ok(result.dates.includes('2027-06-01'));
+});

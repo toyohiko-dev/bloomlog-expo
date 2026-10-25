@@ -8,7 +8,7 @@ const vm = require('node:vm');
 const ts = require('typescript');
 const path = require('node:path');
 
-function harness(props = {}, storage = memoryStorage()) {
+function harness(props = {}, storage = memoryStorage(), prepare = async file => file) {
   const slots = [];
   let cursor = 0;
   let tree;
@@ -52,7 +52,7 @@ function harness(props = {}, storage = memoryStorage()) {
       compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2020 },
     }).outputText;
     vm.runInNewContext(code, {
-      module: compiledModule, exports: compiledModule.exports, Intl, Date,
+      module: compiledModule, exports: compiledModule.exports, Intl, Date, URLSearchParams, crypto:require('node:crypto').webcrypto,
       window: { localStorage: storage },
       FormData: class extends FormData {
         constructor() {
@@ -71,6 +71,9 @@ function harness(props = {}, storage = memoryStorage()) {
         items = { add: (file) => this.files.push(file) };
       },
       require(id) {
+        if (id === '@/lib/prepare-activity-photo') return {prepareActivityPhoto:prepare,PhotoPreparationError:class extends Error {constructor(){super('Photo preparation failed');}}};
+        if (id === '@/lib/place-coordinate-catalog') return {placeRegistry:{events:[],places:[],anchors:[]}};
+        if (id === './photo-location-suggestions') return {PhotoLocationSuggestions:'LocationSuggestions',SelectedPhotoPreview:'PhotoPreview',PlaceContextSummary:'ContextSummary'};
         if (id === 'react') return react;
         if (id === 'react/jsx-runtime') return { jsx, jsxs: jsx };
         if (id === 'next/link') return { default: 'a' };
@@ -79,7 +82,7 @@ function harness(props = {}, storage = memoryStorage()) {
           const submit = (data) => { calls.push(data); return action(data); };
           return { submitActivityLogAction: submit, updateActivityLogAction: submit };
         }
-        if (id === '@/lib/session-shared') return { searchPavilions: (all) => all };
+        if (id === '@/lib/session-shared') return { searchPavilions: (all,query) => query.trim() ? all : [] };
         if (id.startsWith('@/lib/')) return load(path.resolve(id.slice(2) + '.ts'));
         if (id.startsWith('.')) return load(path.resolve(path.dirname(file), id + '.ts'));
         throw new Error(`Unexpected import ${id}`);
@@ -111,15 +114,20 @@ function harness(props = {}, storage = memoryStorage()) {
   render();
   return {
     calls, navigation, fileInput, render, storage,
+    placeOptions(){return nodes(field("related-place")).filter(n=>n.type==="option").map(n=>n.props.value);},
     setAction(fn) { action = fn; },
     value(id) { return field(id)?.props.value; },
     change(id, value) { field(id).props.onChange({ target: { value } }); render(); },
     type(value) { nodes(tree).find((n) => n.props.name === 'activityType' && n.props.value === value).props.onChange(); render(); },
+    context(id,context) { nodes(tree).find(n=>n.type==='LocationSuggestions').props.onContextSelect(id,context);render(); },
+    location(id) { nodes(tree).find(n=>n.type==='LocationSuggestions').props.onSelect(id);render(); },
+    camera(file) { const input=nodes(tree).find(n=>n.props['aria-label']==='カメラで撮影');input.props.onChange({target:{files:[file],value:'camera'}});render(); },
+    removePhoto() { nodes(tree).find(n=>n.type==='button'&&n.props.children==='選択した写真を取り消す').props.onClick();render(); },
     photo(file) { fileInput.files = file ? [file] : []; field('photo').props.onChange({ target: fileInput }); render(); },
-    selectPavilion() { nodes(tree).find((n) => n.type === 'button' && n.props.type === 'button').props.onClick(); render(); },
+    selectPavilion() { field('related-place').props.onChange({target:{value:'garden'}}); render(); },
     submit() { tree.props.onSubmit({ preventDefault() {}, currentTarget: {} }); render(); },
     async settle() { await task; render(); },
-    message() { return nodes(tree).find((n) => n.type === 'div' && n.props.children === 'saved')?.props.children; },
+    message() { return nodes(tree).some(n=>n.type==='div'&&[n.props.children].flat().includes('saved'))?'saved':undefined; },
     text() { return nodes(tree).flatMap((n) => typeof n.props.children === 'string' ? [n.props.children] : []).join(' '); },
   };
 }
@@ -138,7 +146,7 @@ test('new entries restore independent text, time, price, selection and File draf
   h.photo(curry);
   h.type('pin');
   assert.equal(h.value('title'), ''); assert.equal(h.value('memo'), '');
-  assert.equal(h.value('occurredAt'), ''); assert.equal(h.fileInput.files.length, 0);
+  assert.equal(h.value('occurredAt'), ''); assert.equal(h.fileInput.files[0], curry);
   h.change('title', 'ピン'); h.change('price', '500');
   const pin = new File(['pin'], 'pin.png', { type: 'image/png' });
   h.photo(pin);
@@ -148,13 +156,13 @@ test('new entries restore independent text, time, price, selection and File draf
   h.type('food');
   assert.equal(h.value('title'), 'カレー'); assert.equal(h.value('price'), '1200');
   assert.equal(h.value('memo'), '辛い'); assert.equal(h.value('occurredAt'), '12:30');
-  assert.equal(h.fileInput.files[0], curry);
-  h.submit(); await h.settle();
+  assert.equal(h.fileInput.files[0], pin);
+  h.photo(curry); h.submit(); await h.settle();
   assert.equal(h.calls[0].get('photo').name, 'curry.png');
   assert.equal(await h.calls[0].get('photo').text(), 'curry');
   assert.equal(h.value('title'), ''); assert.equal(h.fileInput.files.length, 0);
   assert.equal(h.message(), 'saved');
-  h.type('pin'); assert.equal(h.value('title'), 'ピン'); assert.equal(h.fileInput.files[0], pin);
+  h.type('pin'); assert.equal(h.value('title'), 'ピン'); assert.equal(h.fileInput.files.length, 0);
   h.type('pavilion_visit'); assert.equal(h.value('pavilion-search'), '庭園');
   assert.equal(h.value('memo'), '花'); assert.equal(h.value('occurredAt'), '14:00');
   h.submit(); await h.settle();
@@ -172,7 +180,8 @@ test('failed result and thrown error preserve inputs and selected photo for retr
     assert.equal(h.value('title'), 'カレー'); assert.equal(h.value('memo'), 'メモ');
     assert.equal(h.value('occurredAt'), '12:00'); assert.equal(h.fileInput.files[0], photo);
   }
-  h.photo(null); h.submit(); await h.settle(); assert.equal(h.calls[2].get('photo'), null);
+  h.photo(null); h.submit(); await h.settle(); assert.equal(h.calls[2].get('photo').name, 'food.png');
+  h.removePhoto(); h.submit(); await h.settle(); assert.equal(h.calls[3].get('photo'), null);
 });
 
 test('pending submission rejects duplicate submits and type changes until completion', async () => {
@@ -210,7 +219,7 @@ test('persistent drafts survive remount, retain other types on success, and mark
   assert.match(h.text(), /写真はもう一度選択/);
   h.setAction(async () => { throw new Error('offline'); }); h.submit(); await h.settle();
   h = harness(props, storage); assert.equal(h.value('title'), 'カレー');
-  h.submit(); await h.settle();
+  h.removePhoto();h.submit(); await h.settle();
   h = harness(props, storage); assert.equal(h.value('title'), '');
   h.type('pavilion_visit'); assert.equal(h.value('pavilion-search'), '庭園');
   h.submit(); await h.settle(); assert.equal(h.calls[0].get('pavilionId'), 'garden');
@@ -241,4 +250,87 @@ test('photo-first food input keeps optional place on failure and after successfu
   h.setAction(async () => ({ status: 'success', message: 'saved', fieldErrors: {} })); h.submit(); await h.settle();
   assert.equal(h.value('related-place'), 'garden'); assert.equal(h.value('title'), '');
   h.change('related-place', ''); assert.equal(h.value('related-place'), '');
+});
+
+test('photo-first category changes and cancelled chooser retain one selected file until explicit removal',()=>{const h=harness();const photo=new File(['jpeg'],'camera.jpg');h.photo(photo);for(const type of ['food','pin','pavilion_visit','event_participation']){h.type(type);assert.equal(h.fileInput.files[0],photo);}h.photo(null);assert.equal(h.fileInput.files[0],photo);h.removePhoto();assert.equal(h.fileInput.files.length,0);});
+test('changing the existing visit day keeps fields and photo and submits to the selected session',async()=>{const h=harness({visitSessions:[{id:'test-session',visit_date:'2027-04-10'},{id:'next-day',visit_date:'2027-05-12'}],successRedirectPath:'/sessions/test-session'});h.type('food');h.change('title','Meal');const photo=new File(['image'],'meal.jpg');h.photo(photo);h.change('recording-session','next-day');assert.equal(h.value('title'),'Meal');assert.equal(h.fileInput.files[0],photo);h.submit();await h.settle();assert.equal(h.calls[0].get('sessionId'),'next-day');assert.equal(h.calls[0].get('photo').name,'meal.jpg');assert.equal(h.navigation[0],'/sessions/next-day');});
+
+test('camera selection and suggested-place correction preserve meal title and retry payload',async()=>{const h=harness();h.type('food');h.change('title','Meal');const photo=new File(['camera'],'camera.jpg');h.camera(photo);h.location('garden');assert.equal(h.value('related-place'),'garden');assert.equal(h.value('title'),'Meal');h.setAction(async()=>({status:'error',message:'offline',fieldErrors:{}}));h.submit();await h.settle();assert.equal(h.calls[0].get('photo').name,'camera.jpg');assert.equal(h.value('title'),'Meal');h.change('related-place','');assert.equal(h.value('title'),'Meal');assert.equal(h.fileInput.files[0],photo);});
+test('editing draft survives remount separately from new-entry and other-record drafts',()=>{const storage=memoryStorage();const props={mode:'edit',logId:'a',draftOwnerId:'owner',initialActivityType:'food',initialTitle:'Original'};const h=harness(props,storage);h.change('title','Unsaved edit');h.photo(new File(['image'],'edit.jpg'));const restored=harness(props,storage);assert.equal(restored.value('title'),'Unsaved edit');assert.match(restored.text(),/写真はもう一度/);assert.equal(harness({...props,logId:'b'},storage).value('title'),'Original');const fresh=harness({draftOwnerId:'owner'},storage);fresh.type('food');assert.equal(fresh.value('title'),'');});
+
+test('empty place search lists facilities and returns to the full list after clearing',()=>{const h=harness();assert(h.placeOptions().includes('garden'));h.change('pavilion-search','Garden');h.change('pavilion-search','');assert(h.placeOptions().includes('garden'));});
+
+
+test('place context survives failed save, category return and draft remount, and clears on explicit place change',async()=>{
+ const context={version:1,event_id:'e60f2360-8147-4112-969a-00954596ceb6',source_catalog_version:'a'.repeat(64),source_place_id:'organizer-hanameguri',subplace_source_id:null,indoor_occurrence_id:'indoor-20261009-all-01'};
+ const storage=memoryStorage();let h=harness({draftOwnerId:'synthetic-owner',sessionId:'context-day'},storage);h.type('food');h.change('title','Synthetic food');h.context('garden',context);h.setAction(async()=>({status:'error',message:'retry',fieldErrors:{}}));h.submit();await h.settle();assert.deepEqual(JSON.parse(h.calls[0].get('placeContext')),context);
+ h.type('pin');h.type('food');h.submit();await h.settle();assert.deepEqual(JSON.parse(h.calls[1].get('placeContext')),context);
+ h=harness({draftOwnerId:'synthetic-owner',sessionId:'context-day'},storage);h.submit();await h.settle();assert.deepEqual(JSON.parse(h.calls[0].get('placeContext')),context);
+ const changed=harness({initialPlaceContext:context,initialPavilionId:'garden'});changed.type('food');changed.location('garden');changed.change('title','Changed');changed.submit();await changed.settle();assert.equal(changed.calls[0].get('placeContext'),'');
+});
+
+
+test('source confirmation saves place name, title and context together in the restored draft',async()=>{const context={version:1,event_id:'e60f2360-8147-4112-969a-00954596ceb6',source_catalog_version:'a'.repeat(64),source_place_id:'organizer-hanameguri',subplace_source_id:null,indoor_occurrence_id:null};const storage=memoryStorage();let h=harness({draftOwnerId:'atomic-draft',sessionId:'source-day'},storage);h.context('garden',context);const expected=h.value('pavilion-search');assert(expected);h=harness({draftOwnerId:'atomic-draft',sessionId:'source-day'},storage);assert.equal(h.value('pavilion-search'),expected);h.submit();await h.settle();assert.equal(h.calls[0].get('title'),expected);assert.deepEqual(JSON.parse(h.calls[0].get('placeContext')),context);});
+
+
+test('uncertain-save retry reuses its attempt ID across restored drafts and changed inputs',async()=>{const storage=memoryStorage();let h=harness({draftOwnerId:'retry-owner',sessionId:'retry-day'},storage);h.type('food');h.change('title','One meal');h.setAction(async()=>({status:'error',message:'network unknown',fieldErrors:{}}));h.submit();await h.settle();const id=h.calls[0].get('saveAttemptId');assert.match(id,/^[a-f0-9-]{36}$/);assert.equal(h.calls[0].get('saveAttemptChanged'),'false');h.submit();await h.settle();assert.equal(h.calls[1].get('saveAttemptId'),id);h=harness({draftOwnerId:'retry-owner',sessionId:'retry-day'},storage);h.change('title','Changed meal');h.setAction(async()=>({status:'error',message:'already saved',recoveryHref:'/sessions/day/activity-logs/log/edit',fieldErrors:{}}));h.submit();await h.settle();assert.equal(h.calls[0].get('saveAttemptId'),id);assert.equal(h.calls[0].get('saveAttemptChanged'),'true');assert.equal(h.value('title'),'Changed meal');});
+
+
+test('a lost draft File cannot silently become a photo-less save without explicit removal',async()=>{const storage=memoryStorage(),props={draftOwnerId:'photo-loss',sessionId:'photo-loss-day'};let h=harness(props,storage);h.type('food');h.change('title','Photo meal');h.photo(new File(['dummy'],'meal.jpg',{type:'image/jpeg'}));h=harness(props,storage);h.submit();await h.settle();assert.equal(h.calls.length,0);assert.equal(h.value('title'),'Photo meal');h.removePhoto();h.submit();await h.settle();assert.equal(h.calls.length,1);assert.equal(h.calls[0].get('photo'),null);});
+
+
+test('saving from a map returns to the selected place and visit date, and editing clears its draft',async()=>{const props={returnToMap:true,visitEventId:'event-a',visitDate:'2027-04-10',draftOwnerId:'map-return',mode:'edit',logId:'map-log',initialActivityType:'food',initialTitle:'Original'};const storage=memoryStorage();const h=harness(props,storage);h.change('title','Updated');h.location('garden');h.submit();await h.settle();assert(h.navigation.some(href=>href.startsWith('/collection-next?')&&href.includes('event=event-a')&&href.includes('place=garden')&&href.includes('day=2027-04-10')));assert(![...storage.data.keys()].some(key=>key.includes('edit%3Amap-log')&&!key.endsWith(':active')));});
+
+test('synthetic photo to failed save, retry, map reread and edit preserves place and selected day', async () => {
+  // In-memory server action only. No fetch, Storage upload, database or real GPS.
+  const records = new Map();
+  const sessions = [{id:'test-session',visit_date:'2027-04-10',event_id:'event-a'},{id:'next-day',visit_date:'2027-05-12',event_id:'event-a'}];
+  const props = {returnToMap:true,visitEventId:'event-a',visitDate:'2027-04-10',visitSessions:sessions};
+  const h = harness(props);
+  h.type('food'); h.change('title','Synthetic lunch');
+  const image = new File([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+afoQAAAAASUVORK5CYII=','base64')],'synthetic-camera.png',{type:'image/png'});
+  h.photo(image); h.location('garden'); h.photo(null);
+  h.change('related-place',''); h.location('garden');
+  h.change('recording-session','next-day');
+  let finish, began;
+  const started=new Promise(resolve=>{began=resolve;});
+  h.setAction(()=>new Promise(resolve=>{finish=resolve;began();}));
+  h.submit(); h.submit();
+  await started;
+  assert.equal(h.calls.length,1);
+  finish({status:'error',message:'offline',fieldErrors:{}}); await h.settle();
+  assert.equal(h.value('title'),'Synthetic lunch'); assert.equal(h.fileInput.files[0],image);
+  h.setAction(async data=>{const id=data.get('saveAttemptId');records.set(id,{id,session_id:data.get('sessionId'),pavilion_id:data.get('pavilionId'),activity_type:data.get('activityType'),title:data.get('title'),photo_path:'synthetic-only.png',occurred_at:null,created_at:'2027-05-12T03:00:00Z'});return {status:'success',message:'saved',fieldErrors:{}};});
+  h.submit(); await h.settle();
+  assert.equal(records.size,1);
+  const record=[...records.values()][0];
+  const target=new URL(h.navigation.at(-1),'https://example.invalid');
+  assert.equal(target.searchParams.get('place'),'garden'); assert.equal(target.searchParams.get('day'),'2027-05-12');
+  assert.equal(target.hash,'#memory-entry-'+record.id);
+  const exports={};vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/memory-map.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports});
+  const model=exports.buildMemoryMap([...records.values()],sessions,'2027-05-12');
+  assert.equal(model.places[0].entries[0].title,'Synthetic lunch'); assert.equal(model.places[0].visited,false);
+  const edit=harness({...props,sessionId:'next-day',visitDate:'2027-05-12',mode:'edit',logId:record.id,initialActivityType:'food',initialTitle:record.title,initialPavilionId:record.pavilion_id});
+  edit.change('title','Edited lunch');
+  edit.setAction(async data=>{records.set(record.id,{...record,title:data.get('title')});return {status:'success',message:'saved',fieldErrors:{}};});
+  edit.submit();await edit.settle();
+  assert.equal(records.size,1);assert.equal(records.get(record.id).title,'Edited lunch');
+  const returned=new URL(edit.navigation.at(-1),'https://example.invalid');
+  assert.equal(returned.searchParams.get('place'),'garden');assert.equal(returned.searchParams.get('day'),'2027-05-12');assert.equal(returned.hash,'#memory-entry-'+record.id);
+});
+
+
+test('photo preparation failure never submits original and retains all fields for explicit retry',async()=>{
+ const image=new File(['raw GPS'],'camera.heic',{type:'image/heic'});
+ const h=harness({},memoryStorage(),async()=>{throw Error('unsupported');});
+ h.type('food');h.change('title','Keep meal');h.location('garden');h.photo(image);
+ h.submit();await h.settle();
+ assert.equal(h.calls.length,0);assert.equal(h.value('title'),'Keep meal');assert.equal(h.value('related-place'),'garden');assert.equal(h.fileInput.files[0],image);
+ h.removePhoto();h.submit();await h.settle();assert.equal(h.calls.length,1);assert.equal(h.calls[0].get('photo'),null);
+});
+test('successful preparation sends only replacement pixels and keeps original for local suggestions',async()=>{
+ const original=new File(['GPS ORIGINAL'],'camera.jpg',{type:'image/jpeg'}),prepared=new File(['PIXELS'],'memory.png',{type:'image/png'});
+ const h=harness({},memoryStorage(),async input=>{assert.equal(input,original);return prepared;});
+ h.type('food');h.change('title','Meal');h.photo(original);h.setAction(async()=>({status:'error',message:'offline',fieldErrors:{}}));h.submit();await h.settle();
+ assert.equal(await h.calls[0].get('photo').text(),'PIXELS');assert.equal(h.fileInput.files[0],original);
 });

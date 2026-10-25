@@ -5,8 +5,9 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const ts = require('typescript');
 
+const symbols={};vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/memory-map-symbols.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports:symbols});
 function renderer(options = {}) {
-  const texts = [], revoked = [], attributes = {}, drawing = [];
+  const texts = [], revoked = [], attributes = {}, drawing = [], requests = [];
   let imageUrl;
   const ctx = new Proxy({
     measureText: (text) => ({ width: Array.from(text).length * 12 }),
@@ -23,15 +24,15 @@ function renderer(options = {}) {
   const code = ts.transpileModule(fs.readFileSync('app/collection-next/venue-map-image.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
   vm.runInNewContext(code, {
     exports, Blob, Intl, Date, Promise, setTimeout, clearTimeout, AbortSignal,
-    require: () => ({ VENUE_MAP_ASSET: { href: '/prototypes/venue-map-zones.png', width: 100, height: 67 } }),
+    require: name => name==='@/lib/memory-map-symbols'?symbols:({ VENUE_MAP_ASSET: { href: '/prototypes/venue-map-zones.png', width: 100, height: 67 } }),
     document: { fonts: { ready: Promise.resolve() }, createElement: () => canvas },
-    fetch: async () => ({ ok: !options.networkError, blob: async () => new Blob(['base']) }),
+    fetch: async (url,init) => {requests.push({url,init});return { ok: !options.networkError&&!(options.coverError&&url==='/cover.jpg')&&!(options.coverUnauthorized&&url.startsWith('/api/activity-photo?')), blob: async () => new Blob(['base']) };},
     FileReader: class { readAsDataURL() { this.result = 'data:image/png;base64,YmFzZQ=='; this.onload(); } },
     XMLSerializer: class { serializeToString() { return '<svg/>'; } },
     Image: class { set src(url) { imageUrl = url; queueMicrotask(() => options.imageError ? this.onerror() : this.onload()); } },
     URL: { createObjectURL: () => 'blob:test-map', revokeObjectURL: (url) => revoked.push(url) },
   });
-  return { ...exports, canvas, texts, revoked, attributes, drawing, source, get imageUrl() { return imageUrl; } };
+  return { ...exports, canvas, texts, revoked, attributes, drawing, requests, source, get imageUrl() { return imageUrl; } };
 }
 
 function marker(id, visited, name = id) {
@@ -80,4 +81,33 @@ test('essential map/image/canvas failures reject and revoke temporary image URLs
     await assert.rejects(() => r.createVenueMapImage(r.source, [marker('a', true)]));
     if (option === 'imageError' || option === 'noBlob') assert.deepEqual(r.revoked, ['blob:test-map']);
   }
+});
+
+test('portrait artwork export keeps the full aspect ratio and count badges without flowers', async () => {
+  const r = renderer();
+  const asset = { href:'/art/memory-garden-v1.png',width:100,height:150,viewBox:'0 0 100 150' };
+  const a = {...marker('a',true),memoryCount:123};
+  await r.createVenueMapImage(r.source,[a],{asset,badgeMarkers:true,title:'2027-04-10の思い出'});
+  assert.equal(r.attributes.height,'2568'); assert(r.canvas.height > 2800);
+  assert(r.texts.includes('123')); assert(r.texts.includes('2027-04-10の思い出'));
+  assert.equal(r.drawing.filter(([name])=>name==='ellipse').length,0);
+  const p = r.getMapImagePositions([a],asset)[0];
+  assert.equal(p.anchorY,166 + 20/150*2568);
+});
+
+
+test('geographic PNG draws photo stacks and flat flowers without implying official completion',async()=>{const r=renderer();const a={...marker('a',true),paperMemory:true,memoryCount:123,memoryDayCount:2,previewUrl:'/cover.jpg'};await r.createVenueMapImage(r.source,[a],{asset:{href:'/art/green-expo-places-v1.svg',width:100,height:125},memoryStyle:true});assert(r.texts.includes('思い出 123件'));assert(r.texts.includes('2日'));assert(!r.texts.some(s=>s.startsWith('達成率')));assert(r.drawing.filter(([op])=>op==='drawImage').length>=2);assert(r.drawing.some(([op])=>op==='bezierCurveTo'));});
+test('failed cover retrieval keeps all records in export and explains the flower fallback',async()=>{const r=renderer({coverError:true});let omitted=0;await r.createVenueMapImage(r.source,[{...marker('a',true),paperMemory:true,memoryCount:14,previewUrl:'/cover.jpg'}],{memoryStyle:true,onPhotosOmitted:n=>omitted=n});assert.equal(omitted,1);assert(r.texts.some(s=>s.includes('写真を取得できなかった1か所')));assert(r.texts.includes('思い出 14件'));});
+
+
+test('private record photos in geographic PNG request same-origin cookies without caching or public-path fallback',async()=>{
+ const r=renderer(),photo='/api/activity-photo?id=12345678-1234-4123-8123-123456789abc';
+ await r.createVenueMapImage(r.source,[{...marker('private',true),paperMemory:true,memoryCount:8,memoryDayCount:2,previewUrl:photo}],{memoryStyle:true});
+ const request=r.requests.find(x=>x.url===photo);assert(request);assert.equal(request.init.credentials,'same-origin');assert.equal(request.init.cache,'no-store');
+ assert(!r.requests.some(x=>x.url.includes('/storage/v1/object/public/')));assert(r.texts.includes('思い出 8件'));
+});
+test('expired photo authentication preserves counts and warns instead of retrying an old public photo URL',async()=>{
+ const r=renderer({coverUnauthorized:true});let omitted=0;
+ await r.createVenueMapImage(r.source,[{...marker('private',true),paperMemory:true,memoryCount:8,previewUrl:'/api/activity-photo?id=12345678-1234-4123-8123-123456789abc'}],{memoryStyle:true,onPhotosOmitted:n=>omitted=n});
+ assert.equal(omitted,1);assert(r.texts.includes('思い出 8件'));assert.equal(r.requests.filter(x=>x.url.startsWith('/api/activity-photo?')).length,1);assert(!r.requests.some(x=>x.url.includes('/storage/v1/object/public/')));
 });

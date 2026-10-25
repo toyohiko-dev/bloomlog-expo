@@ -1,4 +1,10 @@
 "use server";
+import {assertPreparedActivityPhoto} from "@/lib/activity-photo-upload";
+import {sameActivityAttempt} from '@/lib/activity-save-attempt';
+import {placeContextStorageEnabled} from '@/lib/place-context-config';
+import {validatePlaceContext} from '@/lib/place-context';
+import {greenExpoResearch} from '@/lib/green-expo-research';
+
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -26,6 +32,10 @@ import {
   getSessionByVisitDate,
   todayDateString,
 } from "@/lib/sessions";
+
+import {placeRegistry} from "@/lib/place-coordinate-catalog";
+import {canUsePavilionInEvent,reviewedBindings} from "@/lib/place-registry";
+import {listEvents} from "@/lib/sessions";
 
 const FIXED_EVENT_KEY = "GREENEXPO2027";
 const ACTIVITY_PHOTO_BUCKET = "activity-photos";
@@ -95,6 +105,7 @@ async function uploadActivityPhoto(
   activityId: string,
   file: File,
 ) {
+  await assertPreparedActivityPhoto(file);
   const extension = getPhotoExtension(file);
 
   if (!extension) {
@@ -165,7 +176,7 @@ function buildOccurredAt(visitDate: string, occurredTime: string) {
   return datetime.toISOString();
 }
 
-async function validateActivityLog(formData: FormData) {
+async function validateActivityLog(formData: FormData, original?: {pavilion_id:string|null;session_id:string;place_context?:unknown}) {
   const sessionId = readText(formData, "sessionId");
   const activityType = readText(formData, "activityType") as ActivityType;
   const pavilionId = readText(formData, "pavilionId");
@@ -246,6 +257,13 @@ async function validateActivityLog(formData: FormData) {
     };
   }
 
+  if(pavilion && !canUsePavilionInEvent(placeRegistry,session.event_id??null,pavilion.id) && !(original?.pavilion_id===pavilion.id && original.session_id===sessionId)){
+    return {error:activityErrorState("この来場日の施設として未対応です。場所を選び直してください。",{pavilionId:"イベントに対応する施設を選んでください。"})};
+  }
+  const contextInput=formData.has('placeContext')?readText(formData,'placeContext'):original?.place_context??null;
+  if(!placeContextStorageEnabled&&contextInput)return {error:activityErrorState('場所の詳細を保存する準備が完了していません。入力は保持しています。',{pavilionId:'場所の詳細は登録準備中です。'})};
+  const contextResult=validatePlaceContext(contextInput,{catalog:greenExpoResearch,eventId:session.event_id??null,visitDate:session.visit_date,pavilionId:pavilion?.id??null,bindings:new Map(reviewedBindings(placeRegistry).filter(p=>p.pavilionId).map(p=>[p.sourceId,p.pavilionId!]))});
+  if(!contextResult.ok)return {error:activityErrorState(contextResult.error,{pavilionId:contextResult.error})};
   const occurredAt = buildOccurredAt(session.visit_date, occurredTime);
 
   if (occurredAt === undefined) {
@@ -270,6 +288,7 @@ async function validateActivityLog(formData: FormData) {
       price,
       acquisitionMethod,
       photo,
+      placeContext:contextResult.ok?contextResult.value:null,
     },
   };
 }
@@ -329,13 +348,17 @@ export async function createSessionAction(
     };
   }
 
+  const explicitEvent = Boolean(formData?.has("eventId"));
+  const selectedEventId = explicitEvent ? readText(formData!,"eventId") : await getFixedEventId();
+  if(selectedEventId && explicitEvent && !(await listEvents()).some(event=>event.id===selectedEventId)) return {status:"error",message:"選択したイベントが見つかりません。",fieldErrors:{eventId:"イベントを選び直してください。"}};
   const existingSession = await getSessionByVisitDate(visitDate);
 
+  if (existingSession && explicitEvent && (existingSession.event_id??"")!==(selectedEventId??"")) return {status:"error",message:"この日には別イベントの来場日があります。既存の来場日は変更していません。",fieldErrors:{visitDate:"同日の別イベントは既存データとDB制約の確認が必要です。"}};
   if (existingSession) {
     redirect(`/sessions/${existingSession.id}`);
   }
 
-  const fixedEventId = await getFixedEventId();
+
 
   const { data, error } = await supabase
     .from("visit_sessions")
@@ -344,7 +367,7 @@ export async function createSessionAction(
       visit_date: visitDate,
       title: title || null,
       memo: notes,
-      ...(fixedEventId ? { event_id: fixedEventId } : {}),
+      event_id: selectedEventId || null,
     })
     .select("id")
     .single();
@@ -409,7 +432,7 @@ export async function updateSessionAction(
       };
     }
 
-    const fixedEventId = await getFixedEventId();
+
 
     const { error } = await supabase
       .from("visit_sessions")
@@ -418,7 +441,7 @@ export async function updateSessionAction(
         title: title || null,
         visit_date: visitDate,
         memo: notes,
-        event_id: fixedEventId ?? null,
+
       })
       .eq("id", sessionId)
       .eq("user_id", user.id);
@@ -549,9 +572,18 @@ export async function submitActivityLogAction(
       price,
       acquisitionMethod,
       photo,
+      placeContext,
     } = validation.values;
 
-    const logId = crypto.randomUUID();
+    const attemptId=readText(formData,'saveAttemptId');
+    if(attemptId&&!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(attemptId))return activityErrorState('保存操作をやり直してください。');
+    const logId=attemptId||crypto.randomUUID();
+    const expected={user_id:user.id,session_id:sessionId,activity_type:activityType,pavilion_id:pavilionId,title,memo,occurred_at:occurredAt,event_id:session.event_id??null,price:activityType==='food'||activityType==='pin'?price:null,acquisition_method:activityType==='pin'?acquisitionMethod:null,...(placeContextStorageEnabled?{place_context:placeContext}:{})};
+    if(attemptId){const saved=await getActivityLog(attemptId);if(saved){
+      if(readText(formData,'saveAttemptChanged')==='true'||!sameActivityAttempt(saved,expected))return {...activityErrorState('この操作は既に保存されています。入力は保持しています。保存済みの記録を開いて確認・編集してください。'),recoveryHref:`/sessions/${saved.session_id}/activity-logs/${saved.id}/edit`};
+      revalidatePath(`/sessions/${sessionId}`);revalidatePath('/collection');revalidatePath('/collection-next');revalidatePath('/');
+      return {status:'success',message:'保存済みの記録を確認しました。',fieldErrors:{}};
+    }}
     const photoPath =
       photo
         ? await uploadActivityPhoto(supabase, user.id, sessionId, logId, photo)
@@ -572,17 +604,20 @@ export async function submitActivityLogAction(
         activityType === "food" || activityType === "pin" ? price : null,
       acquisition_method: activityType === "pin" ? acquisitionMethod : null,
       photo_path: photoPath,
+      ...(placeContextStorageEnabled?{place_context:placeContext}:{}),
     });
 
     if (error) {
-      await cleanupUncommittedActivityPhoto(supabase, user.id, photoPath);
-      return activityErrorState("\u8a18\u9332\u306e\u4fdd\u5b58\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002");
+      await cleanupUncommittedActivityPhoto(supabase,user.id,photoPath);uploadedPhoto=undefined;
+      if(attemptId&&error.code==='23505'){const saved=await getActivityLog(attemptId);if(saved&&(readText(formData,'saveAttemptChanged')==='true'||!sameActivityAttempt(saved,expected)))return {...activityErrorState('保存済みの記録があります。入力は保持しています。確認して編集してください。'),recoveryHref:`/sessions/${saved.session_id}/activity-logs/${saved.id}/edit`};if(saved&&sameActivityAttempt(saved,expected)){revalidatePath(`/sessions/${sessionId}`);revalidatePath('/collection');revalidatePath('/collection-next');revalidatePath('/');return {status:'success',message:'保存済みの記録を確認しました。',fieldErrors:{}};}}
+      return activityErrorState('記録の保存に失敗しました。');
     }
 
     uploadedPhoto = undefined;
 
     revalidatePath(`/sessions/${sessionId}`);
     revalidatePath("/collection");
+    revalidatePath("/collection-next");revalidatePath("/");
 
     return {
       status: "success",
@@ -609,7 +644,8 @@ export async function updateActivityLogAction(
       requireUser(),
     ]);
     const logId = readText(formData, "logId");
-    const validation = await validateActivityLog(formData);
+    const existingLog = logId ? await getActivityLog(logId) : null;
+    const validation = await validateActivityLog(formData,existingLog??undefined);
 
     if (!logId) {
       return activityErrorState("\u4f53\u9a13ID\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002");
@@ -630,9 +666,10 @@ export async function updateActivityLogAction(
       price,
       acquisitionMethod,
       photo,
+      placeContext,
     } = validation.values;
 
-    const existingLog = await getActivityLog(logId);
+
 
     if (!existingLog || String(existingLog.session_id) !== sessionId) {
       return activityErrorState("\u7de8\u96c6\u5bfe\u8c61\u306e\u4f53\u9a13\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3002");
@@ -658,6 +695,7 @@ export async function updateActivityLogAction(
           activityType === "food" || activityType === "pin" ? price : null,
         acquisition_method: activityType === "pin" ? acquisitionMethod : null,
         photo_path: photoPath,
+      ...(placeContextStorageEnabled?{place_context:placeContext}:{}),
       })
       .eq("id", logId)
       .eq("user_id", user.id);
@@ -684,6 +722,7 @@ export async function updateActivityLogAction(
     revalidatePath(`/sessions/${sessionId}`);
     revalidatePath(`/sessions/${sessionId}/activity-logs/${logId}/edit`);
     revalidatePath("/collection");
+    revalidatePath("/collection-next");revalidatePath("/");
 
     return {
       status: "success",

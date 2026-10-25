@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-const ACTIVITY_PHOTO_BUCKET = "activity-photos";
+
 
 export function getSupabaseEnv() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -24,9 +24,8 @@ export function createPublicSupabaseClient() {
   });
 }
 
-export function getActivityPhotoUrl(photoPath: string) {
-  const { url } = getSupabaseEnv();
-  return `${url}/storage/v1/object/public/${ACTIVITY_PHOTO_BUCKET}/${photoPath}`;
+export function getActivityPhotoUrl(activityLogId: string) {
+  return "/api/activity-photo?id="+encodeURIComponent(activityLogId);
 }
 
 export function getPavilionImageUrl(imagePath: string) {

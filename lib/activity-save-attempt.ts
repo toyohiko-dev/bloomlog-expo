@@ -1,0 +1,4 @@
+/** Cache key only; server always compares canonical saved fields before accepting a retry. */
+export function activityAttemptSignature(text:string){let a=2166136261,b=2246822519;for(let i=0;i<text.length;i++){a=Math.imul(a^text.charCodeAt(i),16777619);b=Math.imul(b^text.charCodeAt(i),3266489917);}return `${text.length}:${a>>>0}:${b>>>0}`;}
+function canonical(value:unknown):string{if(value===null||value===undefined)return 'null';if(typeof value!=='object')return JSON.stringify(value);if(Array.isArray(value))return JSON.stringify(value.map(canonical));return JSON.stringify(Object.keys(value).sort().map(k=>[k,canonical((value as Record<string,unknown>)[k])]));}
+export function sameActivityAttempt(existing:object,expected:Record<string,unknown>){const saved=existing as Record<string,unknown>;return Object.entries(expected).every(([k,v])=>canonical(saved[k])===canonical(v));}

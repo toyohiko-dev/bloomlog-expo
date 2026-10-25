@@ -15,6 +15,10 @@ function load(file, mocks) {
   return exports;
 }
 const cleanup = load('lib/activity-photo-cleanup.ts', {}).cleanupUncommittedActivityPhoto;
+const registryLogic=load('lib/place-registry.ts',{});
+const sourceCatalog=JSON.parse(fs.readFileSync('lib/green-expo-source-data.json','utf8'));
+const contextLogic=load('lib/place-context.ts',{});
+const attemptLogic=load('lib/activity-save-attempt.ts',{});
 test('cleanup never removes without an explicit RPC grant, including absent RPC', async () => {
   const calls = [];
   const c = { storage: { from: () => ({ remove() { calls.push('remove'); } }) } };
@@ -45,11 +49,18 @@ function actions(errorTable, errorOperation, calls = [], options = {}) {
       single() { return this; }, maybeSingle() { return this; },
       then(resolve, reject) {
         if (options.throwDB && operation === errorOperation) return reject(Error('offline'));
-        resolve({ data: operation === 'delete' ? [{ photo_path: 'owner/day/deleted.jpg' }] : options.stale && operation === 'update' ? null : { id: 'event' }, error: table === errorTable && operation === errorOperation ? { message: 'private database detail' } : null });
+        resolve({ data: operation === 'delete' ? [{ photo_path: 'owner/day/deleted.jpg' }] : options.stale && operation === 'update' ? null : { id: 'event' }, error: table === errorTable && operation === errorOperation ? { message: 'private database detail',code:options.errorCode } : null });
       },
     }; return q;
   };
   return load('app/sessions/actions.ts', {
+    '@/lib/activity-photo-upload':{assertPreparedActivityPhoto:async()=>{if(options.unsafePhoto)throw Error('unsafe');}},
+    '@/lib/place-registry':registryLogic,
+    '@/lib/place-context':contextLogic,
+    '@/lib/activity-save-attempt':attemptLogic,
+    '@/lib/green-expo-research':{greenExpoResearch:sourceCatalog},
+    '@/lib/place-context-config':{placeContextStorageEnabled:options.contextEnabled===true},
+    '@/lib/place-coordinate-catalog':{placeRegistry:options.registry??{events:[],places:[],anchors:[]}},
     'next/cache': { revalidatePath() {} }, 'next/navigation': { redirect() { throw Error('redirect'); } },
     '@/lib/auth': { requireUser: async () => ({ id: 'owner' }) },
     '@/lib/activity-photo-cleanup': { cleanupUncommittedActivityPhoto: cleanup },
@@ -58,10 +69,10 @@ function actions(errorTable, errorOperation, calls = [], options = {}) {
       rpc: async (_name, args) => { calls.push(['claim', args.p_path]); return { data: options.claim !== false, error: options.rpcError ? Error('RPC missing') : null }; },
       storage: { from: () => ({ upload: async () => { calls.push('upload'); return { error: null }; }, remove: async paths => { calls.push(['remove', ...paths]); if (options.throwRemove) throw Error('offline'); return { error: options.removeError ? Error('denied') : null }; } }) } }) },
     '@/lib/supabase/shared': { createPublicSupabaseClient: () => ({ from: query }) },
-    '@/lib/sessions': { getSessionByVisitDate: async () => null, getDefaultEventId: async () => 'event',
-      getPavilion: async id => id === 'missing' ? null : ({ id, name: 'Garden', is_active: true }),
-      getSession: async () => ({ visit_date: '2026-10-18', event_id: 'event' }),
-      getActivityLog: async () => ({ session_id: 'day', photo_path: 'owner/day/old.jpg' }) },
+    '@/lib/sessions': { listEvents:async()=>[{id:'event',name:'Event'}], getSessionByVisitDate: async () => options.existingSession??null, getDefaultEventId: async () => 'event',
+      getPavilion: async id => id === 'missing' ? null : ({ id, name: 'Garden', is_active: options.inactivePavilion!==true }),
+      getSession: async () => ({ visit_date: options.sessionDate??'2026-10-18', event_id: options.sessionEventId??'event' }),
+      getActivityLog: async id => id!=='log'?(typeof options.submittedLog==='function'?options.submittedLog():options.submittedLog??null):({ place_context:options.originalContext??null,pavilion_id:options.originalPavilionId??null, session_id: 'day', photo_path: 'owner/day/old.jpg' }) },
   });
 }
 function form() { const f = new FormData(); for (const [key, value] of Object.entries({ id: 'day', sessionId: 'day', logId: 'log', visitDate: '2026-10-18', activityType: 'food', title: 'food' })) f.set(key, value); return f; }
@@ -191,3 +202,27 @@ test('changing a record to pavilion without a new photo retains its existing pho
   assert.equal(writes[0].photo_path, 'owner/day/old.jpg');
   assert.equal(calls.some(call => Array.isArray(call) && call[0] === 'remove'), false);
 });
+
+test('editing a visit day never silently reassigns its event',async()=>{let payload;const f=form();const state=await actions(null,null,[],{onWrite:(table,data)=>{if(table==='visit_sessions')payload=data;}}).updateSessionAction(f);assert.equal(state.status,'success');assert.ok(payload);assert.equal('event_id' in payload,false);});
+test('new visit day validates explicit event and refuses same-day cross-event reuse',async()=>{const calls=[];const f=form();f.set('eventId','not-found');assert.equal((await actions(null,null,calls).createSessionAction(f)).status,'error');assert.equal(calls.includes('insert'),false);f.set('eventId','event');const result=await actions(null,null,calls,{existingSession:{id:'old',event_id:'other-event'}}).createSessionAction(f);assert.equal(result.status,'error');assert.match(result.message,/別イベント/);assert.equal(calls.includes('insert'),false);});
+test('cross-event new facility is rejected before photo upload while an unchanged historical reference is editable',async()=>{const id='11111111-1111-4111-8111-111111111111';const registry={events:[{id:'other-event',name:'Other',sourceNamespace:'official'}],places:[{eventId:'other-event',sourceId:'plot',pavilionId:id,facilityKey:'facility',identityReviewed:true,identityEvidence:'review'}],anchors:[]};const calls=[];const f=form();f.set('pavilionId',id);f.set('photo',new File(['photo'],'image.jpg',{type:'image/jpeg'}));const rejected=await actions(null,null,calls,{registry}).submitActivityLogAction(f);assert.equal(rejected.status,'error');assert.ok(rejected.fieldErrors.pavilionId);assert.deepEqual(calls,[]);f.delete('photo');assert.equal((await actions(null,null,[],{registry,originalPavilionId:id}).updateActivityLogAction(f)).status,'success');});
+
+test('activating an event registry keeps a legacy facility available for new saves without inventing a source binding',async()=>{const id='11111111-1111-4111-8111-111111111111';const registry={events:[{id:'event',name:'Event',sourceNamespace:'official'}],places:[{eventId:'event',sourceId:'new-plot',pavilionId:id,facilityKey:'new-facility',identityReviewed:true,identityEvidence:'fixture'}],anchors:[]};const writes=[];const f=form();f.set('pavilionId','garden');const result=await actions(null,null,[],{registry,onWrite:(table,payload)=>{if(table==='activity_logs')writes.push(payload);}}).submitActivityLogAction(f);assert.equal(result.status,'success');assert.equal(writes[0].pavilion_id,'garden');assert.equal(registry.places.some(p=>p.pavilionId==='garden'),false);});
+
+test('inactive staging rows are rejected before any record or photo write by both create and edit',async()=>{for(const action of ['submitActivityLogAction','updateActivityLogAction']){const calls=[];const f=form();f.set('pavilionId','garden');f.set('photo',new File(['dummy'],'staging.jpg',{type:'image/jpeg'}));const result=await actions(null,null,calls,{inactivePavilion:true})[action](f);assert.equal(result.status,'error');assert.ok(result.fieldErrors.pavilionId);assert.deepEqual(calls,[]);}});
+
+test('context create, preserved edit and explicit clearing keep source IDs out of title and GPS out of payload',async()=>{
+ const id='11111111-1111-4111-8111-111111111111',eventId=sourceCatalog.eventId;const registry={events:[{id:eventId,name:'Expo',sourceNamespace:'source'}],places:[{eventId,sourceId:'organizer-hanameguri',pavilionId:id,facilityKey:'hanameguri',identityReviewed:true,identityEvidence:'mock active parent'}],anchors:[]};const context=contextLogic.makePlaceContext(sourceCatalog,'organizer-hanameguri',null,sourceCatalog.occurrences[0].id);const writes=[];const opts={registry,contextEnabled:true,sessionEventId:eventId,sessionDate:'2027-03-19',onWrite:(t,p)=>{if(t==='activity_logs')writes.push(p);}};
+ const f=form();f.set('pavilionId',id);f.set('placeContext',JSON.stringify(context));assert.equal((await actions(null,null,[],opts).submitActivityLogAction(f)).status,'success');assert.deepEqual(writes[0].place_context,context);assert.equal(writes[0].title,'food');assert.equal('latitude' in writes[0],false);assert(contextLogic.describePlaceContext(writes[0].place_context,sourceCatalog).includes(sourceCatalog.occurrences[0].exhibitor_name_raw));
+ f.delete('placeContext');assert.equal((await actions(null,null,[],{...opts,originalPavilionId:id,originalContext:writes[0].place_context}).updateActivityLogAction(f)).status,'success');assert.deepEqual(writes[1].place_context,context);
+ f.set('placeContext','');assert.equal((await actions(null,null,[],{...opts,originalPavilionId:id,originalContext:context}).updateActivityLogAction(f)).status,'success');assert.equal(writes[2].place_context,null);
+});
+test('invalid context, wrong date and disabled schema fail before upload/write; old schema omits column',async()=>{
+ const id='11111111-1111-4111-8111-111111111111',eventId=sourceCatalog.eventId;const registry={events:[{id:eventId,name:'Expo',sourceNamespace:'source'}],places:[{eventId,sourceId:'organizer-hanameguri',pavilionId:id,facilityKey:'hanameguri',identityReviewed:true,identityEvidence:'fixture'}],anchors:[]};const context=contextLogic.makePlaceContext(sourceCatalog,'organizer-hanameguri',null,sourceCatalog.occurrences[0].id);
+ for(const extra of [{contextEnabled:false},{contextEnabled:true,sessionDate:'2026-10-25'},{contextEnabled:true,sessionEventId:'other'}]){const calls=[];const f=form();f.set('pavilionId',id);f.set('placeContext',JSON.stringify(context));f.set('photo',new File(['dummy'],'context.jpg',{type:'image/jpeg'}));const result=await actions(null,null,calls,{registry,sessionEventId:eventId,sessionDate:'2027-03-19',...extra}).submitActivityLogAction(f);assert.equal(result.status,'error');assert.deepEqual(calls,[]);}
+ let payload;assert.equal((await actions(null,null,[],{onWrite:(t,p)=>{if(t==='activity_logs')payload=p;}}).submitActivityLogAction(form())).status,'success');assert.equal('place_context' in payload,false);
+});
+
+
+test('response loss after commit is confirmed on retry without second insert or photo upload',async()=>{const id='22222222-2222-4222-8222-222222222222';let saved;const firstCalls=[];const f=form();f.set('pavilionId','garden');f.set('saveAttemptId',id);f.set('saveAttemptChanged','false');f.set('photo',new File(['dummy'],'attempt.jpg',{type:'image/jpeg'}));const first=await actions('activity_logs','insert',firstCalls,{throwDB:true,claim:false,onWrite:(t,p)=>{if(t==='activity_logs')saved=p;}}).submitActivityLogAction(f);assert.equal(first.status,'error');assert.equal(saved.id,id);const retryCalls=[];const retry=await actions(null,null,retryCalls,{submittedLog:saved}).submitActivityLogAction(f);assert.equal(retry.status,'success');assert.deepEqual(retryCalls,[]);f.set('title','Changed after uncertainty');f.set('saveAttemptChanged','true');const conflictCalls=[];const changed=await actions(null,null,conflictCalls,{submittedLog:saved}).submitActivityLogAction(f);assert.equal(changed.status,'error');assert.equal(changed.recoveryHref,`/sessions/day/activity-logs/${id}/edit`);assert.deepEqual(conflictCalls,[]);});
+test('simultaneous duplicate attempt uses the existing PK and confirms a matching saved record',async()=>{const id='33333333-3333-4333-8333-333333333333';let saved,reads=0;const f=form();f.set('saveAttemptId',id);f.set('saveAttemptChanged','false');const calls=[];const result=await actions('activity_logs','insert',calls,{errorCode:'23505',submittedLog:()=>++reads===1?null:saved,onWrite:(t,p)=>{if(t==='activity_logs')saved=p;}}).submitActivityLogAction(f);assert.equal(result.status,'success');assert.equal(calls.filter(v=>v==='insert').length,1);assert.equal(saved.id,id);});

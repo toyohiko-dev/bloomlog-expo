@@ -1,20 +1,23 @@
+import {placeRegistry} from '@/lib/place-coordinate-catalog';
+import {scopeMemoryRecords,summarizePavilionProgress} from '@/lib/place-registry';
 import Link from "next/link";
 import { AppPrimaryNav } from "@/app/_components/app-primary-nav";
 import { startSessionForDateAction } from "@/app/sessions/actions";
 import { getActivityTypeMeta, neutralSummaryTone } from "@/lib/activity-types";
 import {
-  getPavilionProgressSummary,
+  listPavilions,
   listCollectionActivityLogs,
   listSessions,
+  listEvents,
   todayDateString,
 } from "@/lib/sessions";
 
-export default async function HomePage() {
-  const [sessions, experiences, pavilionProgress] = await Promise.all([
-    listSessions(),
-    listCollectionActivityLogs(),
-    getPavilionProgressSummary(),
-  ]);
+export default async function HomePage({searchParams}:{searchParams:Promise<{event?:string}>}) {
+  const query=await searchParams;
+  const [allSessions,allExperiences,events,pavilions]=await Promise.all([listSessions(),listCollectionActivityLogs(),listEvents(),listPavilions()]);
+  const eventId=events.some(e=>e.id===query.event)?query.event!:null;
+  const {sessions,logs:experiences}=scopeMemoryRecords(allExperiences,allSessions,eventId,placeRegistry);
+  const pavilionProgress=summarizePavilionProgress(pavilions,allExperiences,allSessions,eventId,placeRegistry);
 
   const initialVisitDate = todayDateString();
   const foodCount = experiences.filter(
@@ -70,6 +73,8 @@ export default async function HomePage() {
       <div className="mx-auto flex w-full max-w-[68rem] flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
         <AppPrimaryNav currentPath="/" />
 
+        <nav aria-label="集計するイベント" className="flex flex-wrap gap-2"><Link href="/" aria-current={eventId===null?'page':undefined} className="rounded-full border bg-white px-4 py-2 text-sm">未分類・既存の記録</Link>{events.map(event=><Link key={event.id} href={`/?event=${encodeURIComponent(event.id)}`} aria-current={eventId===event.id?'page':undefined} className="rounded-full border bg-white px-4 py-2 text-sm">{event.name}</Link>)}</nav>
+        <p className="text-sm text-slate-600">{pavilionProgress.totalPavilions?`この範囲の達成対象 ${pavilionProgress.totalPavilions}か所 · 訪問済み ${pavilionProgress.completedPavilions}か所 · ${Math.round((pavilionProgress.completionRate??0)*100)}%`:'公式の達成対象は未確定です。記録の件数はそのまま表示します。'}{pavilionProgress.unverifiedVisitedPavilions>0?` 出典・達成対象未照合の訪問 ${pavilionProgress.unverifiedVisitedPavilions}か所は達成率に含めていません。`:''}</p>
         <section className="w-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-white to-sky-50 shadow-sm ring-1 ring-slate-200">
           <div className="px-6 py-8 sm:px-6 lg:px-10 lg:py-10">
             <div className="space-y-6">

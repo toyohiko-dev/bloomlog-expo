@@ -13,6 +13,7 @@ export type ActivityLogFieldErrors = Partial<
 >;
 
 export type ActivityLogFormState = {
+  recoveryHref?:string;
   status: "idle" | "success" | "error";
   message: string;
   fieldErrors: ActivityLogFieldErrors;

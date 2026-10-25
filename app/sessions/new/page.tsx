@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { SessionCreateForm } from "@/app/sessions/new/session-create-form";
-import { getSessionByVisitDate, todayDateString } from "@/lib/sessions";
+import { getSessionByVisitDate, todayDateString, listEvents } from "@/lib/sessions";
 
 type NewSessionPageProps = {
-  searchParams?: Promise<{ visitDate?: string | string[] | undefined }>;
+  searchParams?: Promise<{ event?:string;visitDate?: string | string[] | undefined }>;
 };
 
 export default async function NewSessionPage({
@@ -15,7 +15,8 @@ export default async function NewSessionPage({
     ? resolvedSearchParams?.visitDate[0]
     : resolvedSearchParams?.visitDate;
   const visitDate = requestedVisitDate || today;
-  const existingSession = await getSessionByVisitDate(visitDate);
+  const [existingSession,events] = await Promise.all([getSessionByVisitDate(visitDate),listEvents()]);
+  const initialEventId=events.find(event=>event.id===resolvedSearchParams?.event)?.id??"";
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -69,7 +70,7 @@ export default async function NewSessionPage({
           ) : null}
 
           <div className="mt-8">
-            <SessionCreateForm initialVisitDate={visitDate} />
+            <SessionCreateForm initialVisitDate={visitDate} events={events} initialEventId={initialEventId} />
           </div>
         </section>
       </div>

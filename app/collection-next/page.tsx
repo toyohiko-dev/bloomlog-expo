@@ -1,17 +1,37 @@
+import {createGeographicMemoryDemo} from '@/lib/green-expo-demo';
+import {greenExpoMapAnchors} from '@/lib/green-expo-map';
+import reviewedPlaces from '@/lib/green-expo-reviewed-bindings.json';
+import Link from "next/link";
+import {placeRegistry} from "@/lib/place-coordinate-catalog";
+import {scopeMemoryRecords,scopedPavilions,isRegisteredEvent,anchorsForEvent} from "@/lib/place-registry";
 import { AppPrimaryNav } from "@/app/_components/app-primary-nav";
-import { listAreas, listCollectionActivityLogs, listPavilions, listSessions } from "@/lib/sessions";
+import { listAreas, listCollectionActivityLogs, listPavilions, listSessions, listEvents } from "@/lib/sessions";
 import { getActivityPhotoUrl } from "@/lib/supabase/shared";
 import { createMemoryMapDemo } from "@/lib/memory-map-demo";
 import { MemoryMapExplorer } from "./memory-map-explorer";
 
-export default async function CollectionNextPage({ searchParams }: { searchParams: Promise<{ demo?: string }> }) {
-  const demo = (await searchParams).demo === "1";
-  const [areas, pavilions] = await Promise.all([listAreas(), listPavilions()]);
-  const data = demo ? createMemoryMapDemo(pavilions) : null;
+export default async function CollectionNextPage({ searchParams }: { searchParams: Promise<{ demo?: string; event?:string;place?:string;day?:string }> }) {
+  const query=await searchParams;
+  const geographicDemo=query.demo==='geo';
+  const demo = query.demo === "1"||geographicDemo;
+  const [areas, loadedPavilions, events] = await Promise.all([listAreas(), listPavilions(), listEvents()]);
+  const geographicData=geographicDemo?createGeographicMemoryDemo():null;
+  const pavilions=geographicData?.pavilions??loadedPavilions;
+  const data = geographicData??(demo ? createMemoryMapDemo(pavilions) : null);
   const [logs, sessions] = data ? [data.logs, data.sessions] : await Promise.all([listCollectionActivityLogs(), listSessions()]);
-  return <main className="min-h-screen bg-slate-50"><div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
-    {demo ? <p role="status" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">BloomLog · 保存しないデモ。架空の日付・記録です。既存データとは分離しています。</p> : <AppPrimaryNav currentPath="/collection" />}
-    <header><p className="text-sm text-slate-500">思い出アルバム 検証版</p><h1 className="mt-2 text-2xl font-bold text-slate-900">地図から思い出を振り返る</h1><p className="mt-2 text-sm text-slate-600">全日程を一枚に。日付を選ぶと、その日の記録に。場所を開くと日付ごとの写真を見返せます。</p></header>
-    <MemoryMapExplorer demo={demo} logs={logs.map(log => ({ ...log, photoUrl: log.photo_path ? getActivityPhotoUrl(log.photo_path) : null }))} sessions={sessions} areas={areas} pavilions={pavilions} />
+  const eventId=geographicDemo?'e60f2360-8147-4112-969a-00954596ceb6':!demo&&events.some(event=>event.id===query.event)?query.event!:null;
+  const geographic=eventId==='e60f2360-8147-4112-969a-00954596ceb6';
+  const registry=geographicDemo?{events:[{id:eventId!,name:'GREEN×EXPO2027',sourceNamespace:'public-place-demo'}],places:reviewedPlaces,anchors:greenExpoMapAnchors}:placeRegistry;
+  const scoped=scopeMemoryRecords(logs,sessions,eventId,registry);
+  const scopePavilions=scopedPavilions(pavilions,eventId,registry);
+  const official=isRegisteredEvent(registry,eventId);
+  const explicitAnchors=geographic?anchorsForEvent(registry,eventId,"green-expo-places-v1",new Set(scopePavilions.map(p=>p.id))):official?anchorsForEvent(registry,eventId,"memory-garden-v1",new Set(scopePavilions.map(p=>p.id))):undefined;
+  const scopeLabel=geographicDemo?'GREEN×EXPO 2027 · 公開図からの推定配置':eventId?(events.find(event=>event.id===eventId)?.name??'イベント')+(geographic?(official?' · 推定配置・現地未検証':' · 新しい記録先は公開準備中'):' · 施設台帳未対応'):'未分類の記録 · 配置はイメージです。';
+  return <main className="min-h-screen bg-[#f8f5ec]"><div className="mx-auto max-w-4xl space-y-5 px-3 py-5 sm:px-6">
+    {demo ? <p role="status" className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900">保存しないプレビュー · 記録と写真は架空のイラストです。</p> : <AppPrimaryNav currentPath="/collection" />}
+    <header><div className="flex items-end justify-between gap-3"><div className="font-serif text-4xl font-bold tracking-tight text-[#173f34]">BloomLog<span className="ml-1 text-lg text-[#54a69a]">❧</span></div><span className="pb-1 text-xs text-[#748070]">思い出アルバム</span></div><h1 className="mt-2 text-base font-semibold text-[#254d3e]">わたしの会場マップ</h1></header>
+    {!demo?<nav aria-label="記録のイベント" className="flex flex-wrap gap-2"><Link className="rounded-full border bg-white px-4 py-2 text-sm" href="/collection-next">未分類の記録</Link>{events.map(event=><Link key={event.id} aria-current={eventId===event.id?"page":undefined} className="rounded-full border bg-white px-4 py-2 text-sm" href={`/collection-next?event=${encodeURIComponent(event.id)}`}>{event.name}</Link>)}</nav>:null}
+    {!demo?<Link href={scoped.sessions[0]?`/sessions/${scoped.sessions[0].id}/activities/new`:eventId?`/sessions/new?event=${encodeURIComponent(eventId)}`:"/sessions/new"} className="inline-flex rounded-full bg-[#f57565] px-5 py-3 font-semibold text-white">＋ 記録</Link>:null}
+    <MemoryMapExplorer key={`${eventId??"legacy"}:${query.day??"all"}:${query.place??"none"}`} initialDate={query.day} initialPlaceId={query.place} mapMode={geographic?"geographic":"illustration"} explicitAnchors={explicitAnchors} scopeLabel={scopeLabel} demo={demo} logs={scoped.logs.map(log => ({ ...log, photoUrl: geographicDemo?log.photo_path:demo && log.activity_type === "pavilion_visit" ? "/art/memory-garden-v1.png" : log.photo_path ? getActivityPhotoUrl(log.id) : null }))} sessions={scoped.sessions} areas={areas} pavilions={scopePavilions} />
   </div></main>;
 }

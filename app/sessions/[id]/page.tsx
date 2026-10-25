@@ -14,6 +14,7 @@ import {
   getSession,
   listActivityLogs,
   listPavilions,
+  listSessions,
 } from "@/lib/sessions";
 import { getActivityPhotoUrl, getPavilionImageUrl } from "@/lib/supabase/shared";
 import { buildVisitDayReflection } from "@/lib/visit-day-reflection";
@@ -127,11 +128,12 @@ export default async function SessionDetailPage({
     ? resolvedSearchParams?.editLog[0]
     : resolvedSearchParams?.editLog;
 
-  const [session, logs, pavilions, editingLog] = await Promise.all([
+  const [session, logs, pavilions, editingLog, visitSessions] = await Promise.all([
     getSession(sessionId),
     listActivityLogs(sessionId),
     listPavilions(),
     editLogId ? getActivityLog(editLogId) : Promise.resolve(null),
+    listSessions(),
   ]);
 
   if (!session) {
@@ -144,7 +146,7 @@ export default async function SessionDetailPage({
       : null;
   const timelineLogs = logs.map((log) => ({
     ...log,
-    thumbnailUrl: log.photo_path ? getActivityPhotoUrl(log.photo_path) : null,
+    thumbnailUrl: log.photo_path ? getActivityPhotoUrl(log.id) : null,
     pavilionThumbnailUrl: log.pavilion?.image_path
       ? getPavilionImageUrl(log.pavilion.image_path)
       : null,
@@ -261,9 +263,14 @@ export default async function SessionDetailPage({
           </div>
 
           <div className="mt-6">
+            <Link href="/collection-next" className="mb-4 inline-flex rounded-full border border-emerald-200 px-4 py-2 text-sm text-emerald-800">思い出を地図で見る</Link>
             <ActivityLogForm
               key={`${session.user_id}:${sessionId}:${validEditingLog ? `edit:${validEditingLog.id}` : "create"}`}
               sessionId={sessionId}
+              visitDate={session.visit_date}
+              visitEventId={session.event_id}
+              visitSessions={visitSessions.map(day=>({id:day.id,visit_date:day.visit_date,event_id:day.event_id}))}
+              recentPavilionIds={logs.map(log=>log.pavilion_id).filter((id):id is string=>Boolean(id))}
               draftOwnerId={session.user_id}
               pavilions={pavilions}
               mode={validEditingLog ? "edit" : "create"}
@@ -284,6 +291,7 @@ export default async function SessionDetailPage({
                 validEditingLog?.acquisition_method ?? null
               }
               initialPavilionId={validEditingLog?.pavilion_id ?? null}
+              initialPlaceContext={validEditingLog?.place_context??null}
               successRedirectPath={resetEditorHref}
               submitLabel={validEditingLog ? "保存する" : "記録する"}
               cancelHref={validEditingLog ? resetEditorHref : undefined}
@@ -385,6 +393,7 @@ export default async function SessionDetailPage({
                             <h3 className="mt-3 text-lg font-semibold text-slate-900">
                               {getActivityLogTitle(log) || "タイトル未設定"}
                             </h3>
+                            {log.place_context_label?<p className="mt-2 text-xs text-slate-600">{log.place_context_label}</p>:null}
                           </div>
 
                           <div className="flex flex-wrap gap-2">
