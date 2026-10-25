@@ -107,3 +107,9 @@
 - 本人記録が参照する写真へのSELECTは migration 20261025214835_prepare_activity_photo_owner_record_read として適用済み。bucket private切替は対応コード公開・本人表示確認後に実施する。review.sqlは既定でrollbackし、自動実行しない。過去に取得されたコピー/キャッシュの消去は保証しない。
 - 写真保護だけをmainから切り出し、地図/GPS/施設bindingの未公開開発差分は含めない。施設有効化・テスト記録追加・既存画像改変/削除も含めない。
 - 49テスト、lint、型検査、本番build成功。作業コピーの依存共有にTurbopackのjunction制限があるためローカルbuildは公式 --webpack を使用。本番はVercelの通常buildで確認する。実ブラウザでの新画像変換後の向き/サイズ/透過/画質は未検証。既知file: URL拒否は迂回しない。
+
+### 写真保護の公開・private切替結果（2026-10-25 UTC）
+
+- 写真保護コード891bed9をGitHub mainへ反映し、既存Vercel productionでREADY。公開後、本人のアルバム写真4件が認可APIから表示されることを確認してから、承認済みmigration 20261025215955_make_activity_photos_privateを適用。
+- activity-photosはpublic=false。切替後も本人アルバム写真4件が表示。匿名の画像APIは401/空本文/private no-store。記録55・来場日18・施設227・写真5は前後内容指紋も一致。追加216施設はinactive維持。テスト記録・画像の追加/既存写真の改変削除なし。
+- 未公開の地図/GPS開発は元のcodex/memory-map-experienceに保全し、このリリースに含めていない。写真変換の実機ブラウザでの向き/画質/透過や別ユーザーでの実認証試験は未検証。旧コピー/外部キャッシュの撤回は保証しない。
