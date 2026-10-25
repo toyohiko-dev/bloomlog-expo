@@ -50,6 +50,7 @@ function actions(errorTable, errorOperation, calls = [], options = {}) {
     }; return q;
   };
   return load('app/sessions/actions.ts', {
+    '@/lib/activity-photo-upload':{assertPreparedActivityPhoto:async()=>{if(options.unsafePhoto)throw Error('unsafe');}},
     'next/cache': { revalidatePath() {} }, 'next/navigation': { redirect() { throw Error('redirect'); } },
     '@/lib/auth': { requireUser: async () => ({ id: 'owner' }) },
     '@/lib/activity-photo-cleanup': { cleanupUncommittedActivityPhoto: cleanup },

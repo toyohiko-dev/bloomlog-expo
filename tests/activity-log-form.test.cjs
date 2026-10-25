@@ -8,7 +8,7 @@ const vm = require('node:vm');
 const ts = require('typescript');
 const path = require('node:path');
 
-function harness(props = {}, storage = memoryStorage()) {
+function harness(props = {}, storage = memoryStorage(), prepare = async file => file) {
   const slots = [];
   let cursor = 0;
   let tree;
@@ -53,7 +53,7 @@ function harness(props = {}, storage = memoryStorage()) {
     }).outputText;
     vm.runInNewContext(code, {
       module: compiledModule, exports: compiledModule.exports, Intl, Date,
-      window: { localStorage: storage },
+      window: { localStorage: storage }, File,
       FormData: class extends FormData {
         constructor() {
           super();
@@ -71,6 +71,7 @@ function harness(props = {}, storage = memoryStorage()) {
         items = { add: (file) => this.files.push(file) };
       },
       require(id) {
+        if (id === '@/lib/prepare-activity-photo') return {prepareActivityPhoto:prepare,PhotoPreparationError:class extends Error {constructor(){super('Photo preparation failed');}}};
         if (id === 'react') return react;
         if (id === 'react/jsx-runtime') return { jsx, jsxs: jsx };
         if (id === 'next/link') return { default: 'a' };
@@ -231,4 +232,21 @@ test('persistent scope separates users and sessions, handles corrupt data and st
   assert.equal(h.value('title'), 'カレー'); assert.match(h.text(), /下書きを保存できません/);
   const edit = harness({ draftOwnerId: 'a', mode: 'edit', initialActivityType: 'food', initialTitle: '保存済み' }, storage);
   assert.equal(edit.value('title'), '保存済み');
+});
+
+
+test('photo conversion failure stops create and edit without sending original or discarding input',async()=>{
+ for(const props of [{},{mode:'edit',logId:'log',initialActivityType:'food',initialTitle:'Meal'}]){
+  const h=harness(props,memoryStorage(),async()=>{throw Error('cannot convert');});if(!props.mode){h.type('food');h.change('title','Meal');}
+  const original=new File(['GPS original'],'raw.heic',{type:'image/heic'});h.photo(original);h.submit();await h.settle();
+  assert.equal(h.calls.length,0);assert.equal(h.value('title'),'Meal');assert.equal(h.fileInput.files[0],original);
+ }
+});
+test('only sanitized pixels leave create and edit forms; original stays local on save failure',async()=>{
+ for(const props of [{},{mode:'edit',logId:'log',initialActivityType:'food',initialTitle:'Meal'}]){
+  const original=new File(['GPS original'],'raw.jpg',{type:'image/jpeg'}),clean=new File(['pixels'],'memory.png',{type:'image/png'});
+  const h=harness(props,memoryStorage(),async input=>{assert.equal(input,original);return clean;});if(!props.mode){h.type('food');h.change('title','Meal');}
+  h.photo(original);h.setAction(async()=>({status:'error',message:'offline',fieldErrors:{}}));h.submit();await h.settle();
+  assert.equal(await h.calls[0].get('photo').text(),'pixels');assert.equal(h.fileInput.files[0],original);
+ }
 });

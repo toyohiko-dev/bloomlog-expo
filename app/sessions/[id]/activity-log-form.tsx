@@ -1,4 +1,5 @@
 "use client";
+import {prepareActivityPhoto,PhotoPreparationError} from "@/lib/prepare-activity-photo";
 
 import Link from "next/link";
 import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
@@ -348,16 +349,13 @@ export function ActivityLogForm({
     persistDraft();
     const formData = new FormData(event.currentTarget);
     const submittedActivityType = activityType;
-    if (mode === "create") {
-      formData.delete("photo");
-      if (showPhotoInput && selectedPhoto) {
-        formData.set("photo", selectedPhoto);
-      }
-    }
+    const originalPhoto = mode === "create" ? (showPhotoInput ? selectedPhoto : null) : formData.get("photo");
+    formData.delete("photo");
     submittingRef.current = true;
 
     startTransition(async () => {
       try {
+        if(originalPhoto instanceof File && originalPhoto.size>0){try{formData.set("photo",await prepareActivityPhoto(originalPhoto));}catch{throw new PhotoPreparationError();}}
         const result =
           mode === "edit"
             ? await updateActivityLogAction(formData)
@@ -387,11 +385,11 @@ export function ActivityLogForm({
         }
 
         router.refresh();
-      } catch {
+      } catch (error) {
         setState({
           status: "error",
-          message: "保存できませんでした。入力内容を確認して、もう一度お試しください。",
-          fieldErrors: {},
+          message: error instanceof PhotoPreparationError ? error.message : "保存できませんでした。入力内容を確認して、もう一度お試しください。",
+          fieldErrors: error instanceof PhotoPreparationError ? {photo:"写真を変換できません。写真を選び直すか、写真なしで保存してください。"} : {},
         });
       } finally {
         submittingRef.current = false;
@@ -753,7 +751,7 @@ export function ActivityLogForm({
                   id="photo"
                   name="photo"
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   onChange={(event) => {
                     if (mode === "create") {
                       setSelectedPhoto(event.target.files?.[0] ?? null);

@@ -99,3 +99,11 @@
 
 - `db push`、migration repair、本番 DB write、destructive SQL は通常作業で実行しない。
 - 必要になった場合は、対象、影響、rollback、検証方法を整理してから承認を求める。
+
+## 写真本人限定アクセスと新規画像保護（2026-10-25）
+
+- 写真閲覧は本人認証・記録の所有者・本人Storageフォルダを照合する /api/activity-photo?id=記録UUID へ変更。ブラウザにStorageパスや公開/署名URLを渡さず、private/no-storeで配信。既存写真を変更/削除しない。
+- 新規/編集の追加写真は端末内で位置情報を読み取り、向きを適用した画素のみPNGへ再生成。JPEG/PNG/WebP、入力8MiB/20MP、最長4096px、生成6MiB上限。未対応形式・変換失敗は原画像を送らず入力を保持して再選択を案内。サーバーも実バイト/PNGメタデータを検査。
+- 本人記録が参照する写真へのSELECTは migration 20261025214835_prepare_activity_photo_owner_record_read として適用済み。bucket private切替は対応コード公開・本人表示確認後に実施する。review.sqlは既定でrollbackし、自動実行しない。過去に取得されたコピー/キャッシュの消去は保証しない。
+- 写真保護だけをmainから切り出し、地図/GPS/施設bindingの未公開開発差分は含めない。施設有効化・テスト記録追加・既存画像改変/削除も含めない。
+- 49テスト、lint、型検査、本番build成功。作業コピーの依存共有にTurbopackのjunction制限があるためローカルbuildは公式 --webpack を使用。本番はVercelの通常buildで確認する。実ブラウザでの新画像変換後の向き/サイズ/透過/画質は未検証。既知file: URL拒否は迂回しない。

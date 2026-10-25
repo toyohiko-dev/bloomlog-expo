@@ -1,4 +1,5 @@
 "use server";
+import {assertPreparedActivityPhoto} from "@/lib/activity-photo-upload";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -95,6 +96,7 @@ async function uploadActivityPhoto(
   activityId: string,
   file: File,
 ) {
+  await assertPreparedActivityPhoto(file);
   const extension = getPhotoExtension(file);
 
   if (!extension) {

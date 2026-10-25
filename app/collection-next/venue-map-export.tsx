@@ -1,4 +1,5 @@
 "use client";
+import {checkGeneratedPng} from "@/lib/png-metadata";
 
 import { useEffect, useRef, useState } from "react";
 import type { VenueMapMarker } from "./venue-map-frame";
@@ -19,6 +20,7 @@ export function VenueMapExport({ markers }: { markers: VenueMapMarker[] }) {
       const source = hostRef.current?.closest("section")?.querySelector<SVGSVGElement>("svg[data-venue-map-source]");
       if (!source) throw new Error("map-unavailable");
       const blob = await createVenueMapImage(source, markers);
+      await checkGeneratedPng(blob);
       const date = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(new Date());
       const file = new File([blob], `bloomlog-map-${date}.png`, { type: "image/png" });
       setPreview({ url: URL.createObjectURL(blob), file });

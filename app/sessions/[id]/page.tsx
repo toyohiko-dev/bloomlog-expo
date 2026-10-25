@@ -144,7 +144,7 @@ export default async function SessionDetailPage({
       : null;
   const timelineLogs = logs.map((log) => ({
     ...log,
-    thumbnailUrl: log.photo_path ? getActivityPhotoUrl(log.photo_path) : null,
+    thumbnailUrl: log.photo_path ? getActivityPhotoUrl(log.id) : null,
     pavilionThumbnailUrl: log.pavilion?.image_path
       ? getPavilionImageUrl(log.pavilion.image_path)
       : null,
