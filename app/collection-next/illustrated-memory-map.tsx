@@ -11,6 +11,7 @@ export const MEMORY_MAP_ART: MapArtwork = { href: "/art/memory-garden-v1.png", v
 // Illustration anchors are a presentation layout, never geographic coordinates.
 const anchors = [[49,32],[26,49],[74,49],[50,66],[22,79],[78,80],[28,107],[72,107],[51,122],[51,93]];
 export function buildIllustratedMarkers(pavilions: PavilionOption[], places: MemoryPlace[], previews: Map<string,string>, daily: boolean, explicitAnchors?: {pavilionId:string;x:number;y:number}[],artwork:MapArtwork=MEMORY_MAP_ART,paperMemory=false): VenueMapMarker[] {
+  void daily; // A saved photo remains visible in cumulative and day views.
   const unique = [...new Map(pavilions.map(place => [place.id, place])).values()].filter(place=>explicitAnchors===undefined||explicitAnchors.some(anchor=>anchor.pavilionId===place.id));
   const byId = new Map(places.map(place => [place.id,place]));
   return unique.map((pavilion,index) => {
@@ -18,7 +19,7 @@ export function buildIllustratedMarkers(pavilions: PavilionOption[], places: Mem
     const colorIndex=Array.from(pavilion.id).reduce((n,ch)=>n+ch.charCodeAt(0),0)%4;
     const explicit=explicitAnchors?.find(anchor=>anchor.pavilionId===pavilion.id);
     const [x,y] = explicit ? [explicit.x*artwork.width,explicit.y*artwork.height] : unique.length <= anchors.length ? anchors[index] : [12 + index % Math.ceil(Math.sqrt(unique.length)) * 76 / Math.max(1,Math.ceil(Math.sqrt(unique.length))-1), 22 + Math.floor(index / Math.ceil(Math.sqrt(unique.length))) * 105 / Math.max(1,Math.ceil(unique.length / Math.ceil(Math.sqrt(unique.length)))-1)];
-    return { paperMemory,memoryDayCount:place?.days?.length??0,id:pavilion.id, name:pavilion.name, x,y, areaId:pavilion.area_id ?? "", areaName:paperMemory?"公開図からの推定位置":"イメージ配置", visited:place?.visited ?? false, visitCount:place?.visitCount ?? 0, memoryCount:place?.entries.length ?? 0, previewUrl:daily||(paperMemory&&(place?.entries.length??0)>=4) ? previews.get(pavilion.id) : null, imageUrl:null, bloom:["#ee7869","#d28eaf","#e3b75d","#73a58b"][colorIndex], size:1, rotation:0, firstVisitedAt:null, latestVisitedAt:null, latestSessionId:null };
+    return { paperMemory,memoryDayCount:place?.days?.length??0,id:pavilion.id, name:pavilion.name, x,y, areaId:pavilion.area_id ?? "", areaName:paperMemory?"公開図からの推定位置":"イメージ配置", visited:place?.visited ?? false, visitCount:place?.visitCount ?? 0, memoryCount:place?.entries.length ?? 0, previewUrl:previews.get(pavilion.id)??null, imageUrl:null, bloom:["#ee7869","#d28eaf","#e3b75d","#73a58b"][colorIndex], size:1, rotation:0, firstVisitedAt:null, latestVisitedAt:null, latestSessionId:null };
   });
 }
 export function mapExportUnavailableReason(markers:VenueMapMarker[],places:MemoryPlace[],hasExplicitAnchors:boolean){return hasExplicitAnchors&&markers.length===0&&places.some(p=>p.entries.length>0)?'記録の地図位置が未対応のため、この範囲はまだ画像にできません。記録は下の一覧で見返せます。':undefined;}

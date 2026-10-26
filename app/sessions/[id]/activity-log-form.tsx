@@ -507,6 +507,10 @@ export function ActivityLogForm({
           {!draftReady ? "下書きを確認しています..." : pending ? "思い出を保存しています..." : draftNotice}
         </p>
       ) : null}
+      <div aria-label="記録先の確認" className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#d9dfd0] bg-[#fffcf5]/95 p-3 text-sm shadow-sm backdrop-blur">
+        <div><p className="text-xs text-[#496250]">{selectedDay?.visit_date??visitDate??'この来場日'} · {activityTypeMeta.label}</p><p className="font-semibold text-[#234b3b]">{selectedPavilion?.name??'施設に結びつけない記録'}</p></div>
+        <a href="#related-place" className="inline-flex min-h-11 items-center rounded-full border border-[#a7b6a0] px-3 font-semibold text-[#234b3b]">{selectedPavilion?'場所を変更':'場所を指定'}</a>
+      </div>
       <fieldset disabled={pending || !draftReady} className={pending ? "opacity-70" : undefined}>
         <section className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-50/80">
           <div className="space-y-4 border-b border-slate-200 bg-[#fffcf5] px-5 py-5">
@@ -593,7 +597,7 @@ export function ActivityLogForm({
                         className="peer sr-only"
                       />
                       <span
-                        className={`flex h-full min-h-24 flex-col items-start justify-between rounded-3xl border px-4 py-4 text-left transition ${
+                        className={`flex h-full min-h-20 flex-col items-start justify-between rounded-3xl border px-4 py-4 text-left transition ${
                           active
                             ? option.activeButtonClassName
                             : `${option.buttonClassName} hover:brightness-[0.98]`
@@ -641,6 +645,8 @@ export function ActivityLogForm({
               </select>
               {hasPavilionSearch&&filteredPavilions.length===0?<p className="text-xs text-slate-500">一致する場所はありません。名前を消すと一覧に戻れます。</p>:null}
               {state.fieldErrors.pavilionId?<p className="text-sm text-rose-600">{state.fieldErrors.pavilionId}</p>:null}
+              {!showPavilionPicker&&selectedPavilion?<button type="button" disabled={pending} onClick={()=>choosePlace('')} className="min-h-11 rounded-full border px-4 text-sm font-semibold">施設に結びつけずに記録する</button>:null}
+              {!showPavilionPicker?<p className="text-xs leading-5 text-slate-600">園路のパレードなど、施設を選ばない写真も保存できます。道路上の任意点への配置はまだ未対応なので、施設へ自動で移動させません。</p>:null}
               {showPavilionPicker?<p className="text-xs text-slate-500">訪問の記録には場所が必要です。場所を後で決める場合は、フード・グッズ・イベントで記録してください。</p>:null}
             </div>
             {showPavilionPicker ? <input type="hidden" name="title" value={title} /> : (
@@ -819,7 +825,7 @@ export function ActivityLogForm({
         </button>
         {mode === "create" ? (
           <span className="text-sm text-slate-500">
-            保存した思い出は下のタイムラインにすぐ追加されます。
+            {returnToMap?"保存すると、この日付の地図で記録を開きます。":"保存すると、この来場日のタイムラインに戻ります。"}
           </span>
         ) : null}
         {cancelHref ? (

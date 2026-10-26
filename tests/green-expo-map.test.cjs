@@ -48,3 +48,8 @@ test('map photo entry follows the currently selected visit day, including empty 
  const create=new URL(nav.memoryMapPhotoEntryHref([],'expo','2027-04-10'),'https://example.invalid');assert.equal(create.searchParams.get('event'),'expo');assert.equal(create.searchParams.get('visitDate'),'2027-04-10');
  assert.equal(new URL(nav.memoryMapHref('expo','2027-04-10'),'https://example.invalid').hash,'');assert(nav.memoryMapReturnHref(null,null,'2027-04-10').endsWith('#unplaced-memories'));
 });
+
+
+test('one saved photo is visible on the cumulative map and related goods never become a visit',()=>{
+ const d=demo();const record=d.logs.find(l=>l.pavilion_id&&l.activity_type==='pin');const all=model.buildMemoryMap([record],d.sessions);const previews=new Map([[record.pavilion_id,'/art/demo-food.svg']]);const markers=presentation.buildIllustratedMarkers(d.pavilions,all.places,previews,false,map.anchors,artwork,true);const photo=markers.find(m=>m.id===record.pavilion_id);assert.equal(photo.previewUrl,'/art/demo-food.svg');assert.equal(photo.visited,false);assert.equal(photo.memoryCount,1);
+});

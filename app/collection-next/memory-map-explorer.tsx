@@ -1,6 +1,7 @@
 "use client";
 
 import {memoryMapPhotoEntryHref} from '@/lib/memory-map-navigation';
+import {MemoryPhotoViewer} from './memory-photo-viewer';
 import {greenExpoMapAnchors} from '@/lib/green-expo-map';
 import { useState,useSyncExternalStore } from "react";
 import Link from "next/link";
@@ -16,6 +17,7 @@ const clientReady=()=>true;const serverReady=()=>false;
 const labels: Record<string, string> = { pavilion_visit: "パビリオン", food: "フード", pin: "ピンバッジ", event_participation: "イベント" };
 
 export function MemoryMapExplorer({ logs, sessions, pavilions, demo = false, explicitAnchors, scopeLabel, mapMode="illustration",initialDate,initialPlaceId,eventId=null }: Props) {
+  const [photoFocus,setPhotoFocus]=useState<{id:string;ids:string[]}|null>(null);
   const interactive=useSyncExternalStore(hydrationSubscription,clientReady,serverReady);
   const [date, setDate] = useState<string | null>(sessions.some(day=>day.visit_date===initialDate)?initialDate!:null);
   const model = buildMemoryMap(logs, sessions, date);
@@ -26,6 +28,7 @@ export function MemoryMapExplorer({ logs, sessions, pavilions, demo = false, exp
   const visitedPlaceCount = model.places.filter(place=>place.visited).length;
   const previews = new Map<string, string>();
   for (const entry of model.entries.slice().reverse()) { const url = photoById.get(entry.id)?.photoUrl; if (entry.pavilion_id && url && !previews.has(entry.pavilion_id)) previews.set(entry.pavilion_id, url); }
+  const focusedPhotos=photoFocus?model.entries.filter(entry=>photoFocus.ids.includes(entry.id)&&Boolean(photoById.get(entry.id)?.photoUrl)).map(entry=>({id:entry.id,url:photoById.get(entry.id)!.photoUrl!,title:entry.title||'思い出の写真',date:sessions.find(day=>day.id===entry.session_id)?.visit_date??null,editHref:demo?undefined:`/sessions/${entry.session_id}/activity-logs/${entry.id}/edit?return=map`})):[];
   function entriesView(entries: MemoryEntry[],anchorIds=true) {
     return <ul className="grid grid-cols-2 gap-3">{entries.map(entry => {
       const photo = photoById.get(entry.id);
@@ -35,12 +38,13 @@ export function MemoryMapExplorer({ logs, sessions, pavilions, demo = false, exp
         {!demo&&(!entry.pavilion_id||!mappedPlaceIds.has(entry.pavilion_id))?<Link className="mb-2 inline-flex min-h-11 items-center rounded-full border border-[#99ad98] px-3 text-sm font-semibold text-[#234b3b]" href={`/sessions/${entry.session_id}/activity-logs/${entry.id}/edit?return=map#related-place`}>{entry.pavilion_id?"場所を確認する":"場所を指定する"}</Link>:null}
         <p className="break-words text-sm font-semibold leading-6 text-[#233f35]">{entry.title || "名前なし"}</p>
         {photo?.place_context_label?<p className="text-xs text-slate-600">{photo.place_context_label}</p>:null}
-        {photo?.photoUrl ? <Image unoptimized width={600} height={400} src={photo.photoUrl} alt={entry.title || "思い出の写真"} className="mt-2 aspect-square w-full rounded-xl object-cover" /> : <div className="mt-2 flex aspect-[4/3] items-center justify-center rounded-xl bg-[#efeddf] text-xs text-[#425c4d]">写真なし</div>}
+        {photo?.photoUrl ? <button type="button" aria-label={`${entry.title||"思い出"}の写真を大きく見る`} onClick={()=>setPhotoFocus({id:entry.id,ids:entries.map(item=>item.id)})} className="relative mt-2 block w-full overflow-hidden rounded-xl focus-visible:outline-4 focus-visible:outline-[#a94035]"><Image unoptimized width={600} height={400} src={photo.photoUrl} alt={entry.title || "思い出の写真"} className="aspect-square w-full object-cover" /><span className="absolute bottom-2 right-2 rounded-full bg-[#153c32]/90 px-2 py-1 text-xs text-white">写真を開く</span></button> : <div className="mt-2 flex aspect-[4/3] items-center justify-center rounded-xl bg-[#efeddf] text-xs text-[#425c4d]">写真なし</div>}
       </li>;
     })}</ul>;
   }
   const photoEntryHref=memoryMapPhotoEntryHref(sessions,eventId,date);
   return <div className="space-y-5">
+    {photoFocus&&focusedPhotos.some(photo=>photo.id===photoFocus.id)?<MemoryPhotoViewer photos={focusedPhotos} selectedId={photoFocus.id} onSelect={id=>setPhotoFocus({...photoFocus,id})} onClose={()=>setPhotoFocus(null)} />:null}
     {!demo?<div className="rounded-2xl border border-[#d7dfcf] bg-white p-4"><Link href={photoEntryHref} className="inline-flex rounded-full bg-[#a94035] px-5 py-3 font-semibold text-white">写真から記録する</Link><p className="mt-2 text-sm text-[#425748]">{date?`${date}の記録`:"来場日を選んで記録"} · 写真や場所はあとからでも指定できます。</p></div>:null}
     {scopeLabel?<p role="status" className="text-sm text-slate-600">{scopeLabel}</p>:null}
     {explicitAnchors!==undefined&&offMapEntries.length>0?<p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900">地図位置未対応 {offMapEntries.length}件は下の一覧に残ります。画像には配置済みの場所だけを表示します。</p>:null}

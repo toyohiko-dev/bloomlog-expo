@@ -25,7 +25,7 @@ function harness(hydrated=true) {
   const jsx = (type, props) => ({ type, props });
   const dependencies = { react: { useSyncExternalStore:(_subscribe,getSnapshot,getServerSnapshot)=>hydrated?getSnapshot():getServerSnapshot(),useState: initial => {const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return [slots[i],v=>slots[i]=v];} },
     'react/jsx-runtime': { jsx, jsxs: jsx }, 'next/link': 'Link', 'next/image': 'Image',
-    '@/lib/memory-map-navigation':navigation,'@/lib/green-expo-map':{greenExpoMapAnchors:[]},'@/lib/memory-map': model, './illustrated-memory-map': { IllustratedMemoryMap: 'Map' } };
+    './memory-photo-viewer':{MemoryPhotoViewer:'PhotoViewer'},'@/lib/memory-map-navigation':navigation,'@/lib/green-expo-map':{greenExpoMapAnchors:[]},'@/lib/memory-map': model, './illustrated-memory-map': { IllustratedMemoryMap: 'Map' } };
   const { MemoryMapExplorer } = load('app/collection-next/memory-map-explorer.tsx', dependencies);
   const pavilions = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }];
   const data = createMemoryMapDemo(pavilions);
@@ -81,4 +81,11 @@ test('real-mode links follow the selected day and expose a non-writing location 
  h.selectDate(tree,'2027-05-12');tree=h.render();const later=h.props.sessions.find(day=>day.visit_date==='2027-05-12');assert(find(tree,n=>n.props?.href?.includes(`/sessions/${later.id}/activities/new?return=map#photo`)));
  const assignment=find(tree,n=>n.props?.href?.includes('/edit?return=map#related-place'));assert(assignment);assert.match(text(assignment),/場所を指定する/);
 
+});
+
+
+test('photo detail opens the actual selected image, supports every photo in its day and closes without losing the map',()=>{
+ const h=harness();let tree=h.render();const map=find(tree,n=>n.type==='Map');const detail=map.props.renderPlaceDetail('a',()=>{});
+ const photo=find(detail,n=>n.props?.['aria-label']?.endsWith('の写真を大きく見る'));assert(photo);photo.props.onClick();tree=h.render();let viewer=find(tree,n=>n.type==='PhotoViewer');assert(viewer);assert(viewer.props.photos.every(p=>p.url.startsWith('/dummy/')));assert(viewer.props.photos.length>1);
+ const last=viewer.props.photos.at(-1);viewer.props.onSelect(last.id);tree=h.render();viewer=find(tree,n=>n.type==='PhotoViewer');assert.equal(viewer.props.selectedId,last.id);viewer.props.onClose();tree=h.render();assert.equal(find(tree,n=>n.type==='PhotoViewer'),null);assert.equal(find(tree,n=>n.type==='Map').props.places.find(p=>p.id==='a').visitCount,2);
 });
