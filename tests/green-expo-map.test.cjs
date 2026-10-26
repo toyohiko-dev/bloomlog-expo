@@ -27,3 +27,24 @@ test('published binding is limited to the one approved place while other prepare
  assert.equal(placeRegistry.anchors[0].productionApproved,false);
  assert(placeRegistry.pendingPavilionIds.length>=216);
 });
+
+
+test('bare map defaults to GREEN while explicit legacy and session destinations preserve their scope',()=>{
+ const nav=load('lib/memory-map-navigation.ts');const events=[{id:nav.GREEN_EXPO_EVENT_ID},{id:'other'}];
+ assert.equal(nav.resolveMemoryMapEvent(undefined,events),nav.GREEN_EXPO_EVENT_ID);assert.equal(nav.resolveMemoryMapEvent('unclassified',events),null);assert.equal(nav.resolveMemoryMapEvent('other',events),'other');assert.equal(nav.resolveMemoryMapEvent(undefined,[]),null);
+ const legacy=new URL(nav.memoryMapReturnHref(null,null,'2027-05-12'),'https://example.invalid');assert.equal(legacy.searchParams.get('event'),'unclassified');assert.equal(legacy.searchParams.get('day'),'2027-05-12');
+});
+
+test('venue context is independently drawn from the same registered page and never shifts facility anchors',()=>{
+ const base=JSON.parse(fs.readFileSync('lib/green-expo-basemap.json','utf8'));assert.equal(base.page,1);assert.equal(base.basePlanAsOf,'2025-09');assert.deepEqual(base.registrationSize,[1684,1190]);assert.equal(base.landmarks.filter(p=>p.kind==='gate').length,1);assert(base.river.length>2);assert(base.paths.length>2);
+ const svg=fs.readFileSync('public/art/green-expo-places-v1.svg','utf8');for(const name of ['メインゲート','相沢川','シンボルガーデン','はなめぐり'])assert(svg.includes(name));assert(svg.includes('registered-venue-base'));assert.doesNotMatch(svg,/<image\b|data:image|href="https?:/i);
+});
+
+
+test('map photo entry follows the currently selected visit day, including empty days, and navigation starts at the map',()=>{
+ const nav=load('lib/memory-map-navigation.ts');const days=[{id:'may',visit_date:'2027-05-12'},{id:'april',visit_date:'2027-04-10'}];
+ assert.equal(nav.memoryMapPhotoEntryHref(days,'expo','2027-04-10'),'/sessions/april/activities/new?return=map#photo');
+ assert.equal(nav.memoryMapPhotoEntryHref(days,'expo','2027-05-12'),'/sessions/may/activities/new?return=map#photo');
+ const create=new URL(nav.memoryMapPhotoEntryHref([],'expo','2027-04-10'),'https://example.invalid');assert.equal(create.searchParams.get('event'),'expo');assert.equal(create.searchParams.get('visitDate'),'2027-04-10');
+ assert.equal(new URL(nav.memoryMapHref('expo','2027-04-10'),'https://example.invalid').hash,'');assert(nav.memoryMapReturnHref(null,null,'2027-04-10').endsWith('#unplaced-memories'));
+});

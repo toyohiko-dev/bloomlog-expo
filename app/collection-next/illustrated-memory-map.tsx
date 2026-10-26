@@ -33,7 +33,7 @@ export function IllustratedMemoryMap({ pavilions, places, previews, daily, title
         {mapMode==="geographic"?markers.filter(m=>m.visited).map(marker=><circle key={marker.id} cx={marker.x} cy={marker.y} r="5" fill={marker.bloom} opacity=".15"/>):null}
       </svg>
     </VenueMapFrame>
-    <p className="px-5 pb-3 text-[11px] leading-5 text-[#788477]">{mapMode==="geographic"?"公開資料の掲載点から描いた推定マップです。原図画像は使っていません。色面・建築は象徴表現で、入口・園路・境界の案内には使えません。花・写真を開くと記録を見返せます。":"配置はイメージです。実会場の位置・移動案内には使えません。場所をタップすると記録が開きます。"}</p>
+    <p className="px-5 pb-3 text-[11px] leading-5 text-[#405749]">{mapMode==="geographic"?"公開資料の掲載点から描いた推定マップです。原図画像は使っていません。会場・主要園路・相沢川は2025年9月計画の概略です。色面・建築は象徴表現で、現地の移動案内には使えません。花・写真を開くと記録を見返せます。":"配置はイメージです。実会場の位置・移動案内には使えません。場所をタップすると記録が開きます。"}</p>
     <VenueMapExport memoryStyle={mapMode==="geographic"} markers={markers} asset={artwork} badgeMarkers title={title} unavailableReason={mapExportUnavailableReason(markers,places,explicitAnchors!==undefined)} />
   </section>;
 }

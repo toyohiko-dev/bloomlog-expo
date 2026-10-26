@@ -6,11 +6,12 @@ const vm = require('node:vm');
 const ts = require('typescript');
 function load(file, dependencies = {}) {
   const exports = {};
-  vm.runInNewContext(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 } }).outputText, { exports, require: name => {
+  vm.runInNewContext(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 } }).outputText, { exports, URLSearchParams, require: name => {
     if (!(name in dependencies)) throw Error(name); return dependencies[name];
   } }); return exports;
 }
 const model = load('lib/memory-map.ts');
+const navigation=load('lib/memory-map-navigation.ts');
 const { createMemoryMapDemo } = load('lib/memory-map-demo.ts');
 function find(node, predicate) {
   if (!node || typeof node !== 'object') return null;
@@ -24,7 +25,7 @@ function harness(hydrated=true) {
   const jsx = (type, props) => ({ type, props });
   const dependencies = { react: { useSyncExternalStore:(_subscribe,getSnapshot,getServerSnapshot)=>hydrated?getSnapshot():getServerSnapshot(),useState: initial => {const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return [slots[i],v=>slots[i]=v];} },
     'react/jsx-runtime': { jsx, jsxs: jsx }, 'next/link': 'Link', 'next/image': 'Image',
-    '@/lib/green-expo-map':{greenExpoMapAnchors:[]},'@/lib/memory-map': model, './illustrated-memory-map': { IllustratedMemoryMap: 'Map' } };
+    '@/lib/memory-map-navigation':navigation,'@/lib/green-expo-map':{greenExpoMapAnchors:[]},'@/lib/memory-map': model, './illustrated-memory-map': { IllustratedMemoryMap: 'Map' } };
   const { MemoryMapExplorer } = load('app/collection-next/memory-map-explorer.tsx', dependencies);
   const pavilions = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }];
   const data = createMemoryMapDemo(pavilions);
@@ -71,3 +72,13 @@ test('return focus opens the same dated unmapped place without inventing coordin
 
 
 test('server-rendered date controls wait for hydration instead of losing the first click',()=>{const pending=harness(false);const tree=pending.render();assert.equal(find(tree,n=>n.props?.['aria-label']==='2027-04-10の記録を見る').props.disabled,true);const ready=harness(true);assert.equal(find(ready.render(),n=>n.props?.['aria-label']==='2027-04-10の記録を見る').props.disabled,false);});
+
+
+test('real-mode links follow the selected day and expose a non-writing location assignment route',()=>{
+ const h=harness();h.props.demo=false;h.props.eventId='expo';let tree=h.render();h.selectDate(tree,'2027-04-10');tree=h.render();
+ const day=h.props.sessions.find(day=>day.visit_date==='2027-04-10');
+ const photo=find(tree,n=>n.props?.href?.includes('/activities/new?return=map#photo'));assert(photo);assert(photo.props.href.includes(day.id));
+ h.selectDate(tree,'2027-05-12');tree=h.render();const later=h.props.sessions.find(day=>day.visit_date==='2027-05-12');assert(find(tree,n=>n.props?.href?.includes(`/sessions/${later.id}/activities/new?return=map#photo`)));
+ const assignment=find(tree,n=>n.props?.href?.includes('/edit?return=map#related-place'));assert(assignment);assert.match(text(assignment),/場所を指定する/);
+
+});

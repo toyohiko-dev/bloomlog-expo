@@ -4,7 +4,7 @@ function load(file,deps={},globals={}){const exports={};vm.runInNewContext(ts.tr
 const png=load('lib/png-metadata.ts');
 const safe=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+afoQAAAAASUVORK5CYII=','base64');
 function preparation(options={}){
- const calls=[];const canvas={width:0,height:0,getContext:()=>options.noContext?null:{drawImage:(...args)=>{calls.push('draw');canvas.drawnSize=args.slice(-2);}},toBlob:fn=>fn(options.noBlob?null:new Blob([options.metadata?Buffer.concat([safe.subarray(0,safe.length-12),Buffer.from([0,0,0,1,116,69,88,116,88,0,0,0,0]),safe.subarray(safe.length-12)]):safe],{type:'image/png'}))};
+ const calls=[];const canvas={width:0,height:0,getContext:()=>options.noContext?null:{drawImage:(...args)=>{calls.push('draw');canvas.drawnSize=args.slice(-2);}},toBlob:fn=>fn(options.noBlob?null:(options.alwaysLarge||(options.largeEncoding&&canvas.width>2000))?new Blob([new Uint8Array(3_100_000)],{type:'image/png'}):new Blob([options.metadata?Buffer.concat([safe.subarray(0,safe.length-12),Buffer.from([0,0,0,1,116,69,88,116,88,0,0,0,0]),safe.subarray(safe.length-12)]):safe],{type:'image/png'}))};
  const result=load('lib/prepare-activity-photo.ts',{'./png-metadata':png,'./photo-metadata':{readPhotoGps:async()=>{calls.push('gps-local');return null;}}},{createImageBitmap:options.decodeFail?async()=>{throw Error();}:async(_file,opts)=>{calls.push(opts.imageOrientation);return {width:options.width??2,height:options.height??3,close:()=>calls.push('close')};},document:{createElement:()=>canvas}});
  return {...result,calls,canvas};
 }
@@ -89,4 +89,15 @@ test('unexpected storage/auth errors return generic empty non-cacheable response
 test('review SQL adds only authenticated owner-record SELECT and is inert by default',()=>{
  const sql=fs.readFileSync('supabase/migrations/20261025214835_prepare_activity_photo_owner_record_read.sql','utf8');const pending=fs.readFileSync('supabase/activity-photo-private.review.sql','utf8');
  assert.match(sql,/for select to authenticated/i);assert.match(sql,/a\.user_id=\(select auth\.uid\(\)\)/);assert.match(sql,/a\.photo_path=storage\.objects\.name/);assert.match(sql,/storage\.foldername\(name\)/);assert.match(pending,/rollback;/i);assert(!/create policy|public=true\s*where/i.test(pending));assert(!/\bgrant\b|\bto\s+anon\b|\bdrop\s+policy\b/i.test(sql));
+});
+
+
+test('high entropy PNG is resized before sending, with no original fallback or metadata',async()=>{
+ const h=preparation({width:4000,height:3000,largeEncoding:true});
+ const photo=await h.prepareActivityPhoto(new File(['original GPS'],'large.jpg',{type:'image/jpeg'}));
+ assert(photo.size<=3_000_000);assert(h.canvas.drawnSize[0]<=2000);assert(h.calls.filter(c=>c==='draw').length>1);
+ assert.equal((await png.checkGeneratedPng(photo)).locationMetadataContainers.length,0);assert.equal(h.canvas.width,0);assert.equal(h.calls.at(-1),'close');
+ const failure=preparation({width:4000,height:3000,alwaysLarge:true});await assert.rejects(failure.prepareActivityPhoto(new File(['raw'],'large.png',{type:'image/png'})));
+ assert.equal(failure.calls.filter(c=>c==='draw').length,7);assert.equal(failure.calls.at(-1),'close');
+ const {assertPreparedActivityPhoto}=load('lib/activity-photo-upload.ts',{'./png-metadata':png});await assert.rejects(assertPreparedActivityPhoto(new File([new Uint8Array(3_000_001)],'oversized.png',{type:'image/png'})));
 });

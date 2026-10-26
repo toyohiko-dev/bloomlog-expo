@@ -150,7 +150,7 @@
 
 ### 写真保護のローカル準備（2026-10-26 JST、未公開・外部設定未変更）
 
-- 新規画像は写真GPSを端末内で読んだ後、createImageBitmapの向きを適用しCanvasからPNGへ再生成する。JPEG/PNG/WebPのみ、20MP・最長4096px・生成6MiB上限。HEIC、デコード不能、メタデータ検査失敗時は送信を止めて入力/元Fileを保持。原画像へフォールバックしない。サーバーも検査済みPNG以外を拒否するため、旧クライアントの原写真アップロードも停止する。
+- 新規画像は写真GPSを端末内で読んだ後、createImageBitmapの向きを適用しCanvasからPNGへ再生成する。JPEG/PNG/WebPのみ、20MP・最長4096px・生成3,000,000 bytes上限（Vercelの4.5MB本文上限より小さくし、超過時はPNGのまま段階縮小）。HEIC、デコード不能、メタデータ検査失敗時は送信を止めて入力/元Fileを保持。原画像へフォールバックしない。サーバーも検査済みPNG以外を拒否するため、旧クライアントの原写真アップロードも停止する。
 - 表示は /api/activity-photo の本人認証・所有記録照合・Storageダウンロードへ切替準備。公開/署名URLはブラウザへ渡さず、毎回Cookie認証・private no-store。署名URL期限切れは発生しない。ログイン期限切れは401となり再ログイン後の再読込みが必要。地図/アルバム/来場日詳細は共通URL、PNGの写真取得はsame-origin/no-store。既存写真を変換・削除・上書きしていない。
 - 全138テスト・lint・型検査・build成功。画像Canvas/認証/Storage/APIは合成・モック試験。実ブラウザの向き/画質確認は未完了：合成サンプル専用ローカルHTMLをfile:で開く操作がURLポリシーで拒否。操作未実行、HTTP配信等の代替経路へ迂回していない。既存のアップロード/ダウンロード試験も再発行なし。
 - supabase/activity-photo-private.review.sql はレビューのみ、トランザクション末尾rollback。本人の記録が参照する写真だけのSELECTポリシーを追加し、activity-photos 1bucketをprivateへ切替する案。現本番はpublicのままであり保護完了ではない。既存ファイル/写真パス/INSERT・UPDATE・DELETEポリシーは変更しない。

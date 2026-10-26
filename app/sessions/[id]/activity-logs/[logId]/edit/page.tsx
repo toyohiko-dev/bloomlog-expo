@@ -31,7 +31,7 @@ export default async function ActivityLogEditPage({ params,searchParams }: Activ
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
         <div className="space-y-4">
-          <AppPrimaryNav currentPath="/sessions" />
+          <AppPrimaryNav currentPath="/sessions" eventId={session.event_id} visitDate={session.visit_date} />
           <Link href={`/sessions/${session.id}`} className="inline-flex text-sm font-medium text-slate-500 transition hover:text-slate-900">
             この来場日に戻る
           </Link>

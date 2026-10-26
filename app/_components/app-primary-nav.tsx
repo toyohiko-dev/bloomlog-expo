@@ -1,19 +1,22 @@
+import {GREEN_EXPO_EVENT_ID,memoryMapHref} from '@/lib/memory-map-navigation';
 import Link from "next/link";
 import { AccountMenu } from "@/app/_components/account-menu";
 import { getCurrentUser } from "@/lib/auth";
 import { getCurrentProfile, hasCompletedProfile } from "@/lib/profiles";
 
 type AppPrimaryNavProps = {
-  currentPath: "/" | "/sessions" | "/collection";
+  currentPath: "/" | "/sessions" | "/collection" | "/collection-next";
+  eventId?:string|null; visitDate?:string|null;
 };
 
 const navItems = [
   { href: "/", label: "ホーム" },
   { href: "/sessions", label: "来場日一覧" },
+  { href: "/collection-next", label: "思い出の地図" },
   { href: "/collection", label: "思い出アルバム" },
 ] as const;
 
-export async function AppPrimaryNav({ currentPath }: AppPrimaryNavProps) {
+export async function AppPrimaryNav({ currentPath,eventId=GREEN_EXPO_EVENT_ID,visitDate=null }: AppPrimaryNavProps) {
   const [user, profile] = await Promise.all([getCurrentUser(), getCurrentProfile()]);
   const displayLabel = profile?.display_name ?? user?.email ?? user?.id ?? "Account";
   const profileHref = hasCompletedProfile(profile) ? "/profile" : "/profile/setup";
@@ -28,7 +31,7 @@ export async function AppPrimaryNav({ currentPath }: AppPrimaryNavProps) {
             return (
               <Link
                 key={item.href}
-                href={item.href}
+                href={item.href==="/collection-next"?memoryMapHref(eventId,visitDate):item.href}
                 className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition ${
                   active
                     ? "bg-slate-900 text-white"

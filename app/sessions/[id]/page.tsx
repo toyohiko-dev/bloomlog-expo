@@ -1,3 +1,4 @@
+import {memoryMapHref} from '@/lib/memory-map-navigation';
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppPrimaryNav } from "@/app/_components/app-primary-nav";
@@ -201,7 +202,7 @@ export default async function SessionDetailPage({
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto flex w-full max-w-[68rem] flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
-        <AppPrimaryNav currentPath="/sessions" />
+        <AppPrimaryNav currentPath="/sessions" eventId={session.event_id} visitDate={session.visit_date} />
 
         <section className="w-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-white to-sky-50 shadow-sm ring-1 ring-slate-200">
           <div className="px-6 py-8 sm:px-6 lg:px-10 lg:py-10">
@@ -263,7 +264,7 @@ export default async function SessionDetailPage({
           </div>
 
           <div className="mt-6">
-            <Link href="/collection-next" className="mb-4 inline-flex rounded-full border border-emerald-200 px-4 py-2 text-sm text-emerald-800">思い出を地図で見る</Link>
+            <Link href={memoryMapHref(session.event_id,session.visit_date)} className="mb-4 inline-flex rounded-full border border-emerald-200 px-4 py-2 text-sm text-emerald-800">思い出を地図で見る</Link>
             <ActivityLogForm
               key={`${session.user_id}:${sessionId}:${validEditingLog ? `edit:${validEditingLog.id}` : "create"}`}
               sessionId={sessionId}

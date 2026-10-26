@@ -95,3 +95,9 @@ test('illustrated markers receive badge mode and retain unlimited counts without
  const related=h.badge('b'); assert.match(related.props['aria-label'],/未訪問/);
  assert.equal(related.props.children[1].props.children,'9件');
 });
+
+
+test('an active place without records remains selectable at initial zoom with a 44px control',()=>{
+ const h=harness();const empty=marker('empty',{visited:false,visitCount:0,memoryCount:0,paperMemory:true});h.render([empty],{badgeMarkers:true});
+ const badge=h.badge('empty');assert.equal(badge.type,'button');assert.match(badge.props.className,/h-11 w-11/);assert.match(badge.props['aria-label'],/記録なし/);h.select('empty');h.render([empty],{badgeMarkers:true});assert.equal(h.detail().marker.id,'empty');
+});
