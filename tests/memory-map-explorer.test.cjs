@@ -10,6 +10,7 @@ function load(file, dependencies = {}) {
     if (!(name in dependencies)) throw Error(name); return dependencies[name];
   } }); return exports;
 }
+const pointLogic=load('lib/memory-map-point.ts');
 const model = load('lib/memory-map.ts');
 const navigation=load('lib/memory-map-navigation.ts');
 const { createMemoryMapDemo } = load('lib/memory-map-demo.ts');
@@ -25,7 +26,7 @@ function harness(hydrated=true) {
   const jsx = (type, props) => ({ type, props });
   const dependencies = { react: { useSyncExternalStore:(_subscribe,getSnapshot,getServerSnapshot)=>hydrated?getSnapshot():getServerSnapshot(),useState: initial => {const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return [slots[i],v=>slots[i]=v];} },
     'react/jsx-runtime': { jsx, jsxs: jsx }, 'next/link': 'Link', 'next/image': 'Image',
-    './memory-photo-viewer':{MemoryPhotoViewer:'PhotoViewer'},'@/lib/memory-map-navigation':navigation,'@/lib/green-expo-map':{greenExpoMapAnchors:[]},'@/lib/memory-map': model, './illustrated-memory-map': { IllustratedMemoryMap: 'Map' } };
+    '@/lib/map-point-config':{mapPointStorageEnabled:false},'@/lib/memory-map-point':pointLogic,'./memory-photo-viewer':{MemoryPhotoViewer:'PhotoViewer'},'@/lib/memory-map-navigation':navigation,'@/lib/green-expo-map':{greenExpoMapAnchors:[]},'@/lib/memory-map': model, './illustrated-memory-map': { IllustratedMemoryMap: 'Map' } };
   const { MemoryMapExplorer } = load('app/collection-next/memory-map-explorer.tsx', dependencies);
   const pavilions = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }];
   const data = createMemoryMapDemo(pavilions);
@@ -88,4 +89,10 @@ test('photo detail opens the actual selected image, supports every photo in its 
  const h=harness();let tree=h.render();const map=find(tree,n=>n.type==='Map');const detail=map.props.renderPlaceDetail('a',()=>{});
  const photo=find(detail,n=>n.props?.['aria-label']?.endsWith('の写真を大きく見る'));assert(photo);photo.props.onClick();tree=h.render();let viewer=find(tree,n=>n.type==='PhotoViewer');assert(viewer);assert(viewer.props.photos.every(p=>p.url.startsWith('/dummy/')));assert(viewer.props.photos.length>1);
  const last=viewer.props.photos.at(-1);viewer.props.onSelect(last.id);tree=h.render();viewer=find(tree,n=>n.type==='PhotoViewer');assert.equal(viewer.props.selectedId,last.id);viewer.props.onClose();tree=h.render();assert.equal(find(tree,n=>n.type==='PhotoViewer'),null);assert.equal(find(tree,n=>n.type==='Map').props.places.find(p=>p.id==='a').visitCount,2);
+});
+
+
+test('independent photo points render and reopen by record without becoming facility visits or disappearing on date changes',()=>{
+ const h=harness(),point=pointLogic.confirmMapPoint(pointLogic.manualMapPoint(.3,.4),true);h.props.eventId=point.event_id;h.props.mapMode='geographic';h.props.mapPointAvailable=true;h.props.logs=Array.from({length:24},(_,i)=>({...h.props.logs[0],id:'point-'+i,pavilion_id:null,activity_type:'event_participation',event_id:point.event_id,map_point:point,title:'Road photo '+i,photoUrl:'/synthetic.png'}));
+ let tree=h.render(),map=find(tree,n=>n.type==='Map');assert.equal(map.props.pointMarkers.length,24);assert.equal(map.props.places.length,0);assert.match(text(tree),/0\s*か所訪問/);const detail=map.props.renderPlaceDetail('point:point-23',()=>{});assert.match(text(detail),/Road photo 23/);assert.match(text(detail),/施設の訪問数には含めません/);h.selectDate(tree,'2027-05-12');tree=h.render();assert.equal(find(tree,n=>n.type==='Map').props.pointMarkers.length,0);h.selectDate(tree,'');tree=h.render();assert.equal(find(tree,n=>n.type==='Map').props.pointMarkers.length,24);
 });

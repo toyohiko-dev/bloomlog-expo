@@ -1,4 +1,5 @@
 "use client";
+import {projectedMapPoint,type MapPointDraft} from '@/lib/memory-map-point';
 import {useEffect,useRef,useState} from 'react';
 import {readPhotoGps,type PhotoCoordinates} from '@/lib/photo-metadata';
 import {rankNearbyPlaces,requestCurrentPosition} from '@/lib/place-location';
@@ -9,7 +10,7 @@ import {greenExpoResearch,registeredResearchPavilion} from '@/lib/green-expo-res
 import {coordinatesForEvent,reviewedBindings} from '@/lib/place-registry';
 import {researchPlacesForEvent,nearbyResearchPlaces,indoorOccurrencesOn} from '@/lib/green-expo-research';
 import type {PavilionOption} from '@/lib/session-shared';
-export function PhotoLocationSuggestions({photo,pavilions,onSelect,disabled=false,eventId=null,visitDate='',onContextSelect}:{onContextSelect?:(pavilionId:string,context:PlaceContext)=>void;visitDate?:string;eventId?:string|null;photo:File|null;pavilions:PavilionOption[];onSelect:(id:string)=>void;disabled?:boolean}){
+export function PhotoLocationSuggestions({photo,pavilions,onSelect,disabled=false,eventId=null,visitDate='',onContextSelect,onPointSuggest,photoOrigin='gallery',deviceLocationEnabled=true}:{deviceLocationEnabled?:boolean;onPointSuggest?:(point:MapPointDraft)=>void;photoOrigin?:'gallery'|'camera'|'none';onContextSelect?:(pavilionId:string,context:PlaceContext)=>void;visitDate?:string;eventId?:string|null;photo:File|null;pavilions:PavilionOption[];onSelect:(id:string)=>void;disabled?:boolean}){
  const [photoPosition,setPhotoPosition]=useState<PhotoCoordinates|null>(null);
  const [position,setPosition]=useState<PhotoCoordinates|null>(null);
  const [researchId,setResearchId]=useState('');
@@ -33,7 +34,7 @@ export function PhotoLocationSuggestions({photo,pavilions,onSelect,disabled=fals
  const hasRegisteredResearch=reviewedBindings(placeRegistry).some(p=>p.eventId===eventId&&pavilions.some(item=>item.id===p.pavilionId));
  const hasCoordinates=catalog.length>0||researchCatalog.some(p=>p.gpsEnabled);
  const places=rankNearbyPlaces(position&&position.accuracy<=150?position:{latitude:NaN,longitude:NaN,accuracy:0},catalog).filter(p=>pavilions.some(item=>item.id===p.pavilionId));
- async function locate(){request.current?.abort();const controller=new AbortController();request.current=controller;setBusy(true);setPosition(null);setSource('current');setNotice('現在地を確認中。写真の撮影場所としては扱いません。');
+ async function locate(){if(!deviceLocationEnabled)return;request.current?.abort();const controller=new AbortController();request.current=controller;setBusy(true);setPosition(null);setSource('current');setNotice('現在地を確認中。写真の撮影場所としては扱いません。');
   try{const point=await requestCurrentPosition(navigator.geolocation,controller.signal);if(controller.signal.aborted)return;setPosition(point);setNotice(point.accuracy>150?'現在地の精度が低いため、場所を自分で選んでください。':'現在地を取得しました。候補は確認して選んでください。');}
   catch(e){if(request.current!==controller)return;const code=e instanceof Error?e.message:'';setNotice(code==='denied'?'現在地は許可されませんでした。場所選択と記録は続けられます。':code==='cancelled'?'現在地の取得を取り消しました。入力は保持しています。':code==='timeout'?'現在地の確認が時間切れになりました。再試行するか場所を選べます。':'現在地を取得できませんでした。場所を選んで記録できます。');}
   finally{if(request.current===controller)setBusy(false);}
@@ -43,9 +44,10 @@ export function PhotoLocationSuggestions({photo,pavilions,onSelect,disabled=fals
   <p className="text-xs leading-5 text-slate-600">位置情報は候補の提案だけに使います。過去の写真に現在地を自動で当てはめません。撮影場所と購入店が違う場合は、下の場所選択で変更してください。</p>
   <div className="flex flex-wrap gap-2">
    {photoPosition&&source!=='photo'?<button type="button" disabled={disabled||busy||!hasCoordinates} onClick={()=>{setPosition(photoPosition);setSource('photo');setNotice('写真の撮影位置からの候補です。場所は自分で確定してください。');}} className="rounded-full border bg-white px-4 py-2 text-sm">写真の撮影位置から候補</button>:null}
-   <button type="button" disabled={disabled||busy||!hasCoordinates} onClick={locate} className="rounded-full border bg-white px-4 py-2 text-sm">今いる場所から候補</button>
+   <button type="button" disabled={disabled||busy||!hasCoordinates||!deviceLocationEnabled} onClick={locate} className="rounded-full border bg-white px-4 py-2 text-sm">今いる場所から候補</button>
    {busy?<button type="button" onClick={()=>request.current?.abort()} className="rounded-full border bg-white px-4 py-2 text-sm">位置取得を取り消す</button>:null}
   </div>
+  {position&&onPointSuggest&&(source==='photo'||photoOrigin!=='gallery')?<button type="button" disabled={disabled||busy} className="min-h-11 rounded-full border bg-white px-4 py-2 text-sm" onClick={()=>{const point=projectedMapPoint(position,source==='photo'?'photo-exif':'current-gps',photoOrigin);if(point)onPointSuggest(point);else setNotice('この地図の範囲に対応していません。手動で指定するか、あとで指定できます。');}}>この位置を地図で確認</button>:null}
   {catalog.length===0&&!hasRegisteredResearch?<p className="text-xs text-amber-800">{researchCatalog.length?'公開資料は確認できますが、記録先としての公開・有効化はまだです。資料を選んでも保存先は変わりません。':'このイベントの施設座標は未接続です。'} 下の場所一覧と最近の場所は使えます。</p>:null}
   <p role="status" aria-live="polite" className="text-xs leading-5 text-slate-600">{notice}</p>
   {position?<p className="text-xs text-slate-500">{source==='photo'?'写真の撮影位置（GPS精度は不明）':'現在地'}を使用。{catalog.length===0?'施設座標の対応は準備中です。候補を創作せず、下の一覧から選べます。':places.length===0?'近隣の候補は見つかりません。会場外・低精度の場合も一覧から選べます。':'図面推定の候補は入口位置や距離の正確さを保証しません。'}</p>:null}

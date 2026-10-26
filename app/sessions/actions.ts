@@ -1,4 +1,6 @@
 "use server";
+import {mapPointStorageEnabled} from '@/lib/map-point-config';
+import {validateMapPoint,resolveMapPointEdit} from '@/lib/memory-map-point';
 import {assertPreparedActivityPhoto} from "@/lib/activity-photo-upload";
 import {sameActivityAttempt} from '@/lib/activity-save-attempt';
 import {placeContextStorageEnabled} from '@/lib/place-context-config';
@@ -176,7 +178,7 @@ function buildOccurredAt(visitDate: string, occurredTime: string) {
   return datetime.toISOString();
 }
 
-async function validateActivityLog(formData: FormData, original?: {pavilion_id:string|null;session_id:string;place_context?:unknown}) {
+async function validateActivityLog(formData: FormData, original?: {pavilion_id:string|null;session_id:string;place_context?:unknown;map_point?:unknown}) {
   const sessionId = readText(formData, "sessionId");
   const activityType = readText(formData, "activityType") as ActivityType;
   const pavilionId = readText(formData, "pavilionId");
@@ -264,6 +266,11 @@ async function validateActivityLog(formData: FormData, original?: {pavilion_id:s
   if(!placeContextStorageEnabled&&contextInput)return {error:activityErrorState('場所の詳細を保存する準備が完了していません。入力は保持しています。',{pavilionId:'場所の詳細は登録準備中です。'})};
   const contextResult=validatePlaceContext(contextInput,{catalog:greenExpoResearch,eventId:session.event_id??null,visitDate:session.visit_date,pavilionId:pavilion?.id??null,bindings:new Map(reviewedBindings(placeRegistry).filter(p=>p.pavilionId).map(p=>[p.sourceId,p.pavilionId!]))});
   if(!contextResult.ok)return {error:activityErrorState(contextResult.error,{pavilionId:contextResult.error})};
+  const pointInput=formData.has('mapPoint')?readText(formData,'mapPoint'):null;
+  if(!mapPointStorageEnabled&&pointInput)return {error:activityErrorState('地図の任意位置はまだ保存できません。入力は保持しています。',{pavilionId:'地図位置は準備中です。'})};
+  const pointContext={eventId:session.event_id??null,pavilionId:pavilion?.id??null,activityType};
+  const pointResult=original?resolveMapPointEdit({present:formData.has('mapPoint'),value:pointInput},original.map_point??null,pointContext):validateMapPoint(pointInput,pointContext);
+  if(!pointResult.ok)return {error:activityErrorState('写真の地図位置を確認・確定してください。入力は保持しています。',{pavilionId:'別イベント・地図版・施設訪問との併用、未確定の位置は保存できません。'})};
   const occurredAt = buildOccurredAt(session.visit_date, occurredTime);
 
   if (occurredAt === undefined) {
@@ -289,6 +296,8 @@ async function validateActivityLog(formData: FormData, original?: {pavilion_id:s
       acquisitionMethod,
       photo,
       placeContext:contextResult.ok?contextResult.value:null,
+      mapPoint:pointResult.value,
+      writeMapPoint:mapPointStorageEnabled&&(!original||formData.has("mapPoint")),
     },
   };
 }
@@ -573,12 +582,13 @@ export async function submitActivityLogAction(
       acquisitionMethod,
       photo,
       placeContext,
+      mapPoint,writeMapPoint,
     } = validation.values;
 
     const attemptId=readText(formData,'saveAttemptId');
     if(attemptId&&!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(attemptId))return activityErrorState('保存操作をやり直してください。');
     const logId=attemptId||crypto.randomUUID();
-    const expected={user_id:user.id,session_id:sessionId,activity_type:activityType,pavilion_id:pavilionId,title,memo,occurred_at:occurredAt,event_id:session.event_id??null,price:activityType==='food'||activityType==='pin'?price:null,acquisition_method:activityType==='pin'?acquisitionMethod:null,...(placeContextStorageEnabled?{place_context:placeContext}:{})};
+    const expected={user_id:user.id,session_id:sessionId,activity_type:activityType,pavilion_id:pavilionId,title,memo,occurred_at:occurredAt,event_id:session.event_id??null,price:activityType==='food'||activityType==='pin'?price:null,acquisition_method:activityType==='pin'?acquisitionMethod:null,...(placeContextStorageEnabled?{place_context:placeContext}:{}),...(writeMapPoint?{map_point:mapPoint}:{})};
     if(attemptId){const saved=await getActivityLog(attemptId);if(saved){
       if(readText(formData,'saveAttemptChanged')==='true'||!sameActivityAttempt(saved,expected))return {...activityErrorState('この操作は既に保存されています。入力は保持しています。保存済みの記録を開いて確認・編集してください。'),recoveryHref:`/sessions/${saved.session_id}/activity-logs/${saved.id}/edit`};
       revalidatePath(`/sessions/${sessionId}`);revalidatePath('/collection');revalidatePath('/collection-next');revalidatePath('/');
@@ -604,7 +614,7 @@ export async function submitActivityLogAction(
         activityType === "food" || activityType === "pin" ? price : null,
       acquisition_method: activityType === "pin" ? acquisitionMethod : null,
       photo_path: photoPath,
-      ...(placeContextStorageEnabled?{place_context:placeContext}:{}),
+      ...(placeContextStorageEnabled?{place_context:placeContext}:{}),...(writeMapPoint?{map_point:mapPoint}:{}),
     });
 
     if (error) {
@@ -667,6 +677,7 @@ export async function updateActivityLogAction(
       acquisitionMethod,
       photo,
       placeContext,
+      mapPoint,writeMapPoint,
     } = validation.values;
 
 
@@ -695,7 +706,7 @@ export async function updateActivityLogAction(
           activityType === "food" || activityType === "pin" ? price : null,
         acquisition_method: activityType === "pin" ? acquisitionMethod : null,
         photo_path: photoPath,
-      ...(placeContextStorageEnabled?{place_context:placeContext}:{}),
+      ...(placeContextStorageEnabled?{place_context:placeContext}:{}),...(writeMapPoint?{map_point:mapPoint}:{}),
       })
       .eq("id", logId)
       .eq("user_id", user.id);

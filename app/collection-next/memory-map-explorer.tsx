@@ -1,6 +1,9 @@
 "use client";
 
 import {memoryMapPhotoEntryHref} from '@/lib/memory-map-navigation';
+import {mapPointStorageEnabled} from '@/lib/map-point-config';
+import {validateMapPoint} from '@/lib/memory-map-point';
+import type {VenueMapMarker} from './venue-map-frame';
 import {MemoryPhotoViewer} from './memory-photo-viewer';
 import {greenExpoMapAnchors} from '@/lib/green-expo-map';
 import { useState,useSyncExternalStore } from "react";
@@ -11,12 +14,12 @@ import { buildMemoryMap, type MemoryEntry } from "@/lib/memory-map";
 import { IllustratedMemoryMap } from "./illustrated-memory-map";
 
 type PhotoEntry = ActivityLog & { photoUrl: string | null };
-type Props = { eventId?:string|null; initialDate?:string|null;initialPlaceId?:string|null; mapMode?:"illustration"|"geographic"; explicitAnchors?:{pavilionId:string;x:number;y:number}[]; scopeLabel?:string; demo?: boolean; logs: PhotoEntry[]; sessions: VisitSession[]; areas: Area[]; pavilions: PavilionOption[] };
+type Props = { onEditRecord?:(id:string)=>void; mapPointAvailable?:boolean; eventId?:string|null; initialDate?:string|null;initialPlaceId?:string|null; mapMode?:"illustration"|"geographic"; explicitAnchors?:{pavilionId:string;x:number;y:number}[]; scopeLabel?:string; demo?: boolean; logs: PhotoEntry[]; sessions: VisitSession[]; areas: Area[]; pavilions: PavilionOption[] };
 const hydrationSubscription=()=>()=>{};
 const clientReady=()=>true;const serverReady=()=>false;
 const labels: Record<string, string> = { pavilion_visit: "パビリオン", food: "フード", pin: "ピンバッジ", event_participation: "イベント" };
 
-export function MemoryMapExplorer({ logs, sessions, pavilions, demo = false, explicitAnchors, scopeLabel, mapMode="illustration",initialDate,initialPlaceId,eventId=null }: Props) {
+export function MemoryMapExplorer({ logs, sessions, pavilions, demo = false, explicitAnchors, scopeLabel, mapMode="illustration",initialDate,initialPlaceId,eventId=null,mapPointAvailable=mapPointStorageEnabled,onEditRecord }: Props) {
   const [photoFocus,setPhotoFocus]=useState<{id:string;ids:string[]}|null>(null);
   const interactive=useSyncExternalStore(hydrationSubscription,clientReady,serverReady);
   const [date, setDate] = useState<string | null>(sessions.some(day=>day.visit_date===initialDate)?initialDate!:null);
@@ -24,17 +27,20 @@ export function MemoryMapExplorer({ logs, sessions, pavilions, demo = false, exp
   const photoById = new Map(logs.map(log => [log.id, log]));
   const mappedPlaceIds = new Set(explicitAnchors===undefined?pavilions.map(place=>place.id):explicitAnchors.map(anchor=>anchor.pavilionId));
   const [unmappedFocus,setUnmappedFocus]=useState<string|null>(initialPlaceId&&pavilions.some(p=>p.id===initialPlaceId)&&!mappedPlaceIds.has(initialPlaceId)?initialPlaceId:null);
-  const offMapEntries = model.entries.filter(entry => !entry.pavilion_id || !mappedPlaceIds.has(entry.pavilion_id));
+  const pointEntries=mapPointAvailable&&mapMode==='geographic'?model.entries.filter(entry=>{const p=validateMapPoint(entry.map_point??null,{eventId:entry.event_id??null,pavilionId:entry.pavilion_id,activityType:entry.activity_type??''});return p.ok&&Boolean(p.value);}):[];
+  const pointIds=new Set(pointEntries.map(entry=>entry.id));
+  const offMapEntries = model.entries.filter(entry => !pointIds.has(entry.id)&&(!entry.pavilion_id || !mappedPlaceIds.has(entry.pavilion_id)));
+  const pointMarkers:VenueMapMarker[]=pointEntries.flatMap(entry=>{const parsed=validateMapPoint(entry.map_point,{eventId:entry.event_id??null,pavilionId:null,activityType:entry.activity_type??''});if(!parsed.ok||!parsed.value)return [];const p=parsed.value;return [{id:'point:'+entry.id,name:entry.title||'写真の位置',x:p.x*100,y:p.y*125,paperMemory:true,memoryCount:1,memoryDayCount:1,visited:false,visitCount:0,previewUrl:photoById.get(entry.id)?.photoUrl??null,areaId:'',areaName:'自分で指定した写真の位置',imageUrl:null,bloom:'#e89378',size:1,rotation:0,firstVisitedAt:null,latestVisitedAt:null,latestSessionId:entry.session_id}];});
   const visitedPlaceCount = model.places.filter(place=>place.visited).length;
   const previews = new Map<string, string>();
   for (const entry of model.entries.slice().reverse()) { const url = photoById.get(entry.id)?.photoUrl; if (entry.pavilion_id && url && !previews.has(entry.pavilion_id)) previews.set(entry.pavilion_id, url); }
-  const focusedPhotos=photoFocus?model.entries.filter(entry=>photoFocus.ids.includes(entry.id)&&Boolean(photoById.get(entry.id)?.photoUrl)).map(entry=>({id:entry.id,url:photoById.get(entry.id)!.photoUrl!,title:entry.title||'思い出の写真',date:sessions.find(day=>day.id===entry.session_id)?.visit_date??null,editHref:demo?undefined:`/sessions/${entry.session_id}/activity-logs/${entry.id}/edit?return=map`})):[];
+  const focusedPhotos=photoFocus?model.entries.filter(entry=>photoFocus.ids.includes(entry.id)&&Boolean(photoById.get(entry.id)?.photoUrl)).map(entry=>({id:entry.id,url:photoById.get(entry.id)!.photoUrl!,title:entry.title||'思い出の写真',date:sessions.find(day=>day.id===entry.session_id)?.visit_date??null,onEdit:onEditRecord?()=>{setPhotoFocus(null);onEditRecord(entry.id);}:undefined,editHref:demo?undefined:`/sessions/${entry.session_id}/activity-logs/${entry.id}/edit?return=map`})):[];
   function entriesView(entries: MemoryEntry[],anchorIds=true) {
     return <ul className="grid grid-cols-2 gap-3">{entries.map(entry => {
       const photo = photoById.get(entry.id);
       return <li id={anchorIds?`memory-entry-${entry.id}`:undefined} key={entry.id} className="min-w-0 overflow-hidden rounded-2xl border border-[#e9e2d6] bg-[#fffdf8] p-2.5">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-1"><span className="text-xs text-slate-600">{labels[entry.activity_type ?? ""] ?? "思い出"}</span>
-          {demo ? <span className="text-xs text-slate-600">サンプル・保存なし</span> : <Link className="text-xs underline" href={`/sessions/${entry.session_id}/activity-logs/${entry.id}/edit?return=map`}>記録を見る</Link>}</div>
+          {demo ? onEditRecord?<button type="button" className="min-h-11 text-xs underline" onClick={()=>onEditRecord(entry.id)}>合成記録を編集</button>:<span className="text-xs text-slate-600">サンプル・保存なし</span> : <Link className="text-xs underline" href={`/sessions/${entry.session_id}/activity-logs/${entry.id}/edit?return=map`}>記録を見る</Link>}</div>
         {!demo&&(!entry.pavilion_id||!mappedPlaceIds.has(entry.pavilion_id))?<Link className="mb-2 inline-flex min-h-11 items-center rounded-full border border-[#99ad98] px-3 text-sm font-semibold text-[#234b3b]" href={`/sessions/${entry.session_id}/activity-logs/${entry.id}/edit?return=map#related-place`}>{entry.pavilion_id?"場所を確認する":"場所を指定する"}</Link>:null}
         <p className="break-words text-sm font-semibold leading-6 text-[#233f35]">{entry.title || "名前なし"}</p>
         {photo?.place_context_label?<p className="text-xs text-slate-600">{photo.place_context_label}</p>:null}
@@ -54,7 +60,9 @@ export function MemoryMapExplorer({ logs, sessions, pavilions, demo = false, exp
       <label className={model.dates.length<=4?"hidden":"text-sm text-slate-700"}><span className="sr-only">1日を選ぶ</span> <select disabled={!interactive} aria-label="地図に表示する来場日" value={date ?? ""} onChange={event => setDate(event.target.value || null)} className="ml-2 rounded-lg border bg-white px-3 py-2"><option value="">全日程</option>{model.dates.map(day => <option key={day} value={day}>{day}</option>)}</select></label>
       <p role="status" className="w-full text-sm text-slate-600">{date ?? "全日程"} · {model.entries.length}件の思い出 · {visitedPlaceCount}か所訪問</p>
     </nav>
-    <IllustratedMemoryMap focusPlaceId={initialPlaceId} mapMode={mapMode} explicitAnchors={explicitAnchors} pavilions={pavilions} places={model.places} previews={previews} daily={date !== null} title={date ? `${date}の思い出` : "わたしの思い出マップ"} renderPlaceDetail={(id, onClose) => {
+    <IllustratedMemoryMap pointMarkers={pointMarkers} focusPlaceId={initialPlaceId} mapMode={mapMode} explicitAnchors={explicitAnchors} pavilions={pavilions} places={model.places} previews={previews} daily={date !== null} title={date ? `${date}の思い出` : "わたしの思い出マップ"} renderPlaceDetail={(id, onClose) => {
+      const pointRecord=id.startsWith('point:')?pointEntries.find(entry=>entry.id===id.slice(6)):null;
+      if(pointRecord)return <aside aria-label="写真の位置の思い出" className="pointer-events-auto absolute inset-x-0 bottom-0 top-2 z-30 overflow-y-auto rounded-t-3xl border bg-[#fffcf5] p-4 sm:inset-x-auto sm:right-4 sm:w-[390px] sm:rounded-3xl" onPointerDown={event=>event.stopPropagation()}><header className="mb-3 flex items-center justify-between gap-3"><h3 className="font-bold">{pointRecord.title||'写真の位置'}</h3><button type="button" aria-label="写真の位置を閉じる" className="min-h-11 rounded-full border px-4" onClick={onClose}>閉じる</button></header><p className="mb-3 text-xs leading-5">自分で確認した写真の位置です。施設の訪問数には含めません。図上の推定・手動位置で、地図の誤差は不明です。</p>{entriesView([pointRecord])}</aside>;
       const place = model.places.find(item => item.id === id);
       const targetDay = sessions.find(day=>date?day.visit_date===date:day.visit_date===place?.days[0]?.date)??sessions[0];
       return <aside aria-label="場所の思い出" className="pointer-events-auto absolute inset-x-0 bottom-0 z-30 top-2 max-h-[calc(100%-8px)] overflow-y-auto overscroll-contain rounded-t-[26px] border border-[#e6dfcf] bg-[#fffcf5] p-4 shadow-xl sm:inset-x-auto sm:bottom-4 sm:right-4 sm:top-4 sm:w-[390px] sm:rounded-[26px]" onPointerDown={event => event.stopPropagation()}>

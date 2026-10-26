@@ -1,3 +1,4 @@
+import {decodeMapPoint,type MapPoint} from './memory-map-point';
 import {decodePlaceContext,type PlaceContext} from './place-context';
 import { activityTypeOptions, type ActivityType } from "./activity-types";
 
@@ -7,6 +8,8 @@ export type ActivityTypeDraft = {
   photoSelectionId?:string;
   saveAttemptSignature?:string;
   placeContext?:PlaceContext|null;
+  mapPoint?:MapPoint|null;
+  photoOrigin?:"gallery"|"camera";
   title: string;
   memo: string;
   occurredAt: string;
@@ -50,6 +53,8 @@ function parseDraft(raw: string | null, type: ActivityType): ActivityTypeDraft |
     const context=decodePlaceContext(data.placeContext);
     return {
       placeContext:context.ok?context.value:null,
+      mapPoint:decodeMapPoint(data.mapPoint??null).ok?(decodeMapPoint(data.mapPoint??null) as {ok:true;value:MapPoint|null}).value:null,
+      photoOrigin:data.photoOrigin==="camera"?"camera":"gallery",
       photoSelectionId:typeof data.photoSelectionId==='string'&&data.photoSelectionId.length<=40?data.photoSelectionId:undefined,
       saveAttemptId:typeof data.saveAttemptId==='string'&&/^[0-9a-f-]{36}$/i.test(data.saveAttemptId)?data.saveAttemptId:undefined,
       saveAttemptSignature:typeof data.saveAttemptSignature==='string'&&data.saveAttemptSignature.length<=100?data.saveAttemptSignature:undefined,

@@ -17,6 +17,7 @@ function load(file, mocks) {
 const cleanup = load('lib/activity-photo-cleanup.ts', {}).cleanupUncommittedActivityPhoto;
 const registryLogic=load('lib/place-registry.ts',{});
 const sourceCatalog=JSON.parse(fs.readFileSync('lib/green-expo-source-data.json','utf8'));
+const pointLogic=load('lib/memory-map-point.ts',{});
 const contextLogic=load('lib/place-context.ts',{});
 const attemptLogic=load('lib/activity-save-attempt.ts',{});
 test('cleanup never removes without an explicit RPC grant, including absent RPC', async () => {
@@ -54,6 +55,8 @@ function actions(errorTable, errorOperation, calls = [], options = {}) {
     }; return q;
   };
   return load('app/sessions/actions.ts', {
+    '@/lib/map-point-config':{mapPointStorageEnabled:options.pointEnabled===true},
+    '@/lib/memory-map-point':pointLogic,
     '@/lib/activity-photo-upload':{assertPreparedActivityPhoto:async()=>{if(options.unsafePhoto)throw Error('unsafe');}},
     '@/lib/place-registry':registryLogic,
     '@/lib/place-context':contextLogic,
@@ -72,7 +75,7 @@ function actions(errorTable, errorOperation, calls = [], options = {}) {
     '@/lib/sessions': { listEvents:async()=>[{id:'event',name:'Event'}], getSessionByVisitDate: async () => options.existingSession??null, getDefaultEventId: async () => 'event',
       getPavilion: async id => id === 'missing' ? null : ({ id, name: 'Garden', is_active: options.inactivePavilion!==true }),
       getSession: async () => ({ visit_date: options.sessionDate??'2026-10-18', event_id: options.sessionEventId??'event' }),
-      getActivityLog: async id => id!=='log'?(typeof options.submittedLog==='function'?options.submittedLog():options.submittedLog??null):({ place_context:options.originalContext??null,pavilion_id:options.originalPavilionId??null, session_id: 'day', photo_path: 'owner/day/old.jpg' }) },
+      getActivityLog: async id => id!=='log'?(typeof options.submittedLog==='function'?options.submittedLog():options.submittedLog??null):({ map_point:options.originalPoint??null,place_context:options.originalContext??null,pavilion_id:options.originalPavilionId??null, session_id: 'day', photo_path: 'owner/day/old.jpg' }) },
   });
 }
 function form() { const f = new FormData(); for (const [key, value] of Object.entries({ id: 'day', sessionId: 'day', logId: 'log', visitDate: '2026-10-18', activityType: 'food', title: 'food' })) f.set(key, value); return f; }
@@ -226,3 +229,12 @@ test('invalid context, wrong date and disabled schema fail before upload/write; 
 
 test('response loss after commit is confirmed on retry without second insert or photo upload',async()=>{const id='22222222-2222-4222-8222-222222222222';let saved;const firstCalls=[];const f=form();f.set('pavilionId','garden');f.set('saveAttemptId',id);f.set('saveAttemptChanged','false');f.set('photo',new File(['dummy'],'attempt.jpg',{type:'image/jpeg'}));const first=await actions('activity_logs','insert',firstCalls,{throwDB:true,claim:false,onWrite:(t,p)=>{if(t==='activity_logs')saved=p;}}).submitActivityLogAction(f);assert.equal(first.status,'error');assert.equal(saved.id,id);const retryCalls=[];const retry=await actions(null,null,retryCalls,{submittedLog:saved}).submitActivityLogAction(f);assert.equal(retry.status,'success');assert.deepEqual(retryCalls,[]);f.set('title','Changed after uncertainty');f.set('saveAttemptChanged','true');const conflictCalls=[];const changed=await actions(null,null,conflictCalls,{submittedLog:saved}).submitActivityLogAction(f);assert.equal(changed.status,'error');assert.equal(changed.recoveryHref,`/sessions/day/activity-logs/${id}/edit`);assert.deepEqual(conflictCalls,[]);});
 test('simultaneous duplicate attempt uses the existing PK and confirms a matching saved record',async()=>{const id='33333333-3333-4333-8333-333333333333';let saved,reads=0;const f=form();f.set('saveAttemptId',id);f.set('saveAttemptChanged','false');const calls=[];const result=await actions('activity_logs','insert',calls,{errorCode:'23505',submittedLog:()=>++reads===1?null:saved,onWrite:(t,p)=>{if(t==='activity_logs')saved=p;}}).submitActivityLogAction(f);assert.equal(result.status,'success');assert.equal(calls.filter(v=>v==='insert').length,1);assert.equal(saved.id,id);});
+
+
+test('point storage feature gate rejects before upload; enabled actions preserve/create/clear without changing unrelated fields',async()=>{
+ const point=pointLogic.confirmMapPoint(pointLogic.manualMapPoint(.3,.4),true),eventId=point.event_id;const f=form();f.set('mapPoint',JSON.stringify(point));f.set('photo',new File(['synthetic'],'safe.png',{type:'image/png'}));
+ const blocked=[];assert.equal((await actions('', '',blocked,{sessionEventId:eventId}).submitActivityLogAction(f)).status,'error');assert.equal(blocked.length,0);
+ let inserted;const enabled=actions('','',[],{pointEnabled:true,sessionEventId:eventId,onWrite:(table,p)=>{if(table==='activity_logs')inserted=p;}});assert.equal((await enabled.submitActivityLogAction(f)).status,'success');assert.equal(inserted.map_point.x,.3);assert.equal(inserted.pavilion_id,null);
+ const edit=form();let updated;const update=actions('','',[],{pointEnabled:true,sessionEventId:eventId,originalPoint:point,onWrite:(table,p)=>{if(table==='activity_logs')updated=p;}});assert.equal((await update.updateActivityLogAction(edit)).status,'success');assert.equal('map_point' in updated,false);edit.set('mapPoint','');assert.equal((await update.updateActivityLogAction(edit)).status,'success');assert.equal(updated.map_point,null);
+ for(const invalid of [{...point,confirmed:false},{...point,map_revision:'old'},{...point,latitude:35}]){const calls=[];const bad=form();bad.set('mapPoint',JSON.stringify(invalid));assert.equal((await actions('','',calls,{pointEnabled:true,sessionEventId:eventId}).submitActivityLogAction(bad)).status,'error');assert.equal(calls.length,0);}
+});

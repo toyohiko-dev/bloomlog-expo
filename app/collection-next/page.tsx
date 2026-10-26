@@ -1,3 +1,4 @@
+import {MapPointFlowFixture} from './map-point-flow-fixture';
 import {resolveMemoryMapEvent} from '@/lib/memory-map-navigation';
 import {createGeographicMemoryDemo} from '@/lib/green-expo-demo';
 import {greenExpoMapAnchors} from '@/lib/green-expo-map';
@@ -13,6 +14,7 @@ import { MemoryMapExplorer } from "./memory-map-explorer";
 
 export default async function CollectionNextPage({ searchParams }: { searchParams: Promise<{ demo?: string; event?:string;place?:string;day?:string }> }) {
   const query=await searchParams;
+  if(query.demo==='point-flow')return <MapPointFlowFixture pavilions={createGeographicMemoryDemo().pavilions}/>;
   const geographicDemo=query.demo==='geo';
   const demo = query.demo === "1"||geographicDemo;
   const [areas, loadedPavilions, events] = await Promise.all([listAreas(), listPavilions(), listEvents()]);

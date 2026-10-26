@@ -1,3 +1,4 @@
+import {mapPointStorageEnabled} from './map-point-config';
 import {describePlaceContext} from '@/lib/place-context';
 import {greenExpoResearch} from '@/lib/green-expo-research';
 import {placeContextStorageEnabled} from '@/lib/place-context-config';
@@ -89,6 +90,7 @@ const activityLogSelect: string = `
   photo_path,
   pavilion_id,
   ${placeContextStorageEnabled?'place_context,':''}
+  ${mapPointStorageEnabled?'map_point,':''}
   pavilion:pavilions (
     id,
     name,

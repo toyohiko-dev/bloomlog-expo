@@ -1,4 +1,7 @@
 "use client";
+import {mapPointStorageEnabled} from '@/lib/map-point-config';
+import {validateMapPoint,type MapPoint,type MapPointDraft} from '@/lib/memory-map-point';
+import {MapPointPicker} from './map-point-picker';
 import {prepareActivityPhoto,PhotoPreparationError} from "@/lib/prepare-activity-photo";
 import {memoryMapReturnHref} from '@/lib/memory-map-navigation';
 import {activityAttemptSignature} from '@/lib/activity-save-attempt';
@@ -64,6 +67,7 @@ function fieldClass(hasError: boolean) {
 const EMPTY_VISIT_SESSIONS: {id:string;visit_date:string;event_id?:string|null}[] = [];
 
 type ActivityLogFormProps = {
+  fixtureAdapter?:{photo:File|null;submit:(data:FormData,mode:"create"|"edit")=>Promise<ActivityLogFormState>;onSaved:(id:string|null)=>void};
   sessionId: string;
   visitDate?: string;
   visitEventId?: string|null;
@@ -86,10 +90,13 @@ type ActivityLogFormProps = {
   initialAcquisitionMethod?: string | null;
   initialPavilionId?: string | null;
   initialPlaceContext?:PlaceContext|null;
+  initialMapPoint?:MapPoint|null;
+  mapPointAvailable?:boolean;
 };
 
 export function ActivityLogForm({
   sessionId,
+  fixtureAdapter,
   visitDate,
   visitEventId = null,
   recentPavilionIds = [],
@@ -111,6 +118,8 @@ export function ActivityLogForm({
   initialAcquisitionMethod = "purchase",
   initialPavilionId = null,
   initialPlaceContext = null,
+  initialMapPoint = null,
+  mapPointAvailable = mapPointStorageEnabled,
 }: ActivityLogFormProps) {
   const router = useRouter();
   const draftSessionKey = mode === "edit" ? `${sessionId}:edit:${logId ?? "unknown"}` : sessionId;
@@ -135,6 +144,9 @@ export function ActivityLogForm({
   const [pavilionSearch, setPavilionSearch] = useState(
     initialSelectedPavilion?.name ?? (initialActivityType === "pavilion_visit" ? initialTitle : ""),
   );
+  const [mapPoint,setMapPoint]=useState<MapPoint|null>(initialMapPoint);
+  const [pointPicker,setPointPicker]=useState<MapPointDraft|null|false>(false);
+  const [photoOrigin,setPhotoOrigin]=useState<"gallery"|"camera">("gallery");
   const [placeContext,setPlaceContext]=useState<PlaceContext|null>(initialPlaceContext);
   const [selectedPavilionId, updateSelectedPavilionId] = useState(
     initialSelectedPavilion?.id ?? "",
@@ -160,6 +172,7 @@ export function ActivityLogForm({
       initialActivityType === "pavilion_visit"
         ? {
             ...createEmptyDraft(),
+            mapPoint:initialMapPoint,
             title: initialSelectedPavilion?.name ?? initialTitle,
             price: "",
             acquisitionMethod: "",
@@ -171,6 +184,7 @@ export function ActivityLogForm({
       initialActivityType === "food"
         ? {
             ...createEmptyDraft(),
+            mapPoint:initialMapPoint,
             title: initialTitle,
             price: initialPrice === null ? "" : String(initialPrice),
             acquisitionMethod: "",
@@ -182,6 +196,7 @@ export function ActivityLogForm({
       initialActivityType === "pin"
         ? {
             ...createEmptyDraft(),
+            mapPoint:initialMapPoint,
             title: initialTitle,
             price: initialPrice === null ? "" : String(initialPrice),
             acquisitionMethod:
@@ -194,6 +209,7 @@ export function ActivityLogForm({
       initialActivityType === "event_participation"
         ? {
             ...createEmptyDraft(),
+            mapPoint:initialMapPoint,
             title: initialTitle,
             price: "",
             acquisitionMethod: "",
@@ -221,6 +237,7 @@ export function ActivityLogForm({
       setPavilionSearch(draft.pavilionSearch);
       setSelectedPavilionId(draft.pavilionId);
       setPlaceContext(draft.placeContext??null);
+      setMapPoint(draft.mapPoint??null);setPhotoOrigin(draft.photoOrigin??"gallery");
       photoSelection.current=draft.photoSelectionId;
       saveAttempt.current=draft.saveAttemptId&&draft.saveAttemptSignature?{id:draft.saveAttemptId,signature:draft.saveAttemptSignature}:null;
       const retainedPhoto = draft.photoNeedsReselect ? readDraftPhoto(draftOwnerId, draftSessionKey) : null;
@@ -271,7 +288,7 @@ export function ActivityLogForm({
         occurredAt !== normalizedInitialTime ||
         price !== normalizedInitialPrice ||
         acquisitionMethod !== normalizedInitialMethod ||
-        hasSelectedPhoto;
+        hasSelectedPhoto || JSON.stringify(mapPoint)!==JSON.stringify(initialMapPoint);
 
   function clearFieldState(field: keyof ActivityLogFormState["fieldErrors"]) {
     setState((current) => ({
@@ -308,6 +325,7 @@ export function ActivityLogForm({
       saveAttemptId:saveAttempt.current?.id,
       saveAttemptSignature:saveAttempt.current?.signature,
       placeContext,
+      mapPoint,photoOrigin,
       memo,
       occurredAt,
       photo: selectedPhoto,
@@ -346,6 +364,7 @@ export function ActivityLogForm({
     setPavilionSearch(nextDraft.pavilionSearch);
     setSelectedPavilionId(nextDraft.pavilionId);
     setPlaceContext(nextDraft.placeContext??null);
+    setMapPoint(nextDraft.mapPoint??null);
     photoSelection.current=nextDraft.photoSelectionId;
     saveAttempt.current=nextDraft.saveAttemptId&&nextDraft.saveAttemptSignature?{id:nextDraft.saveAttemptId,signature:nextDraft.saveAttemptSignature}:null;
     if (mode === "create") {
@@ -371,6 +390,7 @@ export function ActivityLogForm({
     setAcquisitionMethod("");
     setPavilionSearch(selectedPavilion?.name ?? "");
     setSelectedPavilionId(selectedPavilionId);
+    setMapPoint(null);
     setHasSelectedPhoto(false);
     setSelectedPhoto(null);
     setPhotoNeedsReselect(false);
@@ -388,25 +408,28 @@ export function ActivityLogForm({
     }
   }
 
-  function choosePhoto(file:File) {
+  function choosePhoto(file:File,origin:"gallery"|"camera"="gallery") {
+    const nextPoint=mapPoint?.source==="manual"?mapPoint:null;setMapPoint(nextPoint);setPhotoOrigin(origin);
     photoSelection.current=crypto.randomUUID();
     if(draftOwnerId)keepDraftPhoto(draftOwnerId,draftSessionKey,file);
     setSelectedPhoto(file); setHasSelectedPhoto(true); setPhotoNeedsReselect(false);
-    persistDraft({photo:file,photoNeedsReselect:false}); clearFieldState('photo');
+    persistDraft({photo:file,photoNeedsReselect:false,mapPoint:nextPoint,photoOrigin:origin}); clearFieldState('photo');
   }
   function removeSelectedPhoto() {
+    const nextPoint=mapPoint?.source==="manual"?mapPoint:null;setMapPoint(nextPoint);setPhotoOrigin("gallery");
     photoSelection.current=crypto.randomUUID();
     if(draftOwnerId)keepDraftPhoto(draftOwnerId,draftSessionKey,null);
     setSelectedPhoto(null);setHasSelectedPhoto(false);setPhotoNeedsReselect(false);
     if(photoInputRef.current)photoInputRef.current.value='';
-    persistDraft({photo:null,photoNeedsReselect:false});clearFieldState('photo');
+    persistDraft({photo:null,photoNeedsReselect:false,mapPoint:nextPoint,photoOrigin:"gallery"});clearFieldState('photo');
   }
   function choosePlace(id:string) {
+    setMapPoint(null);
     const place=availablePavilions.find(item=>item.id===id);
     setSelectedPavilionId(place?.id??'');setPavilionSearch(place?.name??'');
     const nextTitle=activityType==='pavilion_visit' ? place?.name??'' : title;
     if(activityType==='pavilion_visit')setTitle(nextTitle);
-    persistDraft({placeContext:null,pavilionId:place?.id??'',pavilionSearch:place?.name??'',title:nextTitle});clearFieldState('pavilionId');
+    persistDraft({mapPoint:null,placeContext:null,pavilionId:place?.id??'',pavilionSearch:place?.name??'',title:nextTitle});clearFieldState('pavilionId');
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -416,14 +439,16 @@ export function ActivityLogForm({
     }
     if(photoNeedsReselect&&!selectedPhoto){setState({status:'error',message:'写真を選び直すか、写真なしに変更してください。ほかの入力は保持しています。',fieldErrors:{photo:'写真の再選択が必要です。'}});return;}
     if(!placeCompatible){setState({status:"error",message:"この来場日の施設対応が未確認です。場所を選び直してください。",fieldErrors:{pavilionId:"イベントに対応する施設を選んでください。"}});return;}
+    if(mapPoint){const checked=validateMapPoint(mapPoint,{eventId:recordingEventId,pavilionId:selectedPavilionId||null,activityType});if(!mapPointAvailable||!checked.ok){setState({status:'error',message:'地図の位置を確認するか、あとで指定に変更してください。入力は保持しています。',fieldErrors:{pavilionId:'地図位置がこの記録に対応していません。'}});return;}}
     if(mode==='create'){
-      const signature=activityAttemptSignature(JSON.stringify({recordingSessionId,activityType,title,memo,occurredAt,price,acquisitionMethod,selectedPavilionId,placeContext,hasPhoto:Boolean(selectedPhoto||photoNeedsReselect),photoSelection:photoSelection.current}));
+      const signature=activityAttemptSignature(JSON.stringify({recordingSessionId,activityType,title,memo,occurredAt,price,acquisitionMethod,selectedPavilionId,placeContext,mapPoint,hasPhoto:Boolean(selectedPhoto||photoNeedsReselect),photoSelection:photoSelection.current}));
       if(!saveAttempt.current)saveAttempt.current={id:crypto.randomUUID(),signature};
     }
     persistDraft();
     const formData = new FormData(event.currentTarget);
+    if(mapPointAvailable)formData.set("mapPoint",mapPoint?JSON.stringify(mapPoint):"");
     if(placeContextStorageEnabled)formData.set("placeContext",placeContext?JSON.stringify(placeContext):"");
-    if(mode==='create'&&saveAttempt.current){formData.set('saveAttemptId',saveAttempt.current.id);const signature=activityAttemptSignature(JSON.stringify({recordingSessionId,activityType,title,memo,occurredAt,price,acquisitionMethod,selectedPavilionId,placeContext,hasPhoto:Boolean(selectedPhoto||photoNeedsReselect),photoSelection:photoSelection.current}));formData.set('saveAttemptChanged',String(signature!==saveAttempt.current.signature));}
+    if(mode==='create'&&saveAttempt.current){formData.set('saveAttemptId',saveAttempt.current.id);const signature=activityAttemptSignature(JSON.stringify({recordingSessionId,activityType,title,memo,occurredAt,price,acquisitionMethod,selectedPavilionId,placeContext,mapPoint,hasPhoto:Boolean(selectedPhoto||photoNeedsReselect),photoSelection:photoSelection.current}));formData.set('saveAttemptChanged',String(signature!==saveAttempt.current.signature));}
     const submittedActivityType = activityType;
     const submittedRecordId=mode==='edit'?logId??null:saveAttempt.current?.id??null;
     formData.delete("photo");
@@ -434,7 +459,7 @@ export function ActivityLogForm({
       try {
         if(selectedPhoto){try{formData.set("photo",await prepareActivityPhoto(selectedPhoto));}catch{throw new PhotoPreparationError();}}
         const result =
-          mode === "edit"
+          fixtureAdapter?await fixtureAdapter.submit(formData,mode):mode === "edit"
             ? await updateActivityLogAction(formData)
             : await submitActivityLogAction(formData);
 
@@ -450,7 +475,8 @@ export function ActivityLogForm({
         }
 
         if(mode==='edit'&&draftOwnerId){keepDraftPhoto(draftOwnerId,draftSessionKey,null);try{for(const option of activityTypeOptions)removeActivityDraft(window.localStorage,draftOwnerId,draftSessionKey,option.value);}catch{ /* Saved record is authoritative; draft cleanup failure does not undo it. */ }}
-        if(returnToMap){router.push(memoryMapReturnHref(recordingEventId,selectedPavilionId||null,selectedDay?.visit_date??visitDate??null,submittedRecordId));router.refresh();return;}
+        if(fixtureAdapter){fixtureAdapter.onSaved(submittedRecordId);return;}
+        if(returnToMap){router.push(memoryMapReturnHref(recordingEventId,selectedPavilionId||null,selectedDay?.visit_date??visitDate??null,submittedRecordId,Boolean(mapPoint)));router.refresh();return;}
         if (successRedirectPath) {
           router.push(recordingSessionId !== sessionId ? `/sessions/${recordingSessionId}` : successRedirectPath);
           router.refresh();
@@ -483,6 +509,8 @@ export function ActivityLogForm({
       className="space-y-6"
       encType="multipart/form-data"
     >
+      {pointPicker!==false?<MapPointPicker initial={pointPicker} onCancel={()=>setPointPicker(false)} onConfirm={point=>{if(!mapPointAvailable||activityType==='pavilion_visit')return;choosePlace('');setMapPoint(point);setPointPicker(false);persistDraft({mapPoint:point,placeContext:null,pavilionId:'',pavilionSearch:''});}} />:null}
+      {fixtureAdapter?<div role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">端末内の合成試験です。本番DB・Storageには送信しません。<button type="button" disabled={!fixtureAdapter.photo||pending} onClick={()=>{if(fixtureAdapter.photo)choosePhoto(fixtureAdapter.photo);}} className="mt-2 block min-h-11 rounded-full border bg-white px-4">合成写真を選ぶ</button></div>:null}
       <input type="hidden" name="sessionId" value={recordingSessionId} />
       {mode === "edit" && logId ? (
         <input type="hidden" name="logId" value={logId} />
@@ -508,7 +536,7 @@ export function ActivityLogForm({
         </p>
       ) : null}
       <div aria-label="記録先の確認" className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#d9dfd0] bg-[#fffcf5]/95 p-3 text-sm shadow-sm backdrop-blur">
-        <div><p className="text-xs text-[#496250]">{selectedDay?.visit_date??visitDate??'この来場日'} · {activityTypeMeta.label}</p><p className="font-semibold text-[#234b3b]">{selectedPavilion?.name??'施設に結びつけない記録'}</p></div>
+        <div><p className="text-xs text-[#496250]">{selectedDay?.visit_date??visitDate??'この来場日'} · {activityTypeMeta.label}</p><p className="font-semibold text-[#234b3b]">{mapPoint?"地図上の写真の位置を指定済み":selectedPavilion?.name??(showPavilionPicker?'訪問した場所を指定してください':'施設に結びつけない記録')}</p></div>
         <a href="#related-place" className="inline-flex min-h-11 items-center rounded-full border border-[#a7b6a0] px-3 font-semibold text-[#234b3b]">{selectedPavilion?'場所を変更':'場所を指定'}</a>
       </div>
       <fieldset disabled={pending || !draftReady} className={pending ? "opacity-70" : undefined}>
@@ -535,6 +563,7 @@ export function ActivityLogForm({
                     }
                   }}
                   id="photo"
+                  disabled={Boolean(fixtureAdapter)}
                   name="photo"
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
@@ -542,7 +571,7 @@ export function ActivityLogForm({
                   className={fieldClass(Boolean(state.fieldErrors.photo))}
                 />
                 <label className="mt-3 inline-flex cursor-pointer rounded-full border bg-white px-4 py-2 text-sm">カメラで撮影
-                  <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="sr-only" aria-label="カメラで撮影" onChange={event=>{const file=event.target.files?.[0];if(file)choosePhoto(file);event.target.value='';}} />
+                  <input type="file" disabled={Boolean(fixtureAdapter)} accept="image/jpeg,image/png,image/webp" capture="environment" className="sr-only" aria-label="カメラで撮影" onChange={event=>{const file=event.target.files?.[0];if(file)choosePhoto(file,"camera");event.target.value='';}} />
                 </label>
                 <SelectedPhotoPreview photo={selectedPhoto} />
                 {selectedPhoto||photoNeedsReselect?<button type="button" onClick={removeSelectedPhoto} className="ml-3 rounded-full border px-4 py-2 text-sm">選択した写真を取り消す</button>:null}
@@ -631,7 +660,8 @@ export function ActivityLogForm({
               {[...new Set([selectedPavilionId,...recentPavilionIds,...Object.values(draftsRef.current).map(draft=>draft.pavilionId)].filter(Boolean))].slice(0,5).map(id=>{const place=pavilions.find(p=>p.id===id);return place?<button type="button" key={id} onClick={()=>choosePlace(id)} className="rounded-full border border-[#c6d3c4] bg-[#f2f6ee] px-4 py-2 text-sm">{place.name}</button>:null;})}
             </div>
             {isRegisteredEvent(placeRegistry,recordingEventId)?<p className="text-xs text-slate-600">既存の施設も引き続き選べます。公式台帳との同一性が未確認の施設は、公式の達成対象へ自動的に割り当てません。</p>:null}
-            <PhotoLocationSuggestions photo={selectedPhoto} pavilions={availablePavilions} eventId={recordingEventId} visitDate={selectedDay?.visit_date??visitDate??''} onSelect={choosePlace} onContextSelect={(id,context)=>{const parsed=decodePlaceContext(context);if(!parsed.ok)return;const place=availablePavilions.find(p=>p.id===id);if(!place)return;choosePlace(id);setPlaceContext(parsed.value);persistDraft({pavilionId:id,pavilionSearch:place.name,title:activityType==='pavilion_visit'?place.name:title,placeContext:parsed.value});}} disabled={pending} />
+            {mapPointAvailable&&recordingEventId==='e60f2360-8147-4112-969a-00954596ceb6'&&!showPavilionPicker?<section aria-label="写真の地図位置" className="rounded-2xl border border-[#c7d4bd] bg-[#fffcf5] p-4"><p className="font-semibold">施設以外の場所にも写真を残せます</p><p className="my-2 text-xs">{mapPoint?'位置を指定済み。保存するまでは記録に反映されません。':'道路やパレードの写真は、施設を選ばず地図で指定できます。あとで指定しても記録は残ります。'}</p><button type="button" disabled={pending} onClick={()=>setPointPicker(mapPoint?{...mapPoint,confirmed:false}:null)} className="min-h-11 rounded-full border px-4">{mapPoint?'地図の位置を直す':'地図で写真の位置を選ぶ'}</button>{mapPoint?<button type="button" disabled={pending} onClick={()=>{setMapPoint(null);persistDraft({mapPoint:null});}} className="ml-2 min-h-11 rounded-full border px-4">地図の位置はあとで指定</button>:null}</section>:null}
+            <PhotoLocationSuggestions deviceLocationEnabled={!fixtureAdapter} photoOrigin={selectedPhoto?photoOrigin:mode==="edit"?"gallery":"none"} onPointSuggest={mapPointAvailable&&!showPavilionPicker?draft=>setPointPicker(draft):undefined} photo={selectedPhoto} pavilions={availablePavilions} eventId={recordingEventId} visitDate={selectedDay?.visit_date??visitDate??''} onSelect={choosePlace} onContextSelect={(id,context)=>{const parsed=decodePlaceContext(context);if(!parsed.ok)return;const place=availablePavilions.find(p=>p.id===id);if(!place)return;choosePlace(id);setPlaceContext(parsed.value);persistDraft({pavilionId:id,pavilionSearch:place.name,title:activityType==='pavilion_visit'?place.name:title,placeContext:parsed.value});}} disabled={pending} />
             {placeContext?<div className="rounded-xl border p-3"><PlaceContextSummary context={placeContext}/><button type="button" disabled={pending} onClick={()=>{setPlaceContext(null);persistDraft({placeContext:null});}} className="mt-2 text-sm underline">場所の詳細を取り消す</button></div>:null}
             <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
               <label htmlFor="pavilion-search" className="block text-sm font-medium">場所を選ぶ・変更する{showPavilionPicker?'（訪問は必須）':'（任意）'}</label>
@@ -646,7 +676,7 @@ export function ActivityLogForm({
               {hasPavilionSearch&&filteredPavilions.length===0?<p className="text-xs text-slate-500">一致する場所はありません。名前を消すと一覧に戻れます。</p>:null}
               {state.fieldErrors.pavilionId?<p className="text-sm text-rose-600">{state.fieldErrors.pavilionId}</p>:null}
               {!showPavilionPicker&&selectedPavilion?<button type="button" disabled={pending} onClick={()=>choosePlace('')} className="min-h-11 rounded-full border px-4 text-sm font-semibold">施設に結びつけずに記録する</button>:null}
-              {!showPavilionPicker?<p className="text-xs leading-5 text-slate-600">園路のパレードなど、施設を選ばない写真も保存できます。道路上の任意点への配置はまだ未対応なので、施設へ自動で移動させません。</p>:null}
+              {!showPavilionPicker?<p className="text-xs leading-5 text-slate-600">園路のパレードなど、施設を選ばない写真も保存できます。{mapPointAvailable?"地図でも自分で位置を指定できます。施設へ自動で移動させません。":"道路上の任意点への配置は準備中なので、施設へ自動で移動させません。"}</p>:null}
               {showPavilionPicker?<p className="text-xs text-slate-500">訪問の記録には場所が必要です。場所を後で決める場合は、フード・グッズ・イベントで記録してください。</p>:null}
             </div>
             {showPavilionPicker ? <input type="hidden" name="title" value={title} /> : (

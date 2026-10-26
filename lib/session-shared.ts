@@ -1,3 +1,4 @@
+import type {MapPoint} from './memory-map-point';
 import type {PlaceContext} from './place-context';
 export type VisitSession = {
   id: string;
@@ -64,6 +65,7 @@ export type ActivityLogPavilion = Pick<
 >;
 
 export type ActivityLog = {
+  map_point?:MapPoint|null;
   place_context?:PlaceContext|null;
   place_context_label?:string;
   id: string;

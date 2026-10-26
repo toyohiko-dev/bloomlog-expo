@@ -54,7 +54,7 @@ export default async function ActivityLogEditPage({ params,searchParams }: Activ
             logId={log.id}
             submitLabel="保存する"
             returnToMap={query.return==='map'}
-            cancelHref={query.return==='map'?memoryMapReturnHref(session.event_id,log.pavilion_id,session.visit_date):`/sessions/${session.id}#experience-recorder`}
+            cancelHref={query.return==='map'?memoryMapReturnHref(session.event_id,log.pavilion_id,session.visit_date,log.id,Boolean(log.map_point)):`/sessions/${session.id}#experience-recorder`}
             cancelLabel="入力画面に戻る"
             initialActivityType={(log.activity_type ?? "pavilion_visit") as ActivityType}
             initialTitle={log.title ?? ""}
@@ -64,6 +64,7 @@ export default async function ActivityLogEditPage({ params,searchParams }: Activ
             initialAcquisitionMethod={log.acquisition_method ?? "purchase"}
             initialPavilionId={log.pavilion_id ?? null}
             initialPlaceContext={log.place_context??null}
+            initialMapPoint={log.map_point??null}
           />
         </section>
       </div>

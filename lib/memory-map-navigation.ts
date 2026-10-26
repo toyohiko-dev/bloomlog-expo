@@ -5,7 +5,7 @@ export function resolveMemoryMapEvent(requested:string|undefined,events:{id:stri
  return events.some(event=>event.id===GREEN_EXPO_EVENT_ID)?GREEN_EXPO_EVENT_ID:null;
 }
 /** Fixed same-origin destination; never accepts a caller-supplied URL. */
-export function memoryMapReturnHref(eventId:string|null,placeId:string|null,date:string|null,recordId:string|null=null){const q=new URLSearchParams();q.set('event',eventId??'unclassified');if(placeId)q.set('place',placeId);if(date&&/^\d{4}-\d{2}-\d{2}$/.test(date))q.set('day',date);return `/collection-next${q.size?'?'+q.toString():''}${recordId?'#memory-entry-'+encodeURIComponent(recordId):!placeId?'#unplaced-memories':''}`;}
+export function memoryMapReturnHref(eventId:string|null,placeId:string|null,date:string|null,recordId:string|null=null,hasMapPoint=false){if(hasMapPoint&&recordId)placeId='point:'+recordId;const q=new URLSearchParams();q.set('event',eventId??'unclassified');if(placeId)q.set('place',placeId);if(date&&/^\d{4}-\d{2}-\d{2}$/.test(date))q.set('day',date);return `/collection-next${q.size?'?'+q.toString():''}${recordId?'#memory-entry-'+encodeURIComponent(recordId):!placeId?'#unplaced-memories':''}`;}
 
 /** Navigation opens the map, while save-return links can target a deferred record below it. */
 export function memoryMapHref(eventId:string|null,date:string|null=null){return memoryMapReturnHref(eventId,null,date).split('#')[0];}

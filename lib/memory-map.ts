@@ -1,6 +1,6 @@
 import type { ActivityLog, VisitSession } from "./session-shared";
 
-export type MemoryEntry = Pick<ActivityLog, "id" | "session_id" | "activity_type" | "pavilion_id" | "title" | "occurred_at" | "created_at" | "photo_path">;
+export type MemoryEntry = Pick<ActivityLog, "id" | "session_id" | "activity_type" | "pavilion_id" | "title" | "occurred_at" | "created_at" | "photo_path"> & Partial<Pick<ActivityLog,"map_point"|"event_id">>;
 export type MemoryDay = { date: string | null; entries: MemoryEntry[] };
 export type MemoryPlace = { id: string; visited: boolean; visitCount: number; days: MemoryDay[]; entries: MemoryEntry[] };
 
