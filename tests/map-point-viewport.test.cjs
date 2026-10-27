@@ -1,0 +1,6 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
+const exportsUnderTest={};vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/map-point-viewport.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{exports:exportsUnderTest});
+const {pointPickerLayout}=exportsUnderTest;
+test('initial map fits both desktop short dialog and narrow mobile viewport',()=>{for(const [w,h] of [[1147,326],[356,430],[290,160]]){const m=pointPickerLayout(w,h,1);assert(m.width<=w);assert(m.height<=h);assert.equal(m.height/m.width,1.25);assert.equal(m.left,0);assert.equal(m.top,0);}});
+test('zoom and reopening reveal the saved point without changing its coordinates',()=>{const m=pointPickerLayout(320,300,3,.355233,.592093);assert(m.left>=0&&m.left<=m.width-320);assert(m.top>=0&&m.top<=m.height-300);assert(m.width*.355233>=m.left&&m.width*.355233<=m.left+320);assert(m.height*.592093>=m.top&&m.height*.592093<=m.top+300);for(const x of [0,1])for(const y of [0,1]){const edge=pointPickerLayout(320,300,3,x,y);assert(edge.left>=0&&edge.top>=0);assert(edge.left<=edge.width-320&&edge.top<=edge.height-300);}});
