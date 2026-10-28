@@ -378,3 +378,10 @@ test('photo-derived point is cleared on photo removal while manual location rema
   assert.equal(Boolean(h.calls[0].get('mapPoint')),source==='manual');const id=h.calls[0].get('saveAttemptId');h.openPoint();h.confirmPoint({...base,source:'manual',placement:'manual',x:.6});h.submit();await h.settle();assert.equal(h.calls[1].get('saveAttemptId'),id);assert.equal(h.calls[1].get('saveAttemptChanged'),'true');
  }
 });
+
+
+test('camera entry carries its original File and confirmed point through upload failure and retry',async()=>{
+ const point={version:1,event_id:'e60f2360-8147-4112-969a-00954596ceb6',map_id:'green-expo-places-v1',map_revision:'3073fb3b299d73fe74c86ea12df767d45c4c6c42efb02a08162cb6643ff71fdc',x:.35,y:.59,source:'manual',placement:'manual',source_accuracy_m:null,confirmed:true};
+ const photo=new File(['synthetic camera'],'camera.png',{type:'image/png'});const h=harness({sessionId:'camera-day',initialPhoto:photo,initialMapPoint:point,initialActivityType:'event_participation',initialTitle:'Camera',visitEventId:point.event_id,mapPointAvailable:true,returnToMap:true});
+ h.setAction(async()=>({status:'error',message:'offline',fieldErrors:{}}));h.submit();await h.settle();assert.equal(h.calls[0].get('photo'),photo);assert.equal(JSON.parse(h.calls[0].get('mapPoint')).x,.35);assert.equal(h.fileInput.files[0],photo);h.setAction(async()=>({status:'success',message:'saved',fieldErrors:{}}));h.submit();await h.settle();assert.equal(h.calls[1].get('photo'),photo);assert(h.navigation.at(-1).includes('place=point%3A'));
+});

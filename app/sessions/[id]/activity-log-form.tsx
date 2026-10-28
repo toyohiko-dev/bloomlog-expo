@@ -90,6 +90,7 @@ type ActivityLogFormProps = {
   initialAcquisitionMethod?: string | null;
   initialPavilionId?: string | null;
   initialPlaceContext?:PlaceContext|null;
+  initialPhoto?:File|null;
   initialMapPoint?:MapPoint|null;
   mapPointAvailable?:boolean;
 };
@@ -118,6 +119,7 @@ export function ActivityLogForm({
   initialAcquisitionMethod = "purchase",
   initialPavilionId = null,
   initialPlaceContext = null,
+  initialPhoto = null,
   initialMapPoint = null,
   mapPointAvailable = mapPointStorageEnabled,
 }: ActivityLogFormProps) {
@@ -146,19 +148,19 @@ export function ActivityLogForm({
   );
   const [mapPoint,setMapPoint]=useState<MapPoint|null>(initialMapPoint);
   const [pointPicker,setPointPicker]=useState<MapPointDraft|null|false>(false);
-  const [photoOrigin,setPhotoOrigin]=useState<"gallery"|"camera">("gallery");
+  const [photoOrigin,setPhotoOrigin]=useState<"gallery"|"camera">(initialPhoto?"camera":"gallery");
   const [placeContext,setPlaceContext]=useState<PlaceContext|null>(initialPlaceContext);
   const [selectedPavilionId, updateSelectedPavilionId] = useState(
     initialSelectedPavilion?.id ?? "",
   );
   function setSelectedPavilionId(id:string){updateSelectedPavilionId(id);setPlaceContext(null);}
-  const [hasSelectedPhoto, setHasSelectedPhoto] = useState(false);
-  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const [hasSelectedPhoto, setHasSelectedPhoto] = useState(Boolean(initialPhoto));
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(initialPhoto);
   const [photoNeedsReselect, setPhotoNeedsReselect] = useState(false);
   const [draftReady, setDraftReady] = useState(!draftOwnerId);
   const [draftNotice, setDraftNotice] = useState("");
   const submittingRef = useRef(false);
-  const photoSelection=useRef<string|undefined>(undefined);
+  const photoSelection=useRef<string|undefined>(initialPhoto?crypto.randomUUID():undefined);
   const saveAttempt=useRef<{id:string;signature:string}|null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const deferredPavilionSearch = useDeferredValue(pavilionSearch);
@@ -591,7 +593,7 @@ export function ActivityLogForm({
 
 
             <label className="block text-sm font-medium">来場日
-              {mode==='create'&&visitSessions.length>0 ? <select id="recording-session" aria-label="記録する来場日" value={recordingSessionId} onChange={event=>{setRecordingSessionId(event.target.value);persistDraft({recordingSessionId:event.target.value});}} className="mt-2 block w-full rounded-xl border bg-white p-3">{visitSessions.map(day=><option key={day.id} value={day.id}>{day.visit_date}</option>)}</select> : <span className="ml-3">{visitDate??'この来場日'}</span>}
+              {mode==='create'&&visitSessions.length>0 ? <select id="recording-session" aria-label="記録する来場日" value={recordingSessionId} onChange={event=>{setRecordingSessionId(event.target.value);persistDraft({recordingSessionId:event.target.value});}} className="mt-2 block w-full rounded-xl border bg-white p-3">{!recordingSessionId?<option value="" disabled>来場日を選んでください</option>:null}{visitSessions.map(day=><option key={day.id} value={day.id}>{day.visit_date}</option>)}</select> : <span className="ml-3">{visitDate??'この来場日'}</span>}
             </label>
           </div>
           <div className="border-b border-slate-200 bg-white/80 px-5 py-5">
@@ -846,7 +848,7 @@ export function ActivityLogForm({
       <div className="sticky bottom-2 z-20 flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white/95 p-3 shadow-lg backdrop-blur">
         <button
           type="submit"
-          disabled={!draftReady || pending || (mode === "edit" && !isDirty)}
+          disabled={!draftReady || pending || !recordingSessionId || (mode === "edit" && !isDirty)}
           className="inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
           {pending

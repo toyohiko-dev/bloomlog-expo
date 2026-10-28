@@ -23,12 +23,12 @@ export function buildIllustratedMarkers(pavilions: PavilionOption[], places: Mem
   });
 }
 export function mapExportUnavailableReason(markers:VenueMapMarker[],places:MemoryPlace[],hasExplicitAnchors:boolean){return hasExplicitAnchors&&markers.length===0&&places.some(p=>p.entries.length>0)?'記録の地図位置が未対応のため、この範囲はまだ画像にできません。記録は下の一覧で見返せます。':undefined;}
-export function IllustratedMemoryMap({ pavilions, places, previews, daily, title, renderPlaceDetail, explicitAnchors, mapMode="illustration",focusPlaceId,pointMarkers=[] }: { pointMarkers?:VenueMapMarker[]; focusPlaceId?:string|null; mapMode?:"illustration"|"geographic"; explicitAnchors?:{pavilionId:string;x:number;y:number}[]; pavilions:PavilionOption[]; places:MemoryPlace[]; previews:Map<string,string>; daily:boolean; title:string; renderPlaceDetail:(id:string,onClose:()=>void)=>ReactNode }) {
+export function IllustratedMemoryMap({ pavilions, places, previews, daily, title, renderPlaceDetail, explicitAnchors, mapMode="illustration",focusPlaceId,onMapTap,pointMarkers=[] }: { onMapTap?:(x:number,y:number)=>void;pointMarkers?:VenueMapMarker[]; focusPlaceId?:string|null; mapMode?:"illustration"|"geographic"; explicitAnchors?:{pavilionId:string;x:number;y:number}[]; pavilions:PavilionOption[]; places:MemoryPlace[]; previews:Map<string,string>; daily:boolean; title:string; renderPlaceDetail:(id:string,onClose:()=>void)=>ReactNode }) {
   const artwork=mapMode==="geographic"?GREEN_EXPO_MAP_ART:MEMORY_MAP_ART;
   const markers = [...buildIllustratedMarkers(pavilions,places,previews,daily,explicitAnchors,artwork,mapMode==="geographic"),...pointMarkers];
   return <section className="overflow-hidden rounded-[28px] border border-[#e6dfcf] bg-[#fffcf5] shadow-[0_16px_60px_#344c3910]">
     <div className="flex items-center justify-between gap-3 px-5 pt-5 text-xs text-[#60756b]"><span>わたしの会場マップ</span><span>● 訪問済み　○ 関連する記録</span></div>
-    <VenueMapFrame focusPlaceId={focusPlaceId} markers={markers} mapAsset={artwork} badgeMarkers renderPlaceDetail={renderPlaceDetail}>
+    <VenueMapFrame onMapTap={onMapTap} focusPlaceId={focusPlaceId} markers={markers} mapAsset={artwork} badgeMarkers renderPlaceDetail={renderPlaceDetail}>
       <svg data-venue-map-source="true" viewBox={artwork.viewBox} role="img" aria-label={mapMode==="geographic"?"公開図の推定位置に対応した独自の会場マップ。現地未検証です。":"建築と庭園で思い出をつなぐイメージマップ。実会場の位置とは異なります。"} className="block h-auto w-full">
         <image href={artwork.href} width={artwork.width} height={artwork.height} preserveAspectRatio="none" />
         {mapMode==="geographic"?markers.filter(m=>m.visited).map(marker=><circle key={marker.id} cx={marker.x} cy={marker.y} r="5" fill={marker.bloom} opacity=".15"/>):null}

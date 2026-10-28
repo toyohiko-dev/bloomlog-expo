@@ -24,7 +24,7 @@ function text(node) { if (typeof node === 'string' || typeof node === 'number') 
 function harness(hydrated=true) {
   const slots=[];let cursor=0;
   const jsx = (type, props) => ({ type, props });
-  const dependencies = { react: { useSyncExternalStore:(_subscribe,getSnapshot,getServerSnapshot)=>hydrated?getSnapshot():getServerSnapshot(),useState: initial => {const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return [slots[i],v=>slots[i]=v];} },
+  const dependencies = { './use-map-photo-capture':{useMapPhotoCapture:()=>({content:null,beginCapture:undefined})},react: { useSyncExternalStore:(_subscribe,getSnapshot,getServerSnapshot)=>hydrated?getSnapshot():getServerSnapshot(),useState: initial => {const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return [slots[i],v=>slots[i]=v];} },
     'react/jsx-runtime': { jsx, jsxs: jsx }, 'next/link': 'Link', 'next/image': 'Image',
     '@/lib/map-point-config':{mapPointStorageEnabled:false},'@/lib/memory-map-point':pointLogic,'./memory-photo-viewer':{MemoryPhotoViewer:'PhotoViewer'},'@/lib/memory-map-navigation':navigation,'@/lib/green-expo-map':{greenExpoMapAnchors:[]},'@/lib/memory-map': model, './illustrated-memory-map': { IllustratedMemoryMap: 'Map' } };
   const { MemoryMapExplorer } = load('app/collection-next/memory-map-explorer.tsx', dependencies);

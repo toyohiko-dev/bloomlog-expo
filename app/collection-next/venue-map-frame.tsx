@@ -17,6 +17,7 @@ const MINIMIZED_PAN_MARGIN_RATIO = 0.42;
 export type MapArtwork = { href: string; viewBox: string; width: number; height: number };
 
 type VenueMapFrameProps = {
+  onMapTap?:(x:number,y:number)=>void;
   mapAsset?: MapArtwork;
   focusPlaceId?:string|null;
   badgeMarkers?: boolean;
@@ -359,7 +360,7 @@ function VenueMapMarkerDetail({
   );
 }
 
-export function VenueMapFrame({ children, markers, renderPlaceDetail, mapAsset = VENUE_MAP_ASSET, badgeMarkers = false, focusPlaceId=null }: VenueMapFrameProps) {
+export function VenueMapFrame({ children, markers, renderPlaceDetail, mapAsset = VENUE_MAP_ASSET, badgeMarkers = false, focusPlaceId=null, onMapTap }: VenueMapFrameProps) {
   const [zoom, setZoom] = useState(DESKTOP_INITIAL_ZOOM);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(()=>markers.some(m=>m.id===focusPlaceId)?focusPlaceId:null);
@@ -371,6 +372,7 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail, mapAsset =
   const hasInitializedViewportRef = useRef(false);
   const measuredViewportRef = useRef({width:0,height:0});
   const activePointersRef = useRef(new Map<number, TrackedPointer>());
+  const tapStartRef=useRef<{id:number;x:number;y:number}|null>(null);
   const pinchStartRef = useRef<PinchStart | null>(null);
   const dragStartRef = useRef({
     clientX: 0,
@@ -532,6 +534,7 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail, mapAsset =
       return;
     }
 
+    tapStartRef.current=activePointersRef.current.size===0?{id:event.pointerId,x:event.clientX,y:event.clientY}:null;
     event.currentTarget.setPointerCapture(event.pointerId);
     activePointersRef.current.set(event.pointerId, {
       x: event.clientX,
@@ -559,6 +562,7 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail, mapAsset =
   }
 
   function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
+    const tap=tapStartRef.current;if(tap&&Math.hypot(event.clientX-tap.x,event.clientY-tap.y)>8)tapStartRef.current=null;
     if (activePointersRef.current.has(event.pointerId)) {
       activePointersRef.current.set(event.pointerId, {
         x: event.clientX,
@@ -613,6 +617,10 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail, mapAsset =
   }
 
   function handlePointerEnd(event: PointerEvent<HTMLDivElement>) {
+    const tap=tapStartRef.current;
+    const isTap=event.type==='pointerup'&&tap?.id===event.pointerId&&activePointersRef.current.size===1&&Math.hypot(event.clientX-tap.x,event.clientY-tap.y)<=8;
+    tapStartRef.current=null;
+
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
@@ -620,6 +628,7 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail, mapAsset =
     activePointersRef.current.delete(event.pointerId);
     pinchStartRef.current = null;
     setIsDragging(false);
+    if(isTap&&onMapTap&&mapSize.width>0){const r=event.currentTarget.getBoundingClientRect();const x=(event.clientX-r.left-offset.x)/(mapSize.width*zoom),y=(event.clientY-r.top-offset.y)/(mapSize.height*zoom);if(x>=0&&x<=1&&y>=0&&y<=1)onMapTap(x,y);}
   }
 
   const paperMode=markers.some(marker=>marker.paperMemory);

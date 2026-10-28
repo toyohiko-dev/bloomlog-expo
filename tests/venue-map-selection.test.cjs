@@ -42,6 +42,8 @@ function harness() {
   }
   return {
     render(markers, options = {}) { cursor = 0; tree = exports.VenueMapFrame({ markers, children: null, ...options }); },
+    viewport(){const n=find(tree,n=>typeof n.props?.onPointerUp==='function');n.props.ref.current={clientWidth:400,clientHeight:500,getBoundingClientRect:()=>({left:0,top:0}),setPointerCapture(){},hasPointerCapture(){return false;},releasePointerCapture(){}};return n.props;},
+    measure(){for(const value of slots){if(value&&typeof value==='object'&&'width' in value&&'height' in value){value.width=400;value.height=500;}}},
     badge(id) { const view = find(tree, node => node.props?.marker?.id === id && typeof node.props?.onSelect === "function"); return view.type(view.props); },
     select(id) {
       const view = find(tree, node => node.props?.marker?.id === id && typeof node.props?.onSelect === 'function');
@@ -100,4 +102,13 @@ test('illustrated markers receive badge mode and retain unlimited counts without
 test('an active place without records remains selectable at initial zoom with a 44px control',()=>{
  const h=harness();const empty=marker('empty',{visited:false,visitCount:0,memoryCount:0,paperMemory:true});h.render([empty],{badgeMarkers:true});
  const badge=h.badge('empty');assert.equal(badge.type,'button');assert.match(badge.props.className,/h-11 w-11/);assert.match(badge.props['aria-label'],/記録なし/);h.select('empty');h.render([empty],{badgeMarkers:true});assert.equal(h.detail().marker.id,'empty');
+});
+
+
+test('map camera tap converts visible coordinates and ignores drag, pinch, cancellation and marker pointer-up',()=>{
+ const h=harness(),calls=[],options={onMapTap:(x,y)=>calls.push([x,y])};h.render([],options);h.measure();h.render([],options);let v=h.viewport();const target={getBoundingClientRect:()=>({left:0,top:0}),setPointerCapture(){},hasPointerCapture(){return false;},releasePointerCapture(){}};const event=(id,x,y,type='pointerup')=>({pointerId:id,button:0,clientX:x,clientY:y,type,currentTarget:target});
+ v.onPointerDown(event(1,140,295));v.onPointerUp(event(1,140,295));assert.deepEqual(calls,[[.35,.59]]);
+ v.onPointerDown(event(2,140,295));v.onPointerMove(event(2,180,320));v.onPointerUp(event(2,140,295));assert.equal(calls.length,1);
+ v.onPointerDown(event(3,140,295));v.onPointerDown(event(4,150,300));v.onPointerUp(event(4,150,300));v.onPointerUp(event(3,140,295));assert.equal(calls.length,1);
+ v.onPointerDown(event(5,140,295));v.onPointerCancel(event(5,140,295,'pointercancel'));v.onPointerUp(event(9,140,295));assert.equal(calls.length,1);
 });
