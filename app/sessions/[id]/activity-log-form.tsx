@@ -67,6 +67,7 @@ function fieldClass(hasError: boolean) {
 const EMPTY_VISIT_SESSIONS: {id:string;visit_date:string;event_id?:string|null}[] = [];
 
 type ActivityLogFormProps = {
+  onSaveComplete?: () => void;
   fixtureAdapter?:{photo:File|null;submit:(data:FormData,mode:"create"|"edit")=>Promise<ActivityLogFormState>;onSaved:(id:string|null)=>void};
   sessionId: string;
   visitDate?: string;
@@ -98,6 +99,7 @@ type ActivityLogFormProps = {
 export function ActivityLogForm({
   sessionId,
   fixtureAdapter,
+  onSaveComplete,
   visitDate,
   visitEventId = null,
   recentPavilionIds = [],
@@ -477,6 +479,7 @@ export function ActivityLogForm({
         }
 
         if(mode==='edit'&&draftOwnerId){keepDraftPhoto(draftOwnerId,draftSessionKey,null);try{for(const option of activityTypeOptions)removeActivityDraft(window.localStorage,draftOwnerId,draftSessionKey,option.value);}catch{ /* Saved record is authoritative; draft cleanup failure does not undo it. */ }}
+        onSaveComplete?.();
         if(fixtureAdapter){fixtureAdapter.onSaved(submittedRecordId);return;}
         if(returnToMap){router.push(memoryMapReturnHref(recordingEventId,selectedPavilionId||null,selectedDay?.visit_date??visitDate??null,submittedRecordId,Boolean(mapPoint)));router.refresh();return;}
         if (successRedirectPath) {
