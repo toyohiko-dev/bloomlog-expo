@@ -118,9 +118,8 @@ function drawPaperMemory(ctx:CanvasRenderingContext2D,marker:VenueMapMarker,x:nu
   ctx.fillStyle='#fffcf1';ctx.fillRect(-74,-75,140,122);const w=cover.naturalWidth||600,h=cover.naturalHeight||400,sw=Math.min(w,h*126/108),sh=sw*108/126;ctx.drawImage(cover,(w-sw)/2,(h-sh)/2,sw,sh,-67,-68,126,108);ctx.translate(49,40);
  }
  ctx.save();ctx.scale(0.9,0.9);
- if(marker.visited)for(let i=0;i<6;i++){ctx.save();ctx.rotate(i*Math.PI/3);ctx.fillStyle=marker.visited?(i%2?'#f49d88':marker.bloom):'#d8e3ca';ctx.strokeStyle='#fff9e9';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,5);ctx.bezierCurveTo(-20,-5,-31,-34,-12,-44);ctx.lineTo(0,-36);ctx.lineTo(12,-44);ctx.bezierCurveTo(31,-34,20,-5,0,5);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
- if(!marker.visited){ctx.strokeStyle='#7d9d86';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(0,34);ctx.lineTo(0,-24);ctx.moveTo(0,5);ctx.bezierCurveTo(-45,-25,-38,28,0,15);ctx.moveTo(0,-8);ctx.bezierCurveTo(38,-40,45,6,0,1);ctx.stroke();}
- ctx.beginPath();ctx.arc(0,0,16,0,Math.PI*2);ctx.fillStyle=marker.visited?'#f5d17a':'#fff9eb';ctx.fill();ctx.fillStyle='#335747';ctx.font=`700 18px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(marker.memoryCount??0),0,1);ctx.restore();
+ ctx.strokeStyle='#7d9d86';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(0,34);ctx.lineTo(0,-24);ctx.moveTo(0,5);ctx.bezierCurveTo(-45,-25,-38,28,0,15);ctx.moveTo(0,-8);ctx.bezierCurveTo(38,-40,45,6,0,1);ctx.stroke();
+ ctx.beginPath();ctx.arc(0,0,16,0,Math.PI*2);ctx.fillStyle='#fff9eb';ctx.fill();ctx.fillStyle='#335747';ctx.font=`700 18px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(marker.memoryCount??0),0,1);ctx.restore();
  if((marker.memoryDayCount??0)>1){ctx.fillStyle='#285c4b';ctx.fillRect(-30,-81,61,24);ctx.fillStyle='#fff9eb';ctx.font=`700 16px ${FONT}`;ctx.textAlign='center';ctx.fillText(`${marker.memoryDayCount}日`,0,-68);}
  ctx.restore();
 }
