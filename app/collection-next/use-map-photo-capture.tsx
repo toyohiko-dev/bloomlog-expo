@@ -13,14 +13,15 @@ export function useMapPhotoCapture({enabled,sessions,pavilions,date,fixtureAdapt
  const [recordingDay,setRecordingDay]=useState('');const [cameraNotice,setCameraNotice]=useState('');
  const [started,setStarted]=useState(false);const captureLock=useRef(false);
  useEffect(()=>{if(!editor)return;const oldOverflow=document.body.style.overflow,oldFocus=document.activeElement as HTMLElement|null;document.body.style.overflow='hidden';dialog.current?.focus();return()=>{document.body.style.overflow=oldOverflow;oldFocus?.focus();};},[editor]);
- function openCamera(){try{camera.current?.click();setCameraNotice('');}catch{setCameraNotice('カメラを開けませんでした。位置は保持しています。もう一度撮るか、写真をあとで指定できます。');}}
+ function openCamera(){try{camera.current?.click();setCameraNotice('');}catch{captureLock.current=false;setCameraNotice('カメラを開けませんでした。位置は保持しています。もう一度撮るか、写真をあとで指定できます。');}}
  function begin(x:number,y:number){
   if(!enabled||captureLock.current||fixtureAdapter&&!fixtureAdapter.photo)return;const draft=manualMapPoint(x,y);const selected=draft?confirmMapPoint(draft,true):null;if(!selected)return;
   captureLock.current=true;setRecordingDay(sessions.find(s=>s.visit_date===date)?.id??'');setPoint(selected);if(fixtureAdapter?.photo){setPhoto(fixtureAdapter.photo);setStarted(true);setEditor(true);}else openCamera();
  }
  function finishCapture(){captureLock.current=false;setEditor(false);setStarted(false);setPhoto(null);setPoint(null);setCameraNotice('');}
+ useEffect(()=>{const input=camera.current;if(!input)return;const cancel=()=>{if(!started)captureLock.current=false;};input.addEventListener('cancel',cancel);return()=>input.removeEventListener('cancel',cancel);},[started]);
  const content=<>
-  <input ref={camera} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" aria-label="地図で指定した場所で撮影" className="hidden" onChange={e=>{const selected=e.target.files?.[0];if(selected&&point&&enabled){setPhoto(selected);setStarted(true);setEditor(true);}e.target.value='';}}/>
+  <input ref={camera} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" aria-label="地図で指定した場所で撮影" className="hidden" onChange={e=>{const selected=e.target.files?.[0];if(selected&&point&&enabled){setPhoto(selected);setStarted(true);setEditor(true);}else if(!started){captureLock.current=false;}e.target.value='';}}/>
   {point?<div role="status" className="rounded-2xl border border-[#b8cbb1] bg-[#fffaf0] p-4 text-sm text-[#234b3b]">
    <p>タップした写真の位置を保持しています。撮影を取り消しても、ここから続けられます。</p>{cameraNotice?<p className="mt-2" role="alert">{cameraNotice}</p>:null}
    <div className="mt-3 flex flex-wrap gap-2">
@@ -34,5 +35,5 @@ export function useMapPhotoCapture({enabled,sessions,pavilions,date,fixtureAdapt
    </div>
   </div>:null}
  </>;
- return {beginCapture:enabled&&!point?begin:undefined,content};
+ return {beginCapture:enabled&&!started?begin:undefined,content};
 }
