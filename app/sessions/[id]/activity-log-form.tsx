@@ -544,8 +544,8 @@ export function ActivityLogForm({
           {!draftReady ? "下書きを確認しています..." : pending ? "思い出を保存しています..." : draftNotice}
         </p>
       ) : null}
-      <div aria-label="記録先の確認" className={`${photoEntry?"hidden":"sticky top-0 z-30 flex"} flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#d9dfd0] bg-[#fffcf5]/95 p-3 text-sm shadow-sm backdrop-blur`}>
-        <div><p className="text-xs text-[#496250]">{selectedDay?.visit_date??visitDate??'この来場日'} · {activityTypeMeta.label}</p><p className="font-semibold text-[#234b3b]">{mapPoint?"地図上の写真の位置を指定済み":selectedPavilion?.name??(showPavilionPicker?'訪問した場所を指定してください':'施設に結びつけない記録')}</p></div>
+      <div aria-label="保存する日と場所" className={`${photoEntry?"hidden":"sticky top-0 z-30 flex"} flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#d9dfd0] bg-[#fffcf5]/95 p-3 text-sm shadow-sm backdrop-blur`}>
+        <div><p className="text-xs text-[#496250]">{selectedDay?.visit_date??visitDate??'この来場日'} · {activityTypeMeta.label}</p><p className="font-semibold text-[#234b3b]">{mapPoint?"地図上の写真の位置を指定済み":selectedPavilion?.name??(showPavilionPicker?'訪問した場所を指定してください':'場所はあとで選べます')}</p></div>
         <a onClick={()=>{const panel=document.getElementById("photo-location-options");if(panel instanceof HTMLDetailsElement)panel.open=true;}} href="#photo-location-options" className="inline-flex min-h-11 items-center rounded-full border border-[#a7b6a0] px-3 font-semibold text-[#234b3b]">{selectedPavilion?'場所を変更':'場所を指定'}</a>
       </div>
       <fieldset disabled={pending || !draftReady} className={pending ? "opacity-70" : undefined}>
@@ -677,7 +677,7 @@ export function ActivityLogForm({
             {placeContext?<div className="rounded-xl border p-3"><PlaceContextSummary context={placeContext}/><button type="button" disabled={pending} onClick={()=>{setPlaceContext(null);persistDraft({placeContext:null});}} className="mt-2 text-sm underline">場所の詳細を取り消す</button></div>:null}
             <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
               <label htmlFor="pavilion-search" className="block text-sm font-medium">場所を選ぶ・変更する{showPavilionPicker?'（訪問は必須）':'（任意）'}</label>
-              <p className="text-sm text-[#315e4b]">{selectedPavilion?'選択中: '+selectedPavilion.name:'場所はあとで選べます。'} ピンバッジやフードを記録しても、施設を訪れた回数には数えません。{!placeCompatible?" このイベントでは選べない場所です。別の場所を選んでください。":null}</p>
+              <p className="text-sm text-[#315e4b]">{selectedPavilion?'選んだ場所: '+selectedPavilion.name:showPavilionPicker?'訪れた場所を選んでください。':'場所はあとで選べます。'}{!placeCompatible?" このイベントでは選べない場所です。別の場所を選んでください。":null}</p>
               <input id="pavilion-search" type="text" value={pavilionSearch} placeholder="場所の名前で絞り込む" onChange={event=>{setPavilionSearch(event.target.value);persistDraft({pavilionSearch:event.target.value});}} className={fieldClass(false)} />
               <label htmlFor="related-place" className="sr-only">場所の一覧</label>
               <select id="related-place" value={selectedPavilionId} className={fieldClass(Boolean(state.fieldErrors.pavilionId))} onChange={event=>choosePlace(event.target.value)}>
@@ -687,8 +687,8 @@ export function ActivityLogForm({
               </select>
               {hasPavilionSearch&&filteredPavilions.length===0?<p className="text-xs text-slate-500">一致する場所はありません。名前を消すと一覧に戻れます。</p>:null}
               {state.fieldErrors.pavilionId?<p className="text-sm text-rose-600">{state.fieldErrors.pavilionId}</p>:null}
-              {!showPavilionPicker&&selectedPavilion?<button type="button" disabled={pending} onClick={()=>choosePlace('')} className="min-h-11 rounded-full border px-4 text-sm font-semibold">施設に結びつけずに記録する</button>:null}
-              {!showPavilionPicker?<p className="text-xs leading-5 text-slate-600">園路のパレードなど、施設を選ばない写真も保存できます。{mapPointAvailable?"地図で写真を置く場所を選べます。":"地図で場所を選ぶ機能は準備中です。"}</p>:null}
+              {!showPavilionPicker&&selectedPavilion?<button type="button" disabled={pending} onClick={()=>choosePlace('')} className="min-h-11 rounded-full border px-4 text-sm font-semibold">場所の選択を外す</button>:null}
+              {!showPavilionPicker?<p className="text-xs leading-5 text-slate-600">{mapPointAvailable?"地図で写真を置く場所を選べます。":"地図で場所を選ぶ機能は準備中です。"}</p>:null}
               {showPavilionPicker?<p className="text-xs text-slate-500">訪問の記録には場所が必要です。場所を後で決める場合は、フード・グッズ・イベントで記録してください。</p>:null}
             </div>
             </details>

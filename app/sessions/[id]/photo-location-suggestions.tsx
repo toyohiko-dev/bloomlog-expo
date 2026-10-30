@@ -40,7 +40,7 @@ export function PhotoLocationSuggestions({photo,pavilions,onSelect,disabled=fals
   finally{if(request.current===controller)setBusy(false);}
  }
  return <div className="space-y-3 rounded-2xl bg-[#f3f5ed] p-4">
-  <p className="text-sm font-semibold text-[#275447]">近くの施設を探す</p>
+  <p className="text-sm font-semibold text-[#275447]">近くの場所を探す</p>
   <p className="text-xs leading-5 text-slate-600">撮った場所や今いる場所の近くから探せます。写真の場所は、選ぶまで変わりません。</p>
   <div className="flex flex-wrap gap-2">
    {photoPosition&&source!=='photo'?<button type="button" disabled={disabled||busy||!hasCoordinates} onClick={()=>{setPosition(photoPosition);setSource('photo');setNotice('写真を撮った場所の近くにある施設です。合う場所を選んでください。');}} className="rounded-full border bg-white px-4 py-2 text-sm">写真を撮った場所から探す</button>:null}
@@ -48,7 +48,7 @@ export function PhotoLocationSuggestions({photo,pavilions,onSelect,disabled=fals
    {busy?<button type="button" onClick={()=>request.current?.abort()} className="rounded-full border bg-white px-4 py-2 text-sm">現在地を調べるのをやめる</button>:null}
   </div>
   {position&&onPointSuggest&&(source==='photo'||photoOrigin!=='gallery')?<button type="button" disabled={disabled||busy} className="min-h-11 rounded-full border bg-white px-4 py-2 text-sm" onClick={()=>{const point=projectedMapPoint(position,source==='photo'?'photo-exif':'current-gps',photoOrigin);if(point)onPointSuggest(point);else setNotice('この地図の外にあるようです。地図で場所を選ぶか、あとで決めてください。');}}>地図で場所を確かめる</button>:null}
-  {catalog.length===0&&!hasRegisteredResearch?<p className="text-xs text-amber-800">{researchCatalog.length?'施設の情報は見られますが、まだ保存する場所には選べません。':'このイベントでは、近くの施設を探す機能を準備しています。'} 下の一覧から場所を選べます。</p>:null}
+  {catalog.length===0&&!hasRegisteredResearch?<p className="text-xs text-amber-800">{researchCatalog.length?'施設の情報は見られますが、まだ保存する場所には選べません。':'このイベントでは、近くの場所を探す機能を準備しています。'} 下の一覧から場所を選べます。</p>:null}
   <p role="status" aria-live="polite" className="text-xs leading-5 text-slate-600">{notice}</p>
   {position?<p className="text-xs text-slate-500">{source==='photo'?'写真を撮ったおおよその場所':'現在地'}を使用。{catalog.length===0?'近くの施設はまだ探せません。下の一覧から選んでください。':places.length===0?'近くの施設が見つかりませんでした。下の一覧から選べます。':'距離と場所は目安です。実際の入口とは異なることがあります。'}</p>:null}
   {position&&onContextSelect?researchNearby.map(({place,distanceMeters})=>{
@@ -58,11 +58,11 @@ export function PhotoLocationSuggestions({photo,pavilions,onSelect,disabled=fals
     return <button key={'quick-'+place.sourceId} type="button" disabled={disabled} onClick={()=>onContextSelect(binding.pavilionId!,makePlaceContext(greenExpoResearch,parent.sourceId,place.parentId?place.sourceId:null))} className="block min-h-11 w-full rounded-2xl border border-[#a8c3aa] bg-white p-3 text-left"><span className="block text-sm font-semibold text-[#254d3e]">{place.name}を選ぶ</span><span className="text-xs text-slate-600">{source==='photo'?'写真の位置':'現在地'}の近く · 約{distanceMeters}m（目安）</span></button>;
    }):null}
   {researchCatalog.length>0?<details className="rounded-xl border border-amber-200 bg-white p-3" open={position?true:undefined}>
-   <summary className="cursor-pointer text-sm font-medium">施設を一覧から探す</summary>
+   <summary className="cursor-pointer text-sm font-medium">場所を一覧から探す</summary>
    <p className="mt-2 text-xs leading-5 text-slate-600">施設を選ぶと詳しい情報が見られます。地図上の場所や距離は目安で、実際の入口とは異なることがあります。</p>
    {position&&researchNearby.length===0?<p className="mt-2 text-xs">近くの施設が見つからない場合も、下の一覧から探せます。</p>:null}
    <div className="my-3 space-y-2">{researchNearby.map(({place,distanceMeters})=><button type="button" disabled={disabled} key={place.sourceId} onClick={()=>setResearchId(place.sourceId)} className="block w-full rounded-xl border p-3 text-left text-sm">{place.name}<span className="block text-xs text-slate-500">おおよその距離 約{distanceMeters}m · 詳しく見る</span></button>)}</div>
-   <label className="block text-xs">施設・エリアを選ぶ<select aria-label="公開資料の施設・区画" value={researchPlace?.sourceId??''} onChange={e=>setResearchId(e.target.value)} className="mt-2 w-full rounded-xl border p-3" disabled={disabled}><option value="">選んで確認</option>{researchCatalog.map(p=><option key={p.sourceId} value={p.sourceId}>{p.name}{p.parentId?'（施設内）':''}{!p.coordinate?' · 位置未確認':''}</option>)}</select></label>
+   <label className="block text-xs">場所を選ぶ<select aria-label="公開資料の施設・区画" value={researchPlace?.sourceId??''} onChange={e=>setResearchId(e.target.value)} className="mt-2 w-full rounded-xl border p-3" disabled={disabled}><option value="">選んで確認</option>{researchCatalog.map(p=><option key={p.sourceId} value={p.sourceId}>{p.name}{p.parentId?'（施設内）':''}{!p.coordinate?' · 位置未確認':''}</option>)}</select></label>
    {researchPlace?<div className="mt-3 space-y-2 text-xs leading-5"><p className="font-semibold">{researchPlace.name}</p><p>{researchPlace.categories.join(' / ')}</p><p>{canChooseContext?(placeRegistry.places.some(place=>place.sourceId===researchPlace.sourceId&&placeRegistry.anchors.some(anchor=>anchor.pavilionId===place.pavilionId))?'この場所で保存できます。地図にはおおよその場所が表示されます。':'この場所で保存できますが、まだ地図には表示されません。'):'この場所はまだ選べません。地図の表示も準備中です。'}実際の入口とは異なることがあります。</p>{researchPlace.coordinate?.extrapolated?<p className="text-amber-800">場所が大きくずれている可能性があります。</p>:null}{researchPlace.coordinate?.conflict?<p className="text-amber-800">資料によって場所の説明が異なるため、位置は確認中です。</p>:null}{!researchPlace.gpsEnabled?<p>場所がまだ分からないため、近くの施設には表示していません。</p>:null}
    <button type="button" disabled={disabled||!canChooseContext} onClick={()=>chooseContext()} className="rounded-full border px-4 py-2">この場所を選ぶ</button>
    {researchPlace.sourceId==='organizer-hanameguri'?<div><p className="font-medium">{visitDate||'来場日を選んでください'} に見られる出展 {indoor.length}件</p><p>選んだ来場日に見られる出展です。館内の詳しい場所は地図に表示されません。</p><ul className="max-h-64 overflow-y-auto rounded-lg border p-2">{indoor.map(o=><li key={o.id} className="border-b py-2">{o.exhibitor_name_raw} · {o.building_sections.join('/')}<button type="button" disabled={disabled||!canChooseContext} onClick={()=>chooseContext(o.id)} className="ml-2 rounded border px-2 py-1">この出展を選ぶ</button><span className="block">{o.dateCertainty==='within-period-seven-days-unconfirmed'?'開催日はまだ決まっていません（期間中の7日間）':`${o.precise_start_date}〜${o.precise_end_date_inclusive}`}</span></li>)}</ul>{indoor.length===0?<p>この日の出展情報はまだありません。</p>:null}<p>{canChooseContext?'出展を選ぶと、施設名と一緒に記録できます。':'この出展はまだ選べません。'}</p></div>:null}</div>:null}
