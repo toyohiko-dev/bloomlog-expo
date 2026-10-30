@@ -41,7 +41,7 @@ export default async function ActivityLogEditPage({ params,searchParams }: Activ
           <p className="text-sm font-medium text-sky-700">思い出を編集する</p>
           <h1 className="mt-2 text-3xl font-semibold text-slate-900">思い出を編集する</h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            この思い出の内容を整えて、来場日のタイムラインに反映します。
+            直したいところを変更して「保存する」を押してください。
           </p>
 
           <ActivityLogForm

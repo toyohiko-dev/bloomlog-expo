@@ -10,7 +10,7 @@ export function DeleteSessionButton({ sessionId }: { sessionId: string }) {
     <form
       action={deleteSessionAction}
       onSubmit={(event) => {
-        if (!window.confirm("この来場日を削除しますか？")) {
+        if (!window.confirm("この来場日と、この日の記録を削除します。元に戻せません。削除しますか？")) {
           event.preventDefault();
         }
       }}
@@ -37,7 +37,7 @@ export function DeleteActivityLogButton({
     <form
       action={deleteActivityLogAction}
       onSubmit={(event) => {
-        if (!window.confirm("この思い出を削除しますか？")) {
+        if (!window.confirm("この思い出を削除します。元に戻せません。削除しますか？")) {
           event.preventDefault();
         }
       }}

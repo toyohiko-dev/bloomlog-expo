@@ -109,7 +109,7 @@ export function SessionEditForm({
             className={fieldClass(Boolean(state.fieldErrors.title))}
           />
           <p className="mt-2 text-xs text-slate-500">
-            この日をひとことで表す短い名前をつけます。
+            その日を思い出せる名前です。空欄でも追加できます。
           </p>
           {state.fieldErrors.title ? (
             <p className="mt-2 text-sm text-rose-600">{state.fieldErrors.title}</p>
@@ -169,7 +169,7 @@ export function SessionEditForm({
             className={fieldClass(Boolean(state.fieldErrors.notes))}
           />
           <p className="mt-2 text-xs text-slate-500">
-            あとで振り返りたいことを書きます。
+            覚えておきたいことがあれば書いてください。空欄でも追加できます。
           </p>
           {state.fieldErrors.notes ? (
             <p className="mt-2 text-sm text-rose-600">{state.fieldErrors.notes}</p>

@@ -445,9 +445,9 @@ export function ActivityLogForm({
     if (!draftReady || submittingRef.current || pending) {
       return;
     }
-    if(photoNeedsReselect&&!selectedPhoto){setState({status:'error',message:'写真を選び直すか、写真なしに変更してください。ほかの入力は保持しています。',fieldErrors:{photo:'写真の再選択が必要です。'}});return;}
+    if(photoNeedsReselect&&!selectedPhoto){setState({status:'error',message:'写真を選び直すか、写真なしに変更してください。ほかの入力した内容は残っています。',fieldErrors:{photo:'写真の再選択が必要です。'}});return;}
     if(!placeCompatible){setState({status:"error",message:"この来場日の施設対応が未確認です。場所を選び直してください。",fieldErrors:{pavilionId:"イベントに対応する施設を選んでください。"}});return;}
-    if(mapPoint){const checked=validateMapPoint(mapPoint,{eventId:recordingEventId,pavilionId:selectedPavilionId||null,activityType});if(!mapPointAvailable||!checked.ok){setState({status:'error',message:'地図の位置を確認するか、あとで指定に変更してください。入力は保持しています。',fieldErrors:{pavilionId:'地図位置がこの記録に対応していません。'}});return;}}
+    if(mapPoint){const checked=validateMapPoint(mapPoint,{eventId:recordingEventId,pavilionId:selectedPavilionId||null,activityType});if(!mapPointAvailable||!checked.ok){setState({status:'error',message:'地図の位置を確認するか、あとで指定に変更してください。入力した内容は残っています。',fieldErrors:{pavilionId:'地図位置がこの記録に対応していません。'}});return;}}
     if(mode==='create'){
       const signature=activityAttemptSignature(JSON.stringify({recordingSessionId,activityType,title,memo,occurredAt,price,acquisitionMethod,selectedPavilionId,placeContext,mapPoint,hasPhoto:Boolean(selectedPhoto||photoNeedsReselect),photoSelection:photoSelection.current}));
       if(!saveAttempt.current)saveAttempt.current={id:crypto.randomUUID(),signature};
@@ -519,7 +519,7 @@ export function ActivityLogForm({
       encType="multipart/form-data"
     >
       {pointPicker!==false?<MapPointPicker initial={pointPicker} onCancel={()=>setPointPicker(false)} onConfirm={point=>{if(!mapPointAvailable||activityType==='pavilion_visit')return;choosePlace('');setMapPoint(point);setPointPicker(false);persistDraft({mapPoint:point,placeContext:null,pavilionId:'',pavilionSearch:''});}} />:null}
-      {fixtureAdapter?<div role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">端末内の合成試験です。本番DB・Storageには送信しません。<button type="button" disabled={!fixtureAdapter.photo||pending} onClick={()=>{if(fixtureAdapter.photo)choosePhoto(fixtureAdapter.photo);}} className="mt-2 block min-h-11 rounded-full border bg-white px-4">合成写真を選ぶ</button></div>:null}
+      {fixtureAdapter?<div role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">お試し画面です。実際の記録は増えません。<button type="button" disabled={!fixtureAdapter.photo||pending} onClick={()=>{if(fixtureAdapter.photo)choosePhoto(fixtureAdapter.photo);}} className="mt-2 block min-h-11 rounded-full border bg-white px-4">サンプル写真を使う</button></div>:null}
       <input type="hidden" name="sessionId" value={recordingSessionId} />
       {mode === "edit" && logId ? (
         <input type="hidden" name="logId" value={logId} />
@@ -604,7 +604,7 @@ export function ActivityLogForm({
             <label className="block text-sm font-medium">来場日
               {mode==='create'&&visitSessions.length>0 ? <select id="recording-session" aria-label="記録する来場日" value={recordingSessionId} onChange={event=>{setRecordingSessionId(event.target.value);persistDraft({recordingSessionId:event.target.value});}} className="mt-2 block w-full rounded-xl border bg-white p-3">{!recordingSessionId?<option value="" disabled>来場日を選んでください</option>:null}{visitSessions.map(day=><option key={day.id} value={day.id}>{day.visit_date}</option>)}</select> : <span className="ml-3">{visitDate??'この来場日'}</span>}
             </label>
-            {photoEntry?<p className="text-xs text-slate-600">この写真をどの来場日の思い出として残すかを選びます。地図の表示範囲は変わりません。</p>:null}
+            {photoEntry?<p className="text-xs text-slate-600">写真を撮った日を選んでください。</p>:null}
           </div>
           <details open={!photoEntry||Boolean(state.fieldErrors.activityType)} className="border-b border-slate-200 bg-white/80 px-5 py-5"><summary className="cursor-pointer text-sm font-semibold">種類を変更 · {activityTypeMeta.label}</summary><p className="mt-2 text-xs text-slate-600">フードやピンバッジとして分類したい場合だけ変更します。</p>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -677,7 +677,7 @@ export function ActivityLogForm({
             {placeContext?<div className="rounded-xl border p-3"><PlaceContextSummary context={placeContext}/><button type="button" disabled={pending} onClick={()=>{setPlaceContext(null);persistDraft({placeContext:null});}} className="mt-2 text-sm underline">場所の詳細を取り消す</button></div>:null}
             <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
               <label htmlFor="pavilion-search" className="block text-sm font-medium">場所を選ぶ・変更する{showPavilionPicker?'（訪問は必須）':'（任意）'}</label>
-              <p className="text-sm text-[#315e4b]">{selectedPavilion?'選択中: '+selectedPavilion.name:'場所はあとで指定できます。'} 関連グッズだけでは訪問済みになりません。{!placeCompatible?" この場所は選択したイベントの施設として未対応です。":null}</p>
+              <p className="text-sm text-[#315e4b]">{selectedPavilion?'選択中: '+selectedPavilion.name:'場所はあとで選べます。'} ピンバッジやフードを記録しても、施設を訪れた回数には数えません。{!placeCompatible?" このイベントでは選べない場所です。別の場所を選んでください。":null}</p>
               <input id="pavilion-search" type="text" value={pavilionSearch} placeholder="場所の名前で絞り込む" onChange={event=>{setPavilionSearch(event.target.value);persistDraft({pavilionSearch:event.target.value});}} className={fieldClass(false)} />
               <label htmlFor="related-place" className="sr-only">場所の一覧</label>
               <select id="related-place" value={selectedPavilionId} className={fieldClass(Boolean(state.fieldErrors.pavilionId))} onChange={event=>choosePlace(event.target.value)}>
@@ -688,7 +688,7 @@ export function ActivityLogForm({
               {hasPavilionSearch&&filteredPavilions.length===0?<p className="text-xs text-slate-500">一致する場所はありません。名前を消すと一覧に戻れます。</p>:null}
               {state.fieldErrors.pavilionId?<p className="text-sm text-rose-600">{state.fieldErrors.pavilionId}</p>:null}
               {!showPavilionPicker&&selectedPavilion?<button type="button" disabled={pending} onClick={()=>choosePlace('')} className="min-h-11 rounded-full border px-4 text-sm font-semibold">施設に結びつけずに記録する</button>:null}
-              {!showPavilionPicker?<p className="text-xs leading-5 text-slate-600">園路のパレードなど、施設を選ばない写真も保存できます。{mapPointAvailable?"地図でも自分で位置を指定できます。施設へ自動で移動させません。":"道路上の任意点への配置は準備中なので、施設へ自動で移動させません。"}</p>:null}
+              {!showPavilionPicker?<p className="text-xs leading-5 text-slate-600">園路のパレードなど、施設を選ばない写真も保存できます。{mapPointAvailable?"地図で写真を置く場所を選べます。":"地図で場所を選ぶ機能は準備中です。"}</p>:null}
               {showPavilionPicker?<p className="text-xs text-slate-500">訪問の記録には場所が必要です。場所を後で決める場合は、フード・グッズ・イベントで記録してください。</p>:null}
             </div>
             </details>
@@ -723,7 +723,7 @@ export function ActivityLogForm({
               </div>
             )}
 
-            <details open={!photoEntry||Boolean(state.fieldErrors.occurredAt||state.fieldErrors.price||state.fieldErrors.acquisitionMethod||state.fieldErrors.memo)}><summary className="cursor-pointer rounded-xl border bg-white p-3 text-sm font-semibold">メモ・時刻などを追加（任意）</summary><p className="my-3 text-xs text-slate-600">名前と写真だけでも保存できます。時刻は並び順、メモは振り返り、金額は購入の記録に使います。</p>
+            <details open={!photoEntry||Boolean(state.fieldErrors.occurredAt||state.fieldErrors.price||state.fieldErrors.acquisitionMethod||state.fieldErrors.memo)}><summary className="cursor-pointer rounded-xl border bg-white p-3 text-sm font-semibold">メモや時刻を追加する</summary><p className="my-3 text-xs text-slate-600">名前と写真だけでも保存できます。時刻は並び順、メモは振り返り、金額は購入の記録に使います。</p>
             <div>
               <label
                 htmlFor="occurredAt"
@@ -744,7 +744,7 @@ export function ActivityLogForm({
                 className={fieldClass(Boolean(state.fieldErrors.occurredAt))}
               />
               <p className="mt-2 text-xs leading-5 text-slate-500">
-                入力すると、タイムラインの並び順にも反映されます。
+                時間順に並べたいときだけ入力してください。
               </p>
               {state.fieldErrors.occurredAt ? (
                 <p className="mt-2 text-sm text-rose-600">
@@ -871,7 +871,7 @@ export function ActivityLogForm({
         </button>
         {mode === "create" ? (
           <span className="text-sm text-slate-500">
-            {returnToMap?"保存すると、元の地図の表示範囲を保って記録を開きます。":"保存すると、この来場日のタイムラインに戻ります。"}
+            {returnToMap?"保存すると、地図に戻って写真を見られます。":"保存すると、この来場日のタイムラインに戻ります。"}
           </span>
         ) : null}
         {cancelHref ? (

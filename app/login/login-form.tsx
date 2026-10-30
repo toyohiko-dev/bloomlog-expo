@@ -35,7 +35,7 @@ export function LoginForm({ nextPath }: { nextPath: string }) {
         return;
       }
     } catch {
-      setErrorMessage("ログイン処理に失敗しました。もう一度お試しください。");
+      setErrorMessage("ログインできませんでした。もう一度「Googleでログイン」を押してください。");
       setIsLoading(false);
     }
   }
@@ -60,7 +60,7 @@ export function LoginForm({ nextPath }: { nextPath: string }) {
       ) : null}
 
       <p className="text-center text-xs leading-5 text-slate-500">
-        無料運用のため、現在は Google ログインのみ対応しています。
+        お使いのGoogleアカウントで始められます。
       </p>
     </div>
   );

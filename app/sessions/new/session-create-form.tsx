@@ -69,7 +69,7 @@ export function SessionCreateForm({
         </div>
       ) : null}
 
-      <label className="block text-sm font-medium">イベント<select name="eventId" aria-label="来場日のイベント" defaultValue={initialEventId} disabled={pending} className="mt-2 block w-full rounded-2xl border bg-white p-3"><option value="">未分類</option>{events.map(event=><option key={event.id} value={event.id}>{event.name}</option>)}</select></label>
+      <label className="block text-sm font-medium">イベント<select name="eventId" aria-label="来場日のイベント" defaultValue={initialEventId} disabled={pending} className="mt-2 block w-full rounded-2xl border bg-white p-3"><option value="">イベントを選ばずに記録する</option>{events.map(event=><option key={event.id} value={event.id}>{event.name}</option>)}</select></label>
       {state.fieldErrors.eventId?<p className="text-sm text-rose-600">{state.fieldErrors.eventId}</p>:null}
       <fieldset
         disabled={pending}
@@ -95,7 +95,7 @@ export function SessionCreateForm({
             className={fieldClass(Boolean(state.fieldErrors.visitDate))}
           />
           <p className="mt-2 text-xs text-slate-500">
-            1日ごとに来場日を作成します。
+            会場に行った日を選んでください。
           </p>
           {state.fieldErrors.visitDate ? (
             <p className="mt-2 text-sm text-rose-600">
@@ -124,7 +124,7 @@ export function SessionCreateForm({
             className={fieldClass(Boolean(state.fieldErrors.title))}
           />
           <p className="mt-2 text-xs text-slate-500">
-            この日をひとことで表す短い名前をつけます。
+            その日を思い出せる名前です。空欄でも追加できます。
           </p>
           {state.fieldErrors.title ? (
             <p className="mt-2 text-sm text-rose-600">{state.fieldErrors.title}</p>
@@ -151,7 +151,7 @@ export function SessionCreateForm({
             className={fieldClass(Boolean(state.fieldErrors.notes))}
           />
           <p className="mt-2 text-xs text-slate-500">
-            あとで振り返りたいことを書きます。
+            覚えておきたいことがあれば書いてください。空欄でも追加できます。
           </p>
           {state.fieldErrors.notes ? (
             <p className="mt-2 text-sm text-rose-600">{state.fieldErrors.notes}</p>
@@ -165,7 +165,7 @@ export function SessionCreateForm({
           disabled={pending}
           className="inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300 sm:w-auto"
         >
-          {pending ? "作成中..." : "来場日を作成する"}
+          {pending ? "作成中..." : "来場日を追加する"}
         </button>
         <Link
           href="/sessions"

@@ -158,11 +158,11 @@ export async function createVenueMapImage(source: SVGSVGElement, markers: VenueM
     ctx.fillStyle = "#0f3d32"; ctx.font = `700 56px ${FONT}`;
     ctx.fillText(options?.title ?? "制覇マップ", 56, 82);
     ctx.font = `24px ${FONT}`; ctx.fillStyle = "#52675e";
-    ctx.fillText(paperMode?"公開資料の推定位置に、わたしの思い出を。":options?.badgeMarkers ? "思い出を、ひとつの庭に。配置はイメージです。" : "訪れた場所に、花が咲く。", 58, 128);
+    ctx.fillText(paperMode?"会場に重なる、わたしの思い出。":options?.badgeMarkers ? "思い出を、ひとつの庭に。配置はイメージです。" : "訪れた場所に、花が咲く。", 58, 128);
     ctx.textAlign = "right"; ctx.font = `700 48px ${FONT}`; ctx.fillStyle = "#0f3d32";
     ctx.fillText(paperMode?`思い出 ${summary.markers.reduce((n,m)=>n+(m.memoryCount??0),0)}件`:`${summary.visited.length} / ${summary.total} 訪問済み`, WIDTH - 56, 80);
     ctx.font = `24px ${FONT}`; ctx.fillStyle = "#52675e";
-    ctx.fillText(paperMode?`訪問の記録 ${summary.visited.length}か所 · 現地未検証`:`達成率 ${summary.percentage}%`, WIDTH - 56, 125);
+    ctx.fillText(paperMode?`訪問の記録 ${summary.visited.length}か所 · 場所はおおよそです`:`達成率 ${summary.percentage}%`, WIDTH - 56, 125);
     ctx.textAlign = "left";
     ctx.fillStyle = "#ffffff"; ctx.fillRect(MAP_X, MAP_Y, MAP_WIDTH, MAP_HEIGHT);
     ctx.drawImage(image, MAP_X, MAP_Y, MAP_WIDTH, MAP_HEIGHT);
@@ -209,7 +209,7 @@ export async function createVenueMapImage(source: SVGSVGElement, markers: VenueM
       ctx.font = `24px ${FONT}`; ctx.fillStyle = "#64756d";
       ctx.fillText("最初の訪問を記録すると、地図に花が咲きます。", 56, listY + 50);
     }
-    if(omittedPhotos){ctx.font=`18px ${FONT}`;ctx.fillStyle='#64756d';ctx.fillText(`写真を取得できなかった${omittedPhotos}か所は花で表示しています。`,56,height-70);options?.onPhotosOmitted?.(omittedPhotos);}
+    if(omittedPhotos){ctx.font=`18px ${FONT}`;ctx.fillStyle='#64756d';ctx.fillText(`写真を読み込めなかった${omittedPhotos}か所は花で表示しています。`,56,height-70);options?.onPhotosOmitted?.(omittedPhotos);}
     ctx.font = `21px ${FONT}`; ctx.fillStyle = "#64756d";
     const date = new Intl.DateTimeFormat("ja-JP", { dateStyle: "medium", timeZone: "Asia/Tokyo" }).format(new Date());
     ctx.fillText(`${date} 作成${summary.visited.length > 24 ? ` · 一覧は24件まで表示（ほか${summary.visited.length - 24}件）` : ""}`, 56, height - 35);

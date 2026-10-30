@@ -66,7 +66,7 @@ test('records attached to a removed or unavailable pavilion remain visible off t
   assert.equal(find(tree, node => node.type === 'Map').props.pavilions.some(item => item.id === 'unavailable'), false);
 });
 
-test('registered event without reviewed illustration anchors keeps all records visible as unmapped',()=>{const h=harness();h.props.explicitAnchors=[];const tree=h.render();assert.match(text(tree),/地図位置未対応/);for(const log of h.props.logs)assert.ok(text(tree).includes(log.title));assert.match(text(tree),/1 か所訪問|1.*か所訪問/);});
+test('registered event without reviewed illustration anchors keeps all records visible as unmapped',()=>{const h=harness();h.props.explicitAnchors=[];const tree=h.render();assert.match(text(tree),/地図にまだ表示していない思い出/);for(const log of h.props.logs)assert.ok(text(tree).includes(log.title));assert.match(text(tree),/1 か所訪問|1.*か所訪問/);});
 
 
 test('return focus opens the same dated unmapped place without inventing coordinates or losing entries',()=>{const h=harness();h.props.explicitAnchors=[];h.props.initialPlaceId='a';h.props.initialDate='2027-04-10';const tree=h.render();const panel=find(tree,n=>n.props?.['aria-label']==='位置未対応の場所の思い出');assert(panel);assert.match(text(panel),/フードの思い出 4/);assert.doesNotMatch(text(panel),/翌月のフード/);const map=find(tree,n=>n.type==='Map');assert.equal(map.props.focusPlaceId,'a');assert.equal(map.props.explicitAnchors.length,0);});
@@ -80,7 +80,7 @@ test('real-mode links follow the selected day and expose a non-writing location 
  const day=h.props.sessions.find(day=>day.visit_date==='2027-04-10');
  const photo=find(tree,n=>n.props?.href?.includes('/activities/new?return=map#photo'));assert(photo);assert(photo.props.href.includes(day.id));
  h.selectDate(tree,'2027-05-12');tree=h.render();const later=h.props.sessions.find(day=>day.visit_date==='2027-05-12');assert(find(tree,n=>n.props?.href?.includes(`/sessions/${later.id}/activities/new?return=map#photo`)));
- const assignment=find(tree,n=>n.props?.href?.includes('/edit?return=map#related-place'));assert(assignment);assert.match(text(assignment),/場所を指定する/);
+ const assignment=find(tree,n=>n.props?.href?.includes('/edit?return=map#related-place'));assert(assignment);assert.match(text(assignment),/場所を選ぶ/);
 
 });
 
@@ -94,7 +94,7 @@ test('photo detail opens the actual selected image, supports every photo in its 
 
 test('independent photo points render and reopen by record without becoming facility visits or disappearing on date changes',()=>{
  const h=harness(),point=pointLogic.confirmMapPoint(pointLogic.manualMapPoint(.3,.4),true);h.props.eventId=point.event_id;h.props.mapMode='geographic';h.props.mapPointAvailable=true;h.props.logs=Array.from({length:24},(_,i)=>({...h.props.logs[0],id:'point-'+i,pavilion_id:null,activity_type:'event_participation',event_id:point.event_id,map_point:point,title:'Road photo '+i,photoUrl:'/synthetic.png'}));
- let tree=h.render(),map=find(tree,n=>n.type==='Map');assert.equal(map.props.pointMarkers.length,24);assert.equal(map.props.places.length,0);assert.match(text(tree),/0\s*か所訪問/);const detail=map.props.renderPlaceDetail('point:point-23',()=>{});assert.match(text(detail),/Road photo 23/);assert.match(text(detail),/施設の訪問数には含めません/);h.selectDate(tree,'2027-05-12');tree=h.render();assert.equal(find(tree,n=>n.type==='Map').props.pointMarkers.length,0);h.selectDate(tree,'');tree=h.render();assert.equal(find(tree,n=>n.type==='Map').props.pointMarkers.length,24);
+ let tree=h.render(),map=find(tree,n=>n.type==='Map');assert.equal(map.props.pointMarkers.length,24);assert.equal(map.props.places.length,0);assert.match(text(tree),/0\s*か所訪問/);const detail=map.props.renderPlaceDetail('point:point-23',()=>{});assert.match(text(detail),/Road photo 23/);assert.match(text(detail),/施設に行った回数には数えません/);h.selectDate(tree,'2027-05-12');tree=h.render();assert.equal(find(tree,n=>n.type==='Map').props.pointMarkers.length,0);h.selectDate(tree,'');tree=h.render();assert.equal(find(tree,n=>n.type==='Map').props.pointMarkers.length,24);
 });
 
 test('adding a later-day photo keeps four older facility records in cumulative view',()=>{const h=harness();const first=h.props.logs[0];const session=h.props.sessions[0];h.props.logs=Array.from({length:4},(_,i)=>({...first,id:'older-'+i,pavilion_id:'a',session_id:session.id,photoUrl:null}));let tree=h.render();assert.equal(find(tree,n=>n.type==='Map').props.places.find(p=>p.id==='a').entries.length,4);const next=h.props.sessions.find(s=>s.visit_date!==session.visit_date);h.props.logs.push({...first,id:'single-new-photo',pavilion_id:null,session_id:next.id,photoUrl:'/synthetic.png'});tree=h.render();const map=find(tree,n=>n.type==='Map');assert.equal(map.props.places.find(p=>p.id==='a').entries.length,4);assert.equal(map.props.photoCounts.get('a'),undefined);assert.equal(h.props.logs.length,5);});

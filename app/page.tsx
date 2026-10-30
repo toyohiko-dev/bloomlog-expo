@@ -73,8 +73,8 @@ export default async function HomePage({searchParams}:{searchParams:Promise<{eve
       <div className="mx-auto flex w-full max-w-[68rem] flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
         <AppPrimaryNav currentPath="/" />
 
-        <nav aria-label="集計するイベント" className="flex flex-wrap gap-2"><Link href="/" aria-current={eventId===null?'page':undefined} className="rounded-full border bg-white px-4 py-2 text-sm">未分類・既存の記録</Link>{events.map(event=><Link key={event.id} href={`/?event=${encodeURIComponent(event.id)}`} aria-current={eventId===event.id?'page':undefined} className="rounded-full border bg-white px-4 py-2 text-sm">{event.name}</Link>)}</nav>
-        <p className="text-sm text-slate-600">{pavilionProgress.totalPavilions?`この範囲の達成対象 ${pavilionProgress.totalPavilions}か所 · 訪問済み ${pavilionProgress.completedPavilions}か所 · ${Math.round((pavilionProgress.completionRate??0)*100)}%`:'公式の達成対象は未確定です。記録の件数はそのまま表示します。'}{pavilionProgress.unverifiedVisitedPavilions>0?` 出典・達成対象未照合の訪問 ${pavilionProgress.unverifiedVisitedPavilions}か所は達成率に含めていません。`:''}</p>
+        <nav aria-label="集計するイベント" className="flex flex-wrap gap-2"><Link href="/" aria-current={eventId===null?'page':undefined} className="rounded-full border bg-white px-4 py-2 text-sm">イベントを選んでいない記録</Link>{events.map(event=><Link key={event.id} href={`/?event=${encodeURIComponent(event.id)}`} aria-current={eventId===event.id?'page':undefined} className="rounded-full border bg-white px-4 py-2 text-sm">{event.name}</Link>)}</nav>
+        <p className="text-sm text-slate-600">{pavilionProgress.totalPavilions?`訪問できる場所 ${pavilionProgress.totalPavilions}か所 · 訪問済み ${pavilionProgress.completedPavilions}か所 · ${Math.round((pavilionProgress.completionRate??0)*100)}%`:'訪問できる場所の一覧を準備しています。これまでの記録は見返せます。'}{pavilionProgress.unverifiedVisitedPavilions>0?` 訪問率の計算に含めていない場所 ${pavilionProgress.unverifiedVisitedPavilions}か所があります。記録はそのまま残っています。`:''}</p>
         <section className="w-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-50 via-white to-sky-50 shadow-sm ring-1 ring-slate-200">
           <div className="px-6 py-8 sm:px-6 lg:px-10 lg:py-10">
             <div className="space-y-6">

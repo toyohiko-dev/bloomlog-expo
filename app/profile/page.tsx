@@ -18,7 +18,7 @@ export default async function ProfilePage() {
               ニックネームの設定
             </h1>
             <p className="text-sm leading-6 text-slate-600">
-              BloomLog 内で表示される名前を設定できます。ログインIDではなく、ニックネームとして使われます。
+              アプリに表示する名前です。好きなニックネームを使えます。
             </p>
           </div>
 

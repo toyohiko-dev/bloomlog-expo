@@ -260,17 +260,17 @@ async function validateActivityLog(formData: FormData, original?: {pavilion_id:s
   }
 
   if(pavilion && !canUsePavilionInEvent(placeRegistry,session.event_id??null,pavilion.id) && !(original?.pavilion_id===pavilion.id && original.session_id===sessionId)){
-    return {error:activityErrorState("この来場日の施設として未対応です。場所を選び直してください。",{pavilionId:"イベントに対応する施設を選んでください。"})};
+    return {error:activityErrorState("このイベントでは選べない場所です。別の場所を選んでください。",{pavilionId:"イベントに対応する施設を選んでください。"})};
   }
   const contextInput=formData.has('placeContext')?readText(formData,'placeContext'):original?.place_context??null;
-  if(!placeContextStorageEnabled&&contextInput)return {error:activityErrorState('場所の詳細を保存する準備が完了していません。入力は保持しています。',{pavilionId:'場所の詳細は登録準備中です。'})};
+  if(!placeContextStorageEnabled&&contextInput)return {error:activityErrorState('場所の詳細を保存する準備が完了していません。入力した内容は残っています。',{pavilionId:'場所の詳細は登録準備中です。'})};
   const contextResult=validatePlaceContext(contextInput,{catalog:greenExpoResearch,eventId:session.event_id??null,visitDate:session.visit_date,pavilionId:pavilion?.id??null,bindings:new Map(reviewedBindings(placeRegistry).filter(p=>p.pavilionId).map(p=>[p.sourceId,p.pavilionId!]))});
   if(!contextResult.ok)return {error:activityErrorState(contextResult.error,{pavilionId:contextResult.error})};
   const pointInput=formData.has('mapPoint')?readText(formData,'mapPoint'):null;
-  if(!mapPointStorageEnabled&&pointInput)return {error:activityErrorState('地図の任意位置はまだ保存できません。入力は保持しています。',{pavilionId:'地図位置は準備中です。'})};
+  if(!mapPointStorageEnabled&&pointInput)return {error:activityErrorState('地図の任意位置はまだ保存できません。入力した内容は残っています。',{pavilionId:'地図位置は準備中です。'})};
   const pointContext={eventId:session.event_id??null,pavilionId:pavilion?.id??null,activityType};
   const pointResult=original?resolveMapPointEdit({present:formData.has('mapPoint'),value:pointInput},original.map_point??null,pointContext):validateMapPoint(pointInput,pointContext);
-  if(!pointResult.ok)return {error:activityErrorState('写真の地図位置を確認・確定してください。入力は保持しています。',{pavilionId:'別イベント・地図版・施設訪問との併用、未確定の位置は保存できません。'})};
+  if(!pointResult.ok)return {error:activityErrorState('写真を置く場所を選び直してください。入力した内容は残っています。',{pavilionId:'「地図で場所を選ぶ」から、写真を置く場所を選び直してください。'})};
   const occurredAt = buildOccurredAt(session.visit_date, occurredTime);
 
   if (occurredAt === undefined) {
@@ -590,7 +590,7 @@ export async function submitActivityLogAction(
     const logId=attemptId||crypto.randomUUID();
     const expected={user_id:user.id,session_id:sessionId,activity_type:activityType,pavilion_id:pavilionId,title,memo,occurred_at:occurredAt,event_id:session.event_id??null,price:activityType==='food'||activityType==='pin'?price:null,acquisition_method:activityType==='pin'?acquisitionMethod:null,...(placeContextStorageEnabled?{place_context:placeContext}:{}),...(writeMapPoint?{map_point:mapPoint}:{})};
     if(attemptId){const saved=await getActivityLog(attemptId);if(saved){
-      if(readText(formData,'saveAttemptChanged')==='true'||!sameActivityAttempt(saved,expected))return {...activityErrorState('この操作は既に保存されています。入力は保持しています。保存済みの記録を開いて確認・編集してください。'),recoveryHref:`/sessions/${saved.session_id}/activity-logs/${saved.id}/edit`};
+      if(readText(formData,'saveAttemptChanged')==='true'||!sameActivityAttempt(saved,expected))return {...activityErrorState('この操作は既に保存されています。入力した内容は残っています。保存済みの記録を開いて確認・編集してください。'),recoveryHref:`/sessions/${saved.session_id}/activity-logs/${saved.id}/edit`};
       revalidatePath(`/sessions/${sessionId}`);revalidatePath('/collection');revalidatePath('/collection-next');revalidatePath('/');
       return {status:'success',message:'保存済みの記録を確認しました。',fieldErrors:{}};
     }}
@@ -619,7 +619,7 @@ export async function submitActivityLogAction(
 
     if (error) {
       await cleanupUncommittedActivityPhoto(supabase,user.id,photoPath);uploadedPhoto=undefined;
-      if(attemptId&&error.code==='23505'){const saved=await getActivityLog(attemptId);if(saved&&(readText(formData,'saveAttemptChanged')==='true'||!sameActivityAttempt(saved,expected)))return {...activityErrorState('保存済みの記録があります。入力は保持しています。確認して編集してください。'),recoveryHref:`/sessions/${saved.session_id}/activity-logs/${saved.id}/edit`};if(saved&&sameActivityAttempt(saved,expected)){revalidatePath(`/sessions/${sessionId}`);revalidatePath('/collection');revalidatePath('/collection-next');revalidatePath('/');return {status:'success',message:'保存済みの記録を確認しました。',fieldErrors:{}};}}
+      if(attemptId&&error.code==='23505'){const saved=await getActivityLog(attemptId);if(saved&&(readText(formData,'saveAttemptChanged')==='true'||!sameActivityAttempt(saved,expected)))return {...activityErrorState('保存済みの記録があります。入力した内容は残っています。確認して編集してください。'),recoveryHref:`/sessions/${saved.session_id}/activity-logs/${saved.id}/edit`};if(saved&&sameActivityAttempt(saved,expected)){revalidatePath(`/sessions/${sessionId}`);revalidatePath('/collection');revalidatePath('/collection-next');revalidatePath('/');return {status:'success',message:'保存済みの記録を確認しました。',fieldErrors:{}};}}
       return activityErrorState('記録の保存に失敗しました。');
     }
 

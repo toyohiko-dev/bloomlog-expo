@@ -18,11 +18,11 @@ function readQueryValue(value?: string | string[] | undefined) {
 function getLoginErrorMessage(errorCode?: string) {
   switch (errorCode) {
     case "callback_failed":
-      return "ログイン処理に失敗しました。もう一度お試しください。";
+      return "ログインできませんでした。もう一度「Googleでログイン」を押してください。";
     case "google_not_enabled":
-      return "Googleログインがまだ有効化されていません。設定完了後に再度お試しください。";
+      return "現在、Googleでログインできません。しばらくしてからお試しください。";
     case "unexpected":
-      return "予期しないエラーが発生しました。時間をおいて再度お試しください。";
+      return "うまく読み込めませんでした。少し待ってから、もう一度お試しください。";
     default:
       return null;
   }
@@ -49,7 +49,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             Googleでログイン
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            BloomLog は万博の体験を記録するアプリです。現在は Google ログインのみ対応しています。
+            BloomLogは、会場での写真や出来事を残し、地図やアルバムで見返すアプリです。
           </p>
 
           {errorMessage ? (

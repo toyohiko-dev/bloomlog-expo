@@ -40,12 +40,12 @@ export default async function NewSessionPage({
         </div>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <p className="text-sm font-medium text-sky-700">来場日を作成する</p>
+          <p className="text-sm font-medium text-sky-700">来場日を追加する</p>
           <h1 className="mt-2 text-3xl font-semibold text-slate-900">
-            来場日を作成する
+            来場日を追加する
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            日付に加えて、この日をひとことで表すタイトルや、あとで振り返りたいメモを最初から入力できます。
+            行った日を選びましょう。タイトルとメモは、あとからでも書けます。
           </p>
 
           {existingSession ? (
@@ -56,7 +56,7 @@ export default async function NewSessionPage({
                   : "この日の来場日は、すでにあります。"}
               </p>
               <p className="mt-2 leading-6">
-                続きを記録する場合は、既存の来場日を開いてください。
+                その日のページを開くと、続きを記録できます。
               </p>
               <div className="mt-4">
                 <Link

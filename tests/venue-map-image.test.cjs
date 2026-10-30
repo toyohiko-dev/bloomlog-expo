@@ -97,7 +97,7 @@ test('portrait artwork export keeps the full aspect ratio and count badges witho
 
 
 test('geographic PNG draws photo stacks and flat flowers without implying official completion',async()=>{const r=renderer();const a={...marker('a',true),paperMemory:true,memoryCount:123,memoryDayCount:2,previewUrl:'/cover.jpg'};await r.createVenueMapImage(r.source,[a],{asset:{href:'/art/green-expo-places-v1.svg',width:100,height:125},memoryStyle:true});assert(r.texts.includes('思い出 123件'));assert(r.texts.includes('2日'));assert(!r.texts.some(s=>s.startsWith('達成率')));assert(r.drawing.filter(([op])=>op==='drawImage').length>=2);assert(r.drawing.some(([op])=>op==='bezierCurveTo'));});
-test('failed cover retrieval keeps all records in export and explains the flower fallback',async()=>{const r=renderer({coverError:true});let omitted=0;await r.createVenueMapImage(r.source,[{...marker('a',true),paperMemory:true,memoryCount:14,previewUrl:'/cover.jpg'}],{memoryStyle:true,onPhotosOmitted:n=>omitted=n});assert.equal(omitted,1);assert(r.texts.some(s=>s.includes('写真を取得できなかった1か所')));assert(r.texts.includes('思い出 14件'));});
+test('failed cover retrieval keeps all records in export and explains the flower fallback',async()=>{const r=renderer({coverError:true});let omitted=0;await r.createVenueMapImage(r.source,[{...marker('a',true),paperMemory:true,memoryCount:14,previewUrl:'/cover.jpg'}],{memoryStyle:true,onPhotosOmitted:n=>omitted=n});assert.equal(omitted,1);assert(r.texts.some(s=>s.includes('写真を読み込めなかった1か所')));assert(r.texts.includes('思い出 14件'));});
 
 
 test('private record photos in geographic PNG request same-origin cookies without caching or public-path fallback',async()=>{

@@ -304,7 +304,7 @@ export default async function SessionDetailPage({
         <section className="rounded-[1.75rem] bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-7">
           <div className="flex flex-col gap-2 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500">この日のサマリー</p>
+              <p className="text-sm font-medium text-slate-500">この日の思い出</p>
               <h2 className="mt-1 text-xl font-semibold text-slate-900">
                 {reflection.title}
               </h2>
@@ -338,11 +338,11 @@ export default async function SessionDetailPage({
             <div>
               <p className="text-sm font-medium text-slate-500">タイムライン</p>
               <h2 className="mt-1 text-xl font-semibold text-slate-900">
-                今日の流れ
+                この日の出来事
               </h2>
             </div>
             <p className="text-sm text-slate-500">
-              入力した思い出が時系列で並びます。
+              記録した出来事を、時間順に見返せます。
             </p>
           </div>
 

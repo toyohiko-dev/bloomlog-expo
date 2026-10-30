@@ -19,7 +19,7 @@ export function VenueMapExport({ markers, asset, badgeMarkers, title, unavailabl
     try {
       const source = hostRef.current?.closest("section")?.querySelector<SVGSVGElement>("svg[data-venue-map-source]");
       if (!source) throw new Error("map-unavailable");
-      const blob = await createVenueMapImage(source, markers, { asset, badgeMarkers, title, memoryStyle,onPhotosOmitted:count=>setMessage(`${count}か所の写真は取得できず、花で表示しています。`) });
+      const blob = await createVenueMapImage(source, markers, { asset, badgeMarkers, title, memoryStyle,onPhotosOmitted:count=>setMessage(`${count}か所の写真を読み込めなかったため、花で表示しています。`) });
       await checkGeneratedPng(blob);
       const date = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(new Date());
       const file = new File([blob], `bloomlog-map-${date}.png`, { type: "image/png" });
@@ -56,8 +56,8 @@ export function VenueMapExport({ markers, asset, badgeMarkers, title, unavailabl
             <a href={preview.url} download={preview.file.name}
               className="rounded-full bg-emerald-800 px-5 py-3 text-sm font-semibold text-white">画像を保存</a>
           </div>
-          <p className="text-xs leading-6 text-slate-500">PNG画像として保存できます。保存した画像をXなどで共有できます。</p>
-          <p data-testid="map-metadata-status" className="text-xs leading-6 text-slate-500">生成PNGを検査：EXIF・XMP・テキスト領域なし。原写真の情報は変更していません。</p>
+          <p className="text-xs leading-6 text-slate-500">画像を保存して、Xなどで共有できます。</p>
+          <p data-testid="map-metadata-status" className="text-xs leading-6 text-slate-500">この画像には、元の写真の撮影日時やGPS情報は含まれません。地図で選んだ場所は表示されるので、共有前に確認してください。</p>
           <p role="status" aria-live="polite" className="mt-2 text-sm text-slate-600">{message}</p>
         </dialog>
       ) : null}

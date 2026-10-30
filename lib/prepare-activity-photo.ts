@@ -5,7 +5,7 @@ const cache = new WeakMap<File, Promise<File>>();
 const MAX_PIXELS = 20_000_000;
 const MAX_BYTES = 3_000_000;
 export class PhotoPreparationError extends Error {
-  constructor() { super('写真を安全に変換できませんでした。JPEG・PNG・WebPの写真を選び直してください。入力は保持しています。'); }
+  constructor() { super('この写真を保存用に準備できませんでした。JPEG・PNG・WebPの写真を選び直してください。入力した内容は残っています。'); }
 }
 /** GPS suggestions inspect the original File locally. Only these newly encoded pixels leave the device. */
 export function prepareActivityPhoto(file: File): Promise<File> {

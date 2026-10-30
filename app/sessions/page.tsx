@@ -28,13 +28,13 @@ export default async function SessionsPage() {
               来場日一覧
             </h1>
             <p className="max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-              来場日ごとに、その日の思い出をひとまとまりで見返せます。気になる日を開くと、タイムラインとメモをまとめて確認できます。
+              日付を選ぶと、その日の写真や出来事を見返せます。
             </p>
           </div>
 
           {sessions.length === 0 ? (
             <div className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-sm leading-7 text-slate-600">
-              まだ来場日はありません。ホームから最初の来場日を作りましょう。
+              まだ来場日がありません。ホームで会場に行った日を追加してください。
             </div>
           ) : (
             <div className="mt-6 space-y-3">
