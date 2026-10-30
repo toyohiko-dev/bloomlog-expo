@@ -112,3 +112,5 @@ test('map camera tap converts visible coordinates and ignores drag, pinch, cance
  v.onPointerDown(event(3,140,295));v.onPointerDown(event(4,150,300));v.onPointerUp(event(4,150,300));v.onPointerUp(event(3,140,295));assert.equal(calls.length,1);
  v.onPointerDown(event(5,140,295));v.onPointerCancel(event(5,140,295,'pointercancel'));v.onPointerUp(event(9,140,295));assert.equal(calls.length,1);
 });
+
+test('one actual photo renders one sheet even with four records, and only real additional photos add layers',()=>{const h=harness();function layers(n){if(!n||typeof n!=='object')return 0;return (n.props?.['data-photo-layer']?1:0)+[n.props?.children].flat(Infinity).reduce((sum,c)=>sum+layers(c),0);}for(const count of [1,2,3]){h.render([marker('a',{paperMemory:true,memoryCount:4,previewUrl:'/synthetic.png',photoCount:count})]);assert.equal(layers(h.badge('a')),count);}});

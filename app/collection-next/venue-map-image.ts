@@ -114,7 +114,7 @@ function drawFlower(ctx: CanvasRenderingContext2D, marker: VenueMapMarker, numbe
 function drawPaperMemory(ctx:CanvasRenderingContext2D,marker:VenueMapMarker,x:number,y:number,cover:HTMLImageElement|null){
  ctx.save();ctx.translate(x,y);ctx.scale(cover?2.05:3.1,cover?2.05:3.1);
  if(cover){
-  ctx.save();ctx.rotate(-0.12);ctx.fillStyle='#f0c784';ctx.strokeStyle='#fffcf1';ctx.lineWidth=7;ctx.fillRect(-65,-72,132,112);ctx.strokeRect(-65,-72,132,112);ctx.restore();
+  if((marker.photoCount??1)>1){ctx.save();ctx.rotate(-0.12);ctx.fillStyle='#f0c784';ctx.strokeStyle='#fffcf1';ctx.lineWidth=7;ctx.fillRect(-65,-72,132,112);ctx.strokeRect(-65,-72,132,112);ctx.restore();}
   ctx.fillStyle='#fffcf1';ctx.fillRect(-74,-75,140,122);const w=cover.naturalWidth||600,h=cover.naturalHeight||400,sw=Math.min(w,h*126/108),sh=sw*108/126;ctx.drawImage(cover,(w-sw)/2,(h-sh)/2,sw,sh,-67,-68,126,108);ctx.translate(49,40);
  }
  ctx.save();ctx.scale(0.9,0.9);

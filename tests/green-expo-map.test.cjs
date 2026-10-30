@@ -53,3 +53,5 @@ test('map photo entry follows the currently selected visit day, including empty 
 test('one saved photo is visible on the cumulative map and related goods never become a visit',()=>{
  const d=demo();const record=d.logs.find(l=>l.pavilion_id&&l.activity_type==='pin');const all=model.buildMemoryMap([record],d.sessions);const previews=new Map([[record.pavilion_id,'/art/demo-food.svg']]);const markers=presentation.buildIllustratedMarkers(d.pavilions,all.places,previews,false,map.anchors,artwork,true);const photo=markers.find(m=>m.id===record.pavilion_id);assert.equal(photo.previewUrl,'/art/demo-food.svg');assert.equal(photo.visited,false);assert.equal(photo.memoryCount,1);
 });
+
+test('all-days photo entry explicitly retains cumulative map scope',()=>{const nav=load('lib/memory-map-navigation.ts');const url=new URL(nav.memoryMapPhotoEntryHref([{id:'day',visit_date:'2027-04-10'}],'expo',null),'https://example.invalid');assert.equal(url.searchParams.get('mapDay'),'all');});

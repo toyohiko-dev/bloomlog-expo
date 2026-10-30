@@ -133,6 +133,7 @@ function harness(props = {}, storage = memoryStorage(), prepare = async file => 
     submit() { tree.props.onSubmit({ preventDefault() {}, currentTarget: {} }); render(); },
     async settle() { await task; render(); },
     message() { return nodes(tree).some(n=>n.type==='div'&&[n.props.children].flat().includes('saved'))?'saved':undefined; },
+    disclosures() {return nodes(tree).filter(n=>n.type==='details').map(n=>({open:n.props.open,summary:nodes(n).find(x=>x.type==='summary')?.props.children}));},
     text() { return nodes(tree).flatMap((n) => typeof n.props.children === 'string' ? [n.props.children] : []).join(' '); },
   };
 }
@@ -387,3 +388,7 @@ test('camera entry carries its original File and confirmed point through upload 
 });
 
 test('capture completion is notified only after a successful save, never after failure',async()=>{let completed=0;const h=harness({initialActivityType:'food',initialTitle:'Synthetic',returnToMap:true,onSaveComplete:()=>completed++});h.setAction(async()=>({status:'error',message:'offline',fieldErrors:{}}));h.submit();await h.settle();assert.equal(completed,0);h.setAction(async()=>({status:'success',message:'saved',fieldErrors:{}}));h.submit();await h.settle();assert.equal(completed,1);assert.equal(h.navigation.length,1);});
+
+test('photo save preserves cumulative or selected map scope independently of recording day',async()=>{for(const scope of [null,'2027-05-12']){const h=harness({initialActivityType:'event_participation',initialTitle:'Photo',returnToMap:true,returnMapDate:scope});h.submit();await h.settle();const url=new URL(h.navigation[0],'https://example.test');assert.equal(url.searchParams.get('day'),scope);}});
+
+test('photo form starts with category, facility suggestions and optional details collapsed',()=>{const h=harness({photoEntry:true,initialActivityType:'event_participation',initialTitle:'Photo'});const groups=h.disclosures();assert.equal(groups.length>=4,true);assert.equal(groups.filter(g=>g.open===true).length,1,'only the empty photo picker is expanded');assert.equal(h.value('title'),'Photo');});

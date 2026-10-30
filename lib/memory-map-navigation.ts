@@ -11,7 +11,7 @@ export function memoryMapReturnHref(eventId:string|null,placeId:string|null,date
 export function memoryMapHref(eventId:string|null,date:string|null=null){return memoryMapReturnHref(eventId,null,date).split('#')[0];}
 export function memoryMapPhotoEntryHref(sessions:{id:string;visit_date:string}[],eventId:string|null,date:string|null){
  const day=sessions.find(day=>date?day.visit_date===date:true);
- if(day)return `/sessions/${encodeURIComponent(day.id)}/activities/new?return=map#photo`;
+ if(day)return `/sessions/${encodeURIComponent(day.id)}/activities/new?return=map${date?"":"&mapDay=all"}#photo`;
  const query=new URLSearchParams();if(eventId)query.set('event',eventId);if(date&&/^\d{4}-\d{2}-\d{2}$/.test(date))query.set('visitDate',date);
  return `/sessions/new${query.size?'?'+query.toString():''}`;
 }

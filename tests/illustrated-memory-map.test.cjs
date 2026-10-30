@@ -9,3 +9,5 @@ test('explicit anchors use UUID association and remain stable across master reor
 
 
 test('official records without anchors cannot become a misleading empty shared image, while legacy PNG remains available',()=>{const missing=exportsForTest.mapExportUnavailableReason([], [{id:'a',entries:[{}]}],true);assert.match(missing,/未対応/);assert.equal(exportsForTest.mapExportUnavailableReason([],[{id:'a',entries:[{}]}],false),undefined);assert.equal(exportsForTest.mapExportUnavailableReason([{id:'a'}],[{id:'a',entries:[{}]}],true),undefined);assert.equal(exportsForTest.mapExportUnavailableReason([],[],true),undefined);});
+
+test('record totals and photo totals remain independent',()=>{const markers=buildIllustratedMarkers([{id:'a',name:'A'}],[{id:'a',visited:true,visitCount:1,entries:Array(4).fill({})}],new Map([['a','/dummy.png']]),false,undefined,undefined,true,new Map([['a',1]]));assert.equal(markers[0].photoCount,1);assert.equal(markers[0].memoryCount,4);});
