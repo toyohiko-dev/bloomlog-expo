@@ -115,10 +115,10 @@ function harness(props = {}, storage = memoryStorage(), prepare = async file => 
   render();
   return {
     calls, navigation, fileInput, render, storage,
-    openPoint(){nodes(tree).find(n=>n.type==='button'&&['地図で写真の位置を選ぶ','地図の位置を直す'].includes(n.props.children)).props.onClick();render();},
+    openPoint(){nodes(tree).find(n=>n.type==='button'&&['地図で場所を選ぶ','場所を選び直す'].includes(n.props.children)).props.onClick();render();},
     confirmPoint(point){nodes(tree).find(n=>n.type==='PointPicker').props.onConfirm(point);render();},
     cancelPoint(){nodes(tree).find(n=>n.type==='PointPicker').props.onCancel();render();},
-    deferPoint(){nodes(tree).find(n=>n.type==='button'&&n.props.children==='地図の位置はあとで指定').props.onClick();render();},
+    deferPoint(){nodes(tree).find(n=>n.type==='button'&&n.props.children==='場所を決めずに保存').props.onClick();render();},
     placeOptions(){return nodes(field("related-place")).filter(n=>n.type==="option").map(n=>n.props.value);},
     setAction(fn) { action = fn; },
     value(id) { return field(id)?.props.value; },
@@ -392,3 +392,5 @@ test('capture completion is notified only after a successful save, never after f
 test('photo save preserves cumulative or selected map scope independently of recording day',async()=>{for(const scope of [null,'2027-05-12']){const h=harness({initialActivityType:'event_participation',initialTitle:'Photo',returnToMap:true,returnMapDate:scope});h.submit();await h.settle();const url=new URL(h.navigation[0],'https://example.test');assert.equal(url.searchParams.get('day'),scope);}});
 
 test('photo form starts with category, facility suggestions and optional details collapsed',()=>{const h=harness({photoEntry:true,initialActivityType:'event_participation',initialTitle:'Photo'});const groups=h.disclosures();assert.equal(groups.length>=4,true);assert.equal(groups.filter(g=>g.open===true).length,1,'only the empty photo picker is expanded');assert.equal(h.value('title'),'Photo');});
+
+test('photo location copy explains the action without registry implementation jargon',()=>{const h=harness({photoEntry:true,initialActivityType:'event_participation',initialTitle:'Photo',visitEventId:'e60f2360-8147-4112-969a-00954596ceb6',mapPointAvailable:true});assert.doesNotMatch(h.text(),/公式台帳|同一性|達成対象/);assert.match(h.text(),/場所を選ばず、写真だけでも保存できます/);});
