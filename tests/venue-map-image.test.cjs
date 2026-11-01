@@ -120,9 +120,4 @@ test('unplaced photo failures also prevent incomplete output',async()=>{const r=
 test('all-days image includes every unplaced memory without inventing map positions',async()=>{const r=renderer();await r.createVenueMapImage(r.source,[{...marker('placed',true),paperMemory:true,memoryCount:4}],{memoryStyle:true,unplaced:[{id:'older',title:'Older unplaced',date:'2027-04-10',previewUrl:'/older.jpg'},{id:'later',title:'Later unplaced',date:'2027-05-12',previewUrl:'/later.jpg'}]});assert(r.texts.includes('思い出 6件'));assert(r.texts.includes('Older unplaced'));assert(r.texts.includes('Later unplaced'));assert(r.texts.includes('2027-04-10'));assert(r.texts.includes('2027-05-12'));assert.equal(r.drawing.filter(([op])=>op==='drawImage').length,3);});
 
 
-test('complete memory list includes mapped photos without double counting or a visit-only list',async()=>{
- const r=renderer();await r.createVenueMapImage(r.source,[{...marker('mapped',true),paperMemory:true,memoryCount:2,previewUrl:'/cover.jpg'}],{memoryStyle:true,memories:[{id:'first',title:'First food',date:'2027-04-10',previewUrl:'/one.jpg'},{id:'second',title:'Second food',date:'2027-05-12',previewUrl:'/two.jpg'},{id:'no-place',title:'No place',date:'2027-05-12',previewUrl:null}]});
- assert(r.texts.includes('思い出 3件'));assert(r.texts.includes('思い出一覧'));assert(r.texts.includes('First food'));assert(r.texts.includes('Second food'));
- assert(!r.texts.includes('訪れた場所の記録'));assert(!r.texts.some(t=>t.includes('場所はおおよそです')));
- assert.equal(r.drawing.filter(([op])=>op==='drawImage').length,4);
-});
+test('saved memory map does not invent visit-only or unmapped-memory categories',async()=>{const r=renderer();await r.createVenueMapImage(r.source,[{...marker('a',true),paperMemory:true,memoryCount:1}],{memoryStyle:true,unplaced:[{id:'b',title:'Food',date:'2027-05-12',previewUrl:'/food.jpg'}]});assert(r.texts.includes('Food'));assert(!r.texts.includes('訪れた場所の記録'));assert(!r.texts.includes('場所をまだ選んでいない思い出'));assert(r.texts.includes('思い出 2件'));});

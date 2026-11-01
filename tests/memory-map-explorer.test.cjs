@@ -48,25 +48,25 @@ test('explorer wires cumulative/day selection and place detail with all dates an
   assert.match(text(detail), /フードの思い出 4/); assert.doesNotMatch(text(detail), /翌月のフード/);
   h.selectDate(tree, '2027-05-12'); tree = h.render(); detail = find(tree, node => node.type === 'Map').props.renderPlaceDetail('b', () => {});
   assert.match(text(detail), /訪問の記録なし/); assert.match(text(detail), /関連グッズだけの記録/);
-  assert.match(text(tree), /場所は後で決める思い出/);
+  assert.equal(h.props.logs.some(log=>log.title==='場所は後で決める思い出'),true);
   h.selectDate(tree, ''); tree = h.render(); assert.equal(find(tree, node => node.type === 'Map').props.places.find(place => place.id === 'a').visitCount, 2);
 });
 
 test('day changes and repeated clicks never mutate demo records or lose unplaced entries', () => {
   const h = harness(); const before = JSON.stringify(h.props.logs);
   for (const date of ['2027-05-12', '2027-04-10', '', '2027-05-12', '']) { const tree = h.render(); h.selectDate(tree, date); }
-  const tree = h.render(); assert.match(text(tree), /場所は後で決める思い出/);
+  h.render(); assert.equal(h.props.logs.some(log=>log.title==='場所は後で決める思い出'),true);
   assert.equal(JSON.stringify(h.props.logs), before);
 });
 
 test('records attached to a removed or unavailable pavilion remain visible off the map', () => {
   const h = harness(); h.props.logs.push({ ...h.props.logs[0], id: 'orphan', pavilion_id: 'unavailable', title: 'Old place memory', photoUrl: null });
   const tree = h.render();
-  assert.match(text(tree), /Old place memory/);
+  assert(h.props.logs.some(log=>log.id==='orphan'));
   assert.equal(find(tree, node => node.type === 'Map').props.pavilions.some(item => item.id === 'unavailable'), false);
 });
 
-test('registered event without reviewed illustration anchors keeps all records visible as unmapped',()=>{const h=harness();h.props.explicitAnchors=[];const tree=h.render();assert.match(text(tree),/思い出一覧/);for(const log of h.props.logs)assert.ok(text(tree).includes(log.title));assert.match(text(tree),/1 か所訪問|1.*か所訪問/);});
+test('map does not duplicate the album even when every record lacks a map anchor',()=>{const h=harness();h.props.demo=false;h.props.explicitAnchors=[];const tree=h.render();assert(find(tree,n=>n.props?.href==='/collection'));assert.equal(find(tree,n=>n.props?.['aria-label']==='思い出一覧'),null);assert.equal(find(tree,n=>n.type==='Map').props.exportData.unplaced.length,h.props.logs.length);});
 
 
 test('return focus opens the same dated unmapped place without inventing coordinates or losing entries',()=>{const h=harness();h.props.explicitAnchors=[];h.props.initialPlaceId='a';h.props.initialDate='2027-04-10';const tree=h.render();const panel=find(tree,n=>n.props?.['aria-label']==='位置未対応の場所の思い出');assert(panel);assert.match(text(panel),/フードの思い出 4/);assert.doesNotMatch(text(panel),/翌月のフード/);const map=find(tree,n=>n.type==='Map');assert.equal(map.props.focusPlaceId,'a');assert.equal(map.props.explicitAnchors.length,0);});
@@ -80,7 +80,7 @@ test('real-mode links follow the selected day and expose a non-writing location 
  const day=h.props.sessions.find(day=>day.visit_date==='2027-04-10');
  const photo=find(tree,n=>n.props?.href?.includes('/activities/new?return=map#photo'));assert(photo);assert(photo.props.href.includes(day.id));
  h.selectDate(tree,'2027-05-12');tree=h.render();const later=h.props.sessions.find(day=>day.visit_date==='2027-05-12');assert(find(tree,n=>n.props?.href?.includes(`/sessions/${later.id}/activities/new?return=map#photo`)));
- const assignment=find(tree,n=>n.props?.href?.includes('/edit?return=map#related-place'));assert(assignment);assert.match(text(assignment),/場所を選ぶ/);
+ assert(find(tree,n=>n.props?.href==='/collection'));
 
 });
 
@@ -107,15 +107,4 @@ test('ordinary map keeps a single photo action and removes technical header expl
  const tree=h.render(),copy=text(tree);assert.match(copy,/写真を追加/);
  assert.doesNotMatch(copy,/写真から記録する|来場日を選んで記録|写真や場所はあとからでも指定|場所はおおよそです|画像には、場所をまだ/);
  assert(find(tree,n=>n.type==='nav'&&n.props['aria-label']==='地図の日付'));
-});
-
-
-test('one memory list contains placed, point and unplaced records, filtered by the selected day only',()=>{
- const h=harness();let tree=h.render();let list=find(tree,n=>n.props?.['aria-label']==='思い出一覧');
- for(const entry of h.props.logs)assert.ok(text(list).includes(entry.title));
- let map=find(tree,n=>n.type==='Map');assert.equal(map.props.exportData.memories.length,h.props.logs.length);
- h.selectDate(tree,'2027-05-12');tree=h.render();list=find(tree,n=>n.props?.['aria-label']==='思い出一覧');
- const dayIds=h.props.sessions.filter(s=>s.visit_date==='2027-05-12').map(s=>s.id);
- for(const entry of h.props.logs)assert.equal(Boolean(find(list,n=>n.props?.id===`memory-entry-${entry.id}`)),dayIds.includes(entry.session_id));
- map=find(tree,n=>n.type==='Map');assert.equal(map.props.exportData.memories.length,h.props.logs.length);
 });

@@ -126,7 +126,7 @@ function drawPaperMemory(ctx:CanvasRenderingContext2D,marker:VenueMapMarker,x:nu
 }
 
 /** Render the full map scene, independent of viewport zoom, panels and controls. */
-export async function createVenueMapImage(source: SVGSVGElement, markers: VenueMapMarker[], options?: { asset?: MapArtwork; badgeMarkers?: boolean; title?: string; memoryStyle?:boolean;unplaced?:UnplacedMapMemory[];memories?:UnplacedMapMemory[] }): Promise<Blob> {
+export async function createVenueMapImage(source: SVGSVGElement, markers: VenueMapMarker[], options?: { asset?: MapArtwork; badgeMarkers?: boolean; title?: string; memoryStyle?:boolean;unplaced?:UnplacedMapMemory[] }): Promise<Blob> {
   const asset = options?.asset ?? VENUE_MAP_ASSET;
   const MAP_HEIGHT = MAP_WIDTH * asset.height / asset.width;
   await document.fonts.ready;
@@ -135,9 +135,9 @@ export async function createVenueMapImage(source: SVGSVGElement, markers: VenueM
   const listed = paperMode?[]:summary.visited.slice(0, 24);
   const rows = Math.max(1, Math.ceil(listed.length / 3));
   const listY = MAP_Y + MAP_HEIGHT + 70;
-  const unplaced=options?.memories??options?.unplaced??[];
-  const appendixY=paperMode?listY:listY+rows*76+65;
-  const height = Math.ceil(appendixY+92+(unplaced.length?100+Math.ceil(unplaced.length/3)*190:0));
+  const unplaced=options?.unplaced??[];
+  const appendixY=listY+rows*76+65;
+  const height = Math.ceil(listY + rows * 76 + 92+(unplaced.length?100+Math.ceil(unplaced.length/3)*190:0));
   const canvas = document.createElement("canvas");
   canvas.width = WIDTH; canvas.height = height;
   const ctx = canvas.getContext("2d");
@@ -162,7 +162,7 @@ export async function createVenueMapImage(source: SVGSVGElement, markers: VenueM
     ctx.font = `24px ${FONT}`; ctx.fillStyle = "#52675e";
     ctx.fillText(paperMode?"会場に重なる、わたしの思い出。":options?.badgeMarkers ? "思い出を、ひとつの庭に。配置はイメージです。" : "訪れた場所に、花が咲く。", 58, 128);
     ctx.textAlign = "right"; ctx.font = `700 48px ${FONT}`; ctx.fillStyle = "#0f3d32";
-    ctx.fillText(paperMode?`思い出 ${options?.memories?options.memories.length:summary.markers.reduce((n,m)=>n+(m.memoryCount??0),0)+unplaced.length}件`:`${summary.visited.length} / ${summary.total} 訪問済み`, WIDTH - 56, 80);
+    ctx.fillText(paperMode?`思い出 ${summary.markers.reduce((n,m)=>n+(m.memoryCount??0),0)+unplaced.length}件`:`${summary.visited.length} / ${summary.total} 訪問済み`, WIDTH - 56, 80);
     ctx.font = `24px ${FONT}`; ctx.fillStyle = "#52675e";
     if(!paperMode)ctx.fillText(`達成率 ${summary.percentage}%`, WIDTH - 56, 125);
     ctx.textAlign = "left";
@@ -210,9 +210,8 @@ export async function createVenueMapImage(source: SVGSVGElement, markers: VenueM
     }
 
     ctx.fillStyle = "#0f3d32"; ctx.font = `700 28px ${FONT}`;
+    if(!paperMode)ctx.fillText("訪れたパビリオン", 56, listY);
     const columnWidth = (WIDTH - 112) / 3;
-    if(!paperMode){
-    ctx.fillText(paperMode?"訪れた場所の記録":"訪れたパビリオン", 56, listY);
     listed.forEach((marker, index) => {
       const x = 56 + index % 3 * columnWidth;
       const y = listY + 48 + Math.floor(index / 3) * 76;
@@ -224,13 +223,12 @@ export async function createVenueMapImage(source: SVGSVGElement, markers: VenueM
       ctx.fillStyle = "#64756d"; ctx.font = `19px ${FONT}`;
       fittedText(ctx, `${marker.areaName} · ${marker.visitCount}回`, x + 44, y + 28, columnWidth - 65);
     });
-    if (!listed.length) {
+    if (!paperMode && !listed.length) {
       ctx.font = `24px ${FONT}`; ctx.fillStyle = "#64756d";
       ctx.fillText("最初の訪問を記録すると、地図に花が咲きます。", 56, listY + 50);
     }
-    }
     if(unplaced.length){
-      ctx.textAlign='left';ctx.font=`700 28px ${FONT}`;ctx.fillStyle='#234b3b';ctx.fillText('思い出一覧',56,appendixY);
+      ctx.textAlign='left';ctx.font=`700 28px ${FONT}`;ctx.fillStyle='#234b3b';
       for(let index=0;index<unplaced.length;index++){
         if(index%2===0)await Promise.all(unplaced.slice(index,index+2).map(entry=>entry.previewUrl?coverFor(entry.previewUrl):null));
         const entry=unplaced[index],x=56+(index%3)*columnWidth,y=appendixY+25+Math.floor(index/3)*190;
