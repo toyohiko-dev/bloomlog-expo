@@ -32,7 +32,6 @@ export type VenueMapMarker = {
   paperMemory?:boolean;
   previewUrl?: string | null;
   photoCount?: number;
-  otherDayCount?:number;
   id: string;
   name: string;
   x: number;
@@ -231,11 +230,10 @@ function VenueMapMarkerView({ marker, position, onSelect, badgeMarkers, disabled
   } as CSSProperties;
 
   if(marker.paperMemory){
-    if(!marker.memoryCount&&!marker.otherDayCount)return <button disabled={disabled} type="button" aria-label={`${marker.name}（記録なし）`} title={marker.name} onClick={()=>onSelect(marker)} onPointerDown={event=>event.stopPropagation()} className="absolute z-10 h-11 w-11 -translate-x-1/2 -translate-y-1/2 rounded-full focus-visible:outline-2" style={{left:position.x,top:position.y}}><span aria-hidden="true" className="mx-auto block h-4 w-4 rounded-full border-2 border-white bg-[#34664d] shadow-sm"/>{showPlaceLabel?<span className="absolute left-1/2 top-9 w-max max-w-48 -translate-x-1/2 rounded-full border border-[#d7dfcf] bg-[#fffdf4] px-2 py-1 text-xs font-bold text-[#234c3f]">{marker.name}</span>:null}</button>;
-    return <button disabled={disabled} type="button" aria-label={`${marker.name}（${marker.otherDayCount?'別の日の記録':marker.visited?'訪問済み':'訪問の記録なし'}） ${marker.memoryCount||marker.otherDayCount}件`} title={marker.name} onClick={()=>onSelect(marker)} onPointerDown={event=>event.stopPropagation()} className="absolute z-10 h-[76px] w-[76px] -translate-x-1/2 -translate-y-1/2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ed7567]" style={{left:position.x,top:position.y}}>
+    if(!marker.memoryCount)return <button disabled={disabled} type="button" aria-label={`${marker.name}（記録なし）`} title={marker.name} onClick={()=>onSelect(marker)} onPointerDown={event=>event.stopPropagation()} className="absolute z-10 h-11 w-11 -translate-x-1/2 -translate-y-1/2 rounded-full focus-visible:outline-2" style={{left:position.x,top:position.y}}><span aria-hidden="true" className="mx-auto block h-4 w-4 rounded-full border-2 border-white bg-[#34664d] shadow-sm"/>{showPlaceLabel?<span className="absolute left-1/2 top-9 w-max max-w-48 -translate-x-1/2 rounded-full border border-[#d7dfcf] bg-[#fffdf4] px-2 py-1 text-xs font-bold text-[#234c3f]">{marker.name}</span>:null}</button>;
+    return <button disabled={disabled} type="button" aria-label={`${marker.name}（${marker.visited?'訪問済み':'訪問の記録なし'}） ${marker.memoryCount}件`} title={marker.name} onClick={()=>onSelect(marker)} onPointerDown={event=>event.stopPropagation()} className="absolute z-10 h-[76px] w-[76px] -translate-x-1/2 -translate-y-1/2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ed7567]" style={{left:position.x,top:position.y}}>
       {marker.previewUrl?<>{(marker.photoCount??1)>2?<span data-photo-layer="back" className="absolute left-2 top-0 h-14 w-14 -rotate-[12deg] rounded-xl border-[3px] border-white bg-[#e6bc84] shadow-md"/>:null}{(marker.photoCount??1)>1?<span data-photo-layer="middle" className="absolute left-3 top-0 h-14 w-14 rotate-[7deg] rounded-xl border-[3px] border-white bg-[#b5cec0] shadow-md"/>:null}<span data-photo-layer="photo" className="absolute left-1 top-0 h-14 w-14 overflow-hidden rounded-xl border-[3px] border-white bg-[#e7e4d4] shadow-md" style={{backgroundImage:`url("${marker.previewUrl}")`,backgroundPosition:'center',backgroundSize:'cover'}}/></>:null}
-      <svg className={`absolute ${marker.previewUrl?'bottom-0 right-0 h-11 w-11':'inset-1 h-16 w-16'} drop-shadow-md`} viewBox="-36 -36 72 72" aria-hidden="true"><path d="M0 28 L0 -22 M0 1 Q-30 -23 -23 -3 Q-18 18 0 10 M0 -8 Q26 -30 24 -9 Q15 7 0 1" fill="#dce7d4" stroke="#82a68c" strokeWidth="3"/><circle r="12" fill="#fff9ed"/><text textAnchor="middle" y="4" fontSize="11" fontWeight="700" fill="#35574b">{marker.memoryCount||marker.otherDayCount}</text></svg>
-      {marker.otherDayCount?<span className="absolute -right-1 -top-2 rounded-full border-2 border-white bg-[#e7eee2] px-2 py-0.5 text-[10px] font-bold text-[#35574b]">別の日</span>:null}
+      <svg className={`absolute ${marker.previewUrl?'bottom-0 right-0 h-11 w-11':'inset-1 h-16 w-16'} drop-shadow-md`} viewBox="-36 -36 72 72" aria-hidden="true"><path d="M0 28 L0 -22 M0 1 Q-30 -23 -23 -3 Q-18 18 0 10 M0 -8 Q26 -30 24 -9 Q15 7 0 1" fill="#dce7d4" stroke="#82a68c" strokeWidth="3"/><circle r="12" fill="#fff9ed"/><text textAnchor="middle" y="4" fontSize="11" fontWeight="700" fill="#35574b">{marker.memoryCount}</text></svg>
       {(marker.memoryDayCount??0)>1?<span className="absolute -right-1 -top-2 rounded-full border-2 border-white bg-[#245b49] px-2 py-0.5 text-[10px] font-bold text-white">{marker.memoryDayCount}日</span>:null}
     </button>;
   }
@@ -637,7 +635,7 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail, mapAsset =
   const paperMode=markers.some(marker=>marker.paperMemory);
   const visibleMarkers=markers;
   const anchorPositions=new Map(visibleMarkers.map(marker=>[marker.id,{x:offset.x+mapSize.width*(marker.x/mapAsset.width)*zoom,y:offset.y+mapSize.height*(marker.y/mapAsset.height)*zoom}]));
-  const separated=separateMemorySymbols(visibleMarkers.filter(marker=>marker.paperMemory&&Boolean(marker.memoryCount||marker.otherDayCount)).map(marker=>({id:marker.id,...anchorPositions.get(marker.id)!,radius:marker.previewUrl?38:34})),{left:offset.x,top:offset.y,right:offset.x+mapSize.width*zoom,bottom:offset.y+mapSize.height*zoom},70);
+  const separated=separateMemorySymbols(visibleMarkers.filter(marker=>marker.paperMemory&&Boolean(marker.memoryCount)).map(marker=>({id:marker.id,...anchorPositions.get(marker.id)!,radius:marker.previewUrl?38:34})),{left:offset.x,top:offset.y,right:offset.x+mapSize.width*zoom,bottom:offset.y+mapSize.height*zoom},70);
   const displayPositions=new Map(separated.map(p=>[p.id,p]));
   return (
     <div className="relative">
