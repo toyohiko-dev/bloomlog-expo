@@ -26,3 +26,12 @@ test('camera starts without a map tap and subject capture preserves its ID separ
 
 
 test('named capture never marks a visit and cancellation discards only its unsaved photo draft',()=>{const h=harness();h.get().beginAtPavilion('a');h.render();h.input().props.onChange({target:{files:[{name:'photo.png'}],value:''}});h.render();assert.equal(h.form().props.initialPavilionId,'a');assert.equal(h.form().props.initialMapPoint,null);assert.equal(h.form().props.initialActivityType,'event_participation');h.form().props.onCancelDraft();h.render();assert.equal(h.form(),undefined);assert.equal(h.get().hasDraft,false);assert.equal(typeof h.get().beginCapture,'function');});
+
+
+test('returning to the map keeps photo and day but map taps keep reopening the unfinished editor',()=>{
+ const h=harness(null);h.get().beginCapture(.25,.6);h.render();const photo={name:'kept.png'};h.input().props.onChange({target:{files:[photo],value:''}});h.render();
+ for(let i=0;i<4;i++){
+  h.button('地図に戻る').props.onClick();h.render();assert.equal(h.dialog().props.hidden,true);assert.equal(typeof h.get().beginCapture,'function');h.get().beginCapture(.8,.9);h.render();assert.equal(h.dialog().props.hidden,false);assert.equal(h.form().props.initialPhoto,photo);assert.equal(h.form().props.initialMapPoint.x,.25);assert.equal(h.form().props.sessionId,'');
+ }
+ assert.equal(h.clicks(),1);h.form().props.onCancelDraft();h.render();h.get().beginCapture(.8,.9);h.render();assert.equal(h.clicks(),2);
+});

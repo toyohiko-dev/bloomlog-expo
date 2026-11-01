@@ -115,6 +115,7 @@ function harness(props = {}, storage = memoryStorage(), prepare = async file => 
   render();
   return {
     calls, navigation, fileInput, render, storage,
+    submitDisabled(){return nodes(tree).find(n=>n.props.type==='submit').props.disabled;},
     openPoint(){nodes(tree).find(n=>n.type==='button'&&(['撮ったところを地図で選ぶ','地図で変更'].includes(n.props.children)||n.props['aria-label']==='撮影地点を変更')).props.onClick();render();},
     photoSuggestion(point){nodes(tree).find(n=>n.type==='LocationSuggestions').props.onPhotoPoint(point);render();},
     confirmPoint(point){nodes(tree).find(n=>n.type==='PointPicker').props.onConfirm(point);render();},
@@ -420,4 +421,12 @@ test('photo GPS suggests a capture point without changing subject, while a far m
 test('late photo metadata cannot undo an explicit decision to save without a photo point',async()=>{
  const point={version:1,event_id:'e60f2360-8147-4112-969a-00954596ceb6',map_id:'green-expo-places-v1',map_revision:'3073fb3b299d73fe74c86ea12df767d45c4c6c42efb02a08162cb6643ff71fdc',x:.3,y:.4,source:'manual',placement:'manual',source_accuracy_m:null,confirmed:true};
  const h=harness({photoEntry:true,initialActivityType:'food',initialTitle:'Food',initialMapPoint:point,visitEventId:point.event_id,mapPointAvailable:true});h.deferPoint();h.photoSuggestion({...point,confirmed:false,source:'photo-exif',placement:'projected'});h.submit();await h.settle();assert.equal(h.calls[0].get('mapPoint'),'');
+});
+
+
+test('missing visit day gives an actionable error instead of a dead save button, then preserves photo on retry',async()=>{
+ const photo=new File(['synthetic'],'camera.png',{type:'image/png'}),sessions=[{id:'april',visit_date:'2027-04-10',event_id:'event-a'}];
+ const h=harness({photoEntry:true,sessionId:'',visitSessions:sessions,initialActivityType:'event_participation',initialPhoto:photo,initialTitle:'Photo'});
+ assert.equal(h.submitDisabled(),false);h.submit();await h.settle();assert.equal(h.calls.length,0);assert.match(h.text(),/来場日を選んでください/);assert.equal(h.fileInput.files[0],photo);
+ h.change('recording-session','april');h.submit();await h.settle();assert.equal(h.calls.length,1);assert.equal(h.calls[0].get('sessionId'),'april');assert.equal(h.calls[0].get('photo'),photo);
 });

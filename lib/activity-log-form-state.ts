@@ -1,5 +1,6 @@
 export type ActivityLogFieldErrors = Partial<
   Record<
+    | "sessionId"
     | "activityType"
     | "pavilionId"
     | "title"

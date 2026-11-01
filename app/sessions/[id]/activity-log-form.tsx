@@ -173,6 +173,7 @@ export function ActivityLogForm({
   const photoSelection=useRef<string|undefined>(initialPhoto?crypto.randomUUID():undefined);
   const saveAttempt=useRef<{id:string;signature:string}|null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const recordingSessionRef = useRef<HTMLSelectElement>(null);
   const deferredPavilionSearch = useDeferredValue(pavilionSearch);
   const selectedDay = visitSessions.find(day=>day.id===recordingSessionId);
   const recordingEventId = selectedDay ? selectedDay.event_id ?? null : visitEventId;
@@ -448,6 +449,7 @@ export function ActivityLogForm({
     if (!draftReady || submittingRef.current || pending) {
       return;
     }
+    if(!recordingSessionId){setState({status:"error",message:"来場日を選んでください。",fieldErrors:{sessionId:"来場日を選んでください。"}});recordingSessionRef.current?.focus();recordingSessionRef.current?.scrollIntoView({block:"center"});return;}
     if(photoNeedsReselect&&!selectedPhoto){setState({status:'error',message:'写真を選び直すか、写真なしに変更してください。ほかの入力した内容は残っています。',fieldErrors:{photo:'写真の再選択が必要です。'}});return;}
     if(!placeCompatible){setState({status:"error",message:"この来場日の施設対応が未確認です。場所を選び直してください。",fieldErrors:{pavilionId:"イベントに対応する施設を選んでください。"}});return;}
     if(mapPoint){const checked=validateMapPoint(mapPoint,{eventId:recordingEventId,pavilionId:selectedPavilionId||null,activityType});if(!mapPointAvailable||!checked.ok){setState({status:'error',message:'地図の位置を確認するか、あとで指定に変更してください。入力した内容は残っています。',fieldErrors:{pavilionId:'地図位置がこの記録に対応していません。'}});return;}}
@@ -519,7 +521,7 @@ export function ActivityLogForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6"
+      className="space-y-6 text-slate-900"
       encType="multipart/form-data"
     >
       {pointPicker!==false?<MapPointPicker initial={pointPicker} onCancel={()=>setPointPicker(false)} onConfirm={point=>{if(!mapPointAvailable)return;photoPositionIntent.current="chosen";setMapPoint(point);setPointPicker(false);setPositionSuggestion(null);persistDraft({mapPoint:point});}} />:null}
@@ -606,8 +608,9 @@ export function ActivityLogForm({
 
 
             <label className="block text-sm font-medium">来場日
-              {mode==='create'&&visitSessions.length>0 ? <select id="recording-session" aria-label="記録する来場日" value={recordingSessionId} onChange={event=>{setRecordingSessionId(event.target.value);persistDraft({recordingSessionId:event.target.value});}} className="mt-2 block w-full rounded-xl border bg-white p-3">{!recordingSessionId?<option value="" disabled>来場日を選んでください</option>:null}{visitSessions.map(day=><option key={day.id} value={day.id}>{day.visit_date}</option>)}</select> : <span className="ml-3">{visitDate??'この来場日'}</span>}
+              {mode==='create'&&visitSessions.length>0 ? <select ref={recordingSessionRef} id="recording-session" aria-label="記録する来場日" aria-invalid={Boolean(state.fieldErrors.sessionId)} aria-describedby={state.fieldErrors.sessionId?"recording-session-error":undefined} value={recordingSessionId} onChange={event=>{setRecordingSessionId(event.target.value);persistDraft({recordingSessionId:event.target.value});clearFieldState("sessionId");}} className={`mt-2 ${fieldClass(Boolean(state.fieldErrors.sessionId))}`}>{!recordingSessionId?<option value="" disabled>来場日を選んでください</option>:null}{visitSessions.map(day=><option key={day.id} value={day.id}>{day.visit_date}</option>)}</select> : <span className="ml-3">{visitDate??'この来場日'}</span>}
             </label>
+            {state.fieldErrors.sessionId?<p id="recording-session-error" role="alert" className="text-sm font-medium text-rose-700">{state.fieldErrors.sessionId}</p>:null}
             {photoEntry?<p className="text-xs text-slate-600">写真を撮った日を選んでください。</p>:null}
           </div>
           <div className="space-y-5 px-5 py-5">
@@ -875,14 +878,14 @@ export function ActivityLogForm({
       <div className="sticky bottom-2 z-20 flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white/95 p-3 shadow-lg backdrop-blur">
         <button
           type="submit"
-          disabled={!draftReady || pending || !recordingSessionId || (mode === "edit" && !isDirty)}
-          className="inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+          disabled={!draftReady || pending || (mode === "edit" && !isDirty)}
+          className="inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-600"
         >
           {pending
             ? "保存中..."
             : submitLabel ?? (photoEntry?"保存する":mode === "edit" ? "保存する" : "記録する")}
         </button>
-        {mode === "create" ? (
+        {mode === "create" && !photoEntry ? (
           <span className="text-sm text-slate-500">
             {returnToMap?"保存すると、地図に戻って写真を見られます。":"保存すると、この来場日のタイムラインに戻ります。"}
           </span>
