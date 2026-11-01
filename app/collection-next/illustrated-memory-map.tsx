@@ -29,16 +29,14 @@ export function IllustratedMemoryMap({ pavilions, places, previews, daily, title
   const markers = [...buildIllustratedMarkers(pavilions,places,previews,daily,explicitAnchors,artwork,mapMode==="geographic",photoCounts).filter(marker=>!daily||Boolean(marker.memoryCount)),...pointMarkers];
   const exportMarkers=exportData?[...buildIllustratedMarkers(pavilions,exportData.places,exportData.previews,false,explicitAnchors,artwork,mapMode==="geographic",exportData.photoCounts),...exportData.pointMarkers]:markers;
   return <section className="overflow-hidden rounded-[28px] border border-[#e6dfcf] bg-[#fffcf5] shadow-[0_16px_60px_#344c3910]">
-    <div className="flex items-center justify-between gap-3 px-5 pt-5 text-xs text-[#60756b]"><span>わたしの会場マップ</span><span>● 訪問済み　○ 関連する記録</span></div>
+    <div className="flex items-center justify-between gap-3 px-5 pt-5 text-xs text-[#60756b]"><span>タップして写真を追加</span><span>花・写真から思い出を見る</span></div>
     <VenueMapFrame onMapTap={onMapTap} focusPlaceId={focusPlaceId} markers={markers} mapAsset={artwork} badgeMarkers renderPlaceDetail={renderPlaceDetail}>
       <svg data-venue-map-source="true" viewBox={artwork.viewBox} role="img" aria-label={mapMode==="geographic"?"思い出を置くための会場マップ。場所はおおよそです。":"建築と庭園で思い出をつなぐイメージマップ。実会場の位置とは異なります。"} className="block h-auto w-full">
         <image href={artwork.href} width={artwork.width} height={artwork.height} preserveAspectRatio="none" />
         {mapMode==="geographic"?markers.filter(m=>m.visited).map(marker=><circle key={marker.id} cx={marker.x} cy={marker.y} r="5" fill={marker.bloom} opacity=".15"/>):null}
       </svg>
     </VenueMapFrame>
-    <p className="px-5 pb-3 text-[11px] leading-5 text-[#405749]">{mapMode==="geographic"?"花や写真を押すと、思い出が開きます。地図は2025年9月の計画をもとにしたイメージで、場所はおおよそです。道案内には使えません。":"場所を押すと、思い出が開きます。並び方はイメージで、実際の会場とは異なります。"}</p>
-    {pointMarkers.length>0?<p className="text-xs leading-5 text-slate-600">指定した写真の位置も画像に含まれます。共有前に確認してください。</p>:null}
-    <p className="px-5 pb-3 text-xs text-[#405749]">画像には、全日程の思い出をまとめます。</p>
     <VenueMapExport unplaced={exportData?.unplaced} memoryStyle={mapMode==="geographic"} markers={exportMarkers} asset={artwork} badgeMarkers title={exportData?"わたしの思い出マップ（全日程）":title} unavailableReason={exportData?.unplaced?.length?undefined:mapExportUnavailableReason(exportMarkers,exportData?.places??places,explicitAnchors!==undefined)} />
+    <details className="border-t border-[#e6dfcf] px-5 py-3 text-xs text-[#52675e]"><summary className="cursor-pointer">この地図について</summary><p className="mt-2 leading-5">{mapMode==="geographic"?"2025年9月の会場計画をもとに描いています。建物や道の位置は実際と異なる場合があります。":"会場のイメージ図です。実際の配置とは異なります。"}</p></details>
   </section>;
 }

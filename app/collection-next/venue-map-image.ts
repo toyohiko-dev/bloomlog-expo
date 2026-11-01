@@ -126,7 +126,7 @@ function drawPaperMemory(ctx:CanvasRenderingContext2D,marker:VenueMapMarker,x:nu
 }
 
 /** Render the full map scene, independent of viewport zoom, panels and controls. */
-export async function createVenueMapImage(source: SVGSVGElement, markers: VenueMapMarker[], options?: { asset?: MapArtwork; badgeMarkers?: boolean; title?: string; memoryStyle?:boolean;unplaced?:UnplacedMapMemory[];onPhotosOmitted?:(count:number)=>void }): Promise<Blob> {
+export async function createVenueMapImage(source: SVGSVGElement, markers: VenueMapMarker[], options?: { asset?: MapArtwork; badgeMarkers?: boolean; title?: string; memoryStyle?:boolean;unplaced?:UnplacedMapMemory[] }): Promise<Blob> {
   const asset = options?.asset ?? VENUE_MAP_ASSET;
   const MAP_HEIGHT = MAP_WIDTH * asset.height / asset.width;
   await document.fonts.ready;
@@ -176,8 +176,7 @@ export async function createVenueMapImage(source: SVGSVGElement, markers: VenueM
       ctx.beginPath(); ctx.moveTo(point.anchorX, point.anchorY); ctx.lineTo(point.x, point.y); ctx.stroke();
       ctx.fillStyle = "#52675e"; ctx.beginPath(); ctx.arc(point.anchorX, point.anchorY, 3, 0, Math.PI * 2); ctx.fill();
     }
-    let omittedPhotos=0;
-    const coverDeadline=Date.now()+18000;const covers=new Map<string,Promise<HTMLImageElement|null>>();
+    const coverDeadline=Date.now()+45000;const covers=new Map<string,Promise<HTMLImageElement|null>>();
     async function coverFor(url:string){
       if(covers.has(url))return covers.get(url)!;
       const task=(async()=>{
@@ -201,7 +200,7 @@ export async function createVenueMapImage(source: SVGSVGElement, markers: VenueM
       // Keep only this batch decoded, retaining the existing memory and total wait bounds.
       if(paperMode&&index%2===0)await Promise.all(positions.slice(index,index+2).map(p=>p.marker.previewUrl?coverFor(p.marker.previewUrl):null));
       const {marker,x,y}=positions[index];
-      if(paperMode){const cover=marker.previewUrl?await coverFor(marker.previewUrl):null;if(marker.previewUrl&&!cover)omittedPhotos++;drawPaperMemory(ctx,marker,x,y,cover);continue;}
+      if(paperMode){const cover=marker.previewUrl?await coverFor(marker.previewUrl):null;if(marker.previewUrl&&!cover)throw new Error("photo-unavailable");drawPaperMemory(ctx,marker,x,y,cover);continue;}
       if (options?.badgeMarkers) {
         ctx.beginPath(); ctx.arc(x, y, marker.memoryCount ? 25 : 9, 0, Math.PI * 2);
         ctx.fillStyle = marker.visited ? "#226354" : "#fff8ed"; ctx.fill();
@@ -234,12 +233,11 @@ export async function createVenueMapImage(source: SVGSVGElement, markers: VenueM
         if(index%2===0)await Promise.all(unplaced.slice(index,index+2).map(entry=>entry.previewUrl?coverFor(entry.previewUrl):null));
         const entry=unplaced[index],x=56+(index%3)*columnWidth,y=appendixY+25+Math.floor(index/3)*190;
         const photo=entry.previewUrl?await coverFor(entry.previewUrl):null;
-        if(photo){const width=photo.naturalWidth||600,height=photo.naturalHeight||400,scale=Math.min((columnWidth-30)/width,100/height);ctx.drawImage(photo,x,y,width*scale,height*scale);}else if(entry.previewUrl){omittedPhotos++;}
+        if(photo){const width=photo.naturalWidth||600,height=photo.naturalHeight||400,scale=Math.min((columnWidth-30)/width,100/height);ctx.drawImage(photo,x,y,width*scale,height*scale);}else if(entry.previewUrl){throw new Error("photo-unavailable");}
         ctx.textAlign='left';ctx.fillStyle='#234b3b';ctx.font=`700 22px ${FONT}`;fittedText(ctx,entry.title,x,y+128,columnWidth-30);
         ctx.fillStyle='#52675e';ctx.font=`18px ${FONT}`;ctx.fillText(entry.date??'日付なし',x,y+157);
       }
     }
-    if(omittedPhotos){ctx.font=`18px ${FONT}`;ctx.fillStyle='#64756d';ctx.fillText(`写真を読み込めなかった${omittedPhotos}か所は花で表示しています。`,56,height-70);options?.onPhotosOmitted?.(omittedPhotos);}
     ctx.font = `21px ${FONT}`; ctx.fillStyle = "#64756d";
     const date = new Intl.DateTimeFormat("ja-JP", { dateStyle: "medium", timeZone: "Asia/Tokyo" }).format(new Date());
     ctx.fillText(`${date} 作成${summary.visited.length > 24 ? ` · 一覧は24件まで表示（ほか${summary.visited.length - 24}件）` : ""}`, 56, height - 35);

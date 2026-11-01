@@ -6,7 +6,6 @@ import {mapPointStorageEnabled} from '@/lib/map-point-config';
 import {validateMapPoint} from '@/lib/memory-map-point';
 import type {VenueMapMarker} from './venue-map-frame';
 import {MemoryPhotoViewer} from './memory-photo-viewer';
-import {greenExpoMapAnchors} from '@/lib/green-expo-map';
 import { useState,useSyncExternalStore } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -20,7 +19,7 @@ const hydrationSubscription=()=>()=>{};
 const clientReady=()=>true;const serverReady=()=>false;
 const labels: Record<string, string> = { pavilion_visit: "パビリオン", food: "フード", pin: "ピンバッジ", event_participation: "イベント" };
 
-export function MemoryMapExplorer({ logs, sessions, pavilions, demo = false, explicitAnchors, scopeLabel, mapMode="illustration",initialDate,initialPlaceId,eventId=null,mapPointAvailable=mapPointStorageEnabled,onEditRecord,captureFixture }: Props) {
+export function MemoryMapExplorer({ logs, sessions, pavilions, demo = false, explicitAnchors, mapMode="illustration",initialDate,initialPlaceId,eventId=null,mapPointAvailable=mapPointStorageEnabled,onEditRecord,captureFixture }: Props) {
   const [photoFocus,setPhotoFocus]=useState<{id:string;ids:string[]}|null>(null);
   const interactive=useSyncExternalStore(hydrationSubscription,clientReady,serverReady);
   const [date, setDate] = useState<string | null>(sessions.some(day=>day.visit_date===initialDate)?initialDate!:null);
@@ -60,9 +59,7 @@ export function MemoryMapExplorer({ logs, sessions, pavilions, demo = false, exp
   return <div className="space-y-5">
     {capture.content}
     {photoFocus&&focusedPhotos.some(photo=>photo.id===photoFocus.id)?<MemoryPhotoViewer photos={focusedPhotos} selectedId={photoFocus.id} onSelect={id=>setPhotoFocus({...photoFocus,id})} onClose={()=>setPhotoFocus(null)} />:null}
-    {!demo?<div className="rounded-2xl border border-[#d7dfcf] bg-white p-4"><Link href={photoEntryHref} className="inline-flex rounded-full bg-[#a94035] px-5 py-3 font-semibold text-white">写真から記録する</Link><p className="mt-2 text-sm text-[#425748]">{date?`${date}の記録`:"来場日を選んで記録"} · 写真や場所はあとからでも指定できます。</p></div>:null}
-    {scopeLabel?<p role="status" className="text-sm text-slate-600">{scopeLabel}</p>:null}
-    {explicitAnchors!==undefined&&offMapEntries.length>0?<p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900">地図にまだ表示していない思い出が{offMapEntries.length}件あります。下の一覧で見返せます。画像には、場所をまだ選んでいない思い出も含めて、全日程をまとめます。</p>:null}
+    {!demo?<div className="flex justify-end"><Link href={photoEntryHref} className="inline-flex min-h-12 items-center rounded-full bg-[#a94035] px-6 py-3 font-semibold text-white">＋ 写真を追加</Link></div>:null}
     <nav aria-label="地図の日付" className="flex flex-wrap items-center gap-2">
       <button type="button" disabled={!interactive} aria-pressed={date === null} onClick={() => setDate(null)} className={`rounded-full border px-4 py-2 text-sm ${date === null ? "border-[#a94035] bg-[#a94035] text-white" : "border-[#e5dfd1] bg-[#fffcf5] text-[#38594a]"}`}>全日程</button>
       {model.dates.slice(0,4).map(day=><button key={day} type="button" disabled={!interactive} aria-label={`${day}の記録を見る`} aria-pressed={date===day} onClick={()=>setDate(day)} className={`rounded-full border px-4 py-2 text-sm ${date===day?"border-[#a94035] bg-[#a94035] text-white":"border-[#e5dfd1] bg-[#fffcf5] text-[#38594a]"}`}>{day.slice(5).replace('-','/')}</button>)}
@@ -71,12 +68,11 @@ export function MemoryMapExplorer({ logs, sessions, pavilions, demo = false, exp
     </nav>
     <IllustratedMemoryMap exportData={{places:allModel.places,previews:allPreviews,photoCounts:allPhotoCounts,pointMarkers:makePointMarkers(allPointEntries),unplaced:allModel.entries.filter(entry=>!allPointEntries.some(p=>p.id===entry.id)&&(!entry.pavilion_id||!mappedPlaceIds.has(entry.pavilion_id))).map(entry=>({id:entry.id,title:entry.title||"名前なし",date:sessions.find(day=>day.id===entry.session_id)?.visit_date??null,previewUrl:photoById.get(entry.id)?.photoUrl??null}))}} photoCounts={photoCounts} onMapTap={capture.beginCapture} pointMarkers={pointMarkers} focusPlaceId={initialPlaceId} mapMode={mapMode} explicitAnchors={explicitAnchors} pavilions={pavilions} places={model.places} previews={previews} daily={date !== null} title={date ? `${date}の思い出` : "わたしの思い出マップ"} renderPlaceDetail={(id, onClose) => {
       const pointRecord=id.startsWith('point:')?pointEntries.find(entry=>entry.id===id.slice(6)):null;
-      if(pointRecord)return <aside aria-label="写真の位置の思い出" className="pointer-events-auto absolute inset-x-0 bottom-0 top-2 z-30 overflow-y-auto rounded-t-3xl border bg-[#fffcf5] p-4 sm:inset-x-auto sm:right-4 sm:w-[390px] sm:rounded-3xl" onPointerDown={event=>event.stopPropagation()}><header className="mb-3 flex items-center justify-between gap-3"><h3 className="font-bold">{pointRecord.title||'写真の位置'}</h3><button type="button" aria-label="写真の位置を閉じる" className="min-h-11 rounded-full border px-4" onClick={onClose}>閉じる</button></header><p className="mb-3 text-xs leading-5">地図で選んだ場所の写真です。施設に行った回数には数えません。</p>{entriesView([pointRecord])}</aside>;
+      if(pointRecord)return <aside aria-label="写真の位置の思い出" className="pointer-events-auto absolute inset-x-0 bottom-0 top-2 z-30 overflow-y-auto rounded-t-3xl border bg-[#fffcf5] p-4 sm:inset-x-auto sm:right-4 sm:w-[390px] sm:rounded-3xl" onPointerDown={event=>event.stopPropagation()}><header className="mb-3 flex items-center justify-between gap-3"><h3 className="font-bold">{pointRecord.title||'写真の位置'}</h3><button type="button" aria-label="写真の位置を閉じる" className="min-h-11 rounded-full border px-4" onClick={onClose}>閉じる</button></header><p className="mb-3 text-xs leading-5">この場所の写真</p>{entriesView([pointRecord])}</aside>;
       const place = model.places.find(item => item.id === id);
       const targetDay = sessions.find(day=>date?day.visit_date===date:day.visit_date===place?.days[0]?.date)??sessions[0];
       return <aside aria-label="場所の思い出" className="pointer-events-auto absolute inset-x-0 bottom-0 z-30 top-2 max-h-[calc(100%-8px)] overflow-y-auto overscroll-contain rounded-t-[26px] border border-[#e6dfcf] bg-[#fffcf5] p-4 shadow-xl sm:inset-x-auto sm:bottom-4 sm:right-4 sm:top-4 sm:w-[390px] sm:rounded-[26px]" onPointerDown={event => event.stopPropagation()}>
         <div className="sticky -top-4 z-10 -mx-4 mb-3 flex items-center justify-between gap-3 border-b border-[#e8e0d0] bg-[#fffcf5]/95 p-4 backdrop-blur"><h3 className="font-bold">{pavilions.find(item => item.id === id)?.name ?? "場所を選んでいない思い出"}</h3><button type="button" aria-label="場所の思い出を閉じる" onClick={onClose} className="rounded-full border px-3 py-2">閉じる</button></div>
-        {mapMode==="geographic"?<p className="mb-3 rounded-xl bg-[#f2efe2] p-3 text-xs leading-5 text-[#425c4d]">地図上の場所は目安です。実際の入口とは異なることがあります。{greenExpoMapAnchors.find(a=>a.pavilionId===id)?.extrapolated?'場所が大きくずれている可能性があります。':''} 正確な場所は確認できていません。</p>:null}
         <p className="mb-3 text-sm text-slate-600">{place?.visited ? `訪問 ${place.visitCount}回` : "訪問の記録なし"} · {place?.entries.length ?? 0}件の思い出</p>
         {!demo&&targetDay?<Link href={`/sessions/${targetDay.id}/activities/new?place=${encodeURIComponent(id)}&return=map`} className="mb-3 inline-flex rounded-full bg-[#a94035] px-5 py-3 text-sm font-semibold text-white">この場所の思い出を追加</Link>:null}
         {place?.days.length ? place.days.map(day => <section key={day.date ?? "unknown"} className="mt-4"><h4 className="mb-3 flex items-center justify-between border-t border-[#e6dfcf] pt-4 text-base font-semibold text-[#234b3b]"><span>{day.date ?? "来場日不明"}</span><span className="text-xs font-normal">{day.entries.length}件</span></h4>{entriesView(day.entries)}</section>) : <p className="text-sm text-slate-600">この範囲には記録がありません。</p>}
@@ -84,6 +80,6 @@ export function MemoryMapExplorer({ logs, sessions, pavilions, demo = false, exp
     }} />
     {model.entries.length === 0 ? <p className="rounded-xl border border-dashed p-5 text-sm text-slate-600">この日の記録はまだありません。</p> : null}
     {unmappedFocus?<section aria-label="位置未対応の場所の思い出" className="rounded-[24px] border border-[#e3c997] bg-[#fff9ea] p-5"><div className="mb-3 flex items-center justify-between gap-3"><h2 className="font-bold">{pavilions.find(p=>p.id===unmappedFocus)?.name}</h2><button type="button" onClick={()=>setUnmappedFocus(null)} className="rounded-full border px-3 py-2 text-sm">閉じる</button></div><p className="mb-4 text-xs leading-5">この場所はまだ地図に表示できません。思い出は日付ごとにここで見返せます。</p>{model.places.find(p=>p.id===unmappedFocus)?.days.map(day=><section key={day.date??'unknown'} className="mt-4"><h3 className="mb-3 font-semibold">{day.date??'来場日不明'} · {day.entries.length}件</h3>{entriesView(day.entries)}</section>)??<p className="text-sm">この範囲の記録はありません。</p>}</section>:null}
-    <section id="unplaced-memories" aria-label="場所なしの思い出" className="rounded-[24px] border border-[#e6dfcf] bg-[#fffcf5] p-5"><h2 className="mb-2 font-bold">まだ地図に置いていない思い出 · {offMapEntries.length}件</h2><p className="mb-4 text-sm text-slate-600">写真付きの思い出 {offMapEntries.filter(entry=>photoById.get(entry.id)?.photoUrl).length}件。「場所を選ぶ」から、写真を置く場所を選べます。</p>{entriesView(offMapEntries,!unmappedFocus)}</section>
+    <section id="unplaced-memories" aria-label="場所なしの思い出" className="rounded-[24px] border border-[#e6dfcf] bg-[#fffcf5] p-5"><h2 className="mb-2 font-bold">地図に載っていない思い出 · {offMapEntries.length}件</h2>{entriesView(offMapEntries,!unmappedFocus)}</section>
   </div>;
 }
