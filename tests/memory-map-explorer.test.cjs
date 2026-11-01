@@ -66,7 +66,7 @@ test('records attached to a removed or unavailable pavilion remain visible off t
   assert.equal(find(tree, node => node.type === 'Map').props.pavilions.some(item => item.id === 'unavailable'), false);
 });
 
-test('registered event without reviewed illustration anchors keeps all records visible as unmapped',()=>{const h=harness();h.props.explicitAnchors=[];const tree=h.render();assert.match(text(tree),/地図に載っていない思い出/);for(const log of h.props.logs)assert.ok(text(tree).includes(log.title));assert.match(text(tree),/1 か所訪問|1.*か所訪問/);});
+test('registered event without reviewed illustration anchors keeps all records visible as unmapped',()=>{const h=harness();h.props.explicitAnchors=[];const tree=h.render();assert.match(text(tree),/思い出一覧/);for(const log of h.props.logs)assert.ok(text(tree).includes(log.title));assert.match(text(tree),/1 か所訪問|1.*か所訪問/);});
 
 
 test('return focus opens the same dated unmapped place without inventing coordinates or losing entries',()=>{const h=harness();h.props.explicitAnchors=[];h.props.initialPlaceId='a';h.props.initialDate='2027-04-10';const tree=h.render();const panel=find(tree,n=>n.props?.['aria-label']==='位置未対応の場所の思い出');assert(panel);assert.match(text(panel),/フードの思い出 4/);assert.doesNotMatch(text(panel),/翌月のフード/);const map=find(tree,n=>n.type==='Map');assert.equal(map.props.focusPlaceId,'a');assert.equal(map.props.explicitAnchors.length,0);});
@@ -107,4 +107,15 @@ test('ordinary map keeps a single photo action and removes technical header expl
  const tree=h.render(),copy=text(tree);assert.match(copy,/写真を追加/);
  assert.doesNotMatch(copy,/写真から記録する|来場日を選んで記録|写真や場所はあとからでも指定|場所はおおよそです|画像には、場所をまだ/);
  assert(find(tree,n=>n.type==='nav'&&n.props['aria-label']==='地図の日付'));
+});
+
+
+test('one memory list contains placed, point and unplaced records, filtered by the selected day only',()=>{
+ const h=harness();let tree=h.render();let list=find(tree,n=>n.props?.['aria-label']==='思い出一覧');
+ for(const entry of h.props.logs)assert.ok(text(list).includes(entry.title));
+ let map=find(tree,n=>n.type==='Map');assert.equal(map.props.exportData.memories.length,h.props.logs.length);
+ h.selectDate(tree,'2027-05-12');tree=h.render();list=find(tree,n=>n.props?.['aria-label']==='思い出一覧');
+ const dayIds=h.props.sessions.filter(s=>s.visit_date==='2027-05-12').map(s=>s.id);
+ for(const entry of h.props.logs)assert.equal(Boolean(find(list,n=>n.props?.id===`memory-entry-${entry.id}`)),dayIds.includes(entry.session_id));
+ map=find(tree,n=>n.type==='Map');assert.equal(map.props.exportData.memories.length,h.props.logs.length);
 });

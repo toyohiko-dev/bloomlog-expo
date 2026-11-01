@@ -639,7 +639,6 @@ export function VenueMapFrame({ children, markers, renderPlaceDetail, mapAsset =
   const displayPositions=new Map(separated.map(p=>[p.id,p]));
   return (
     <div className="relative">
-      {paperMode?<label className="block border-b border-[#e4ddca] bg-[#fffcf3] px-4 py-3 text-xs text-[#4e6a59]">場所を開く<select disabled={mapSize.width===0} aria-label="地図で場所を開く" value={selectedMarkerId??''} onChange={event=>{const marker=markers.find(m=>m.id===event.target.value);if(!marker)return;setSelectedMarkerId(marker.id);setOffset(getViewportCenterOffset({focusX:mapSize.width*marker.x/mapAsset.width,focusY:mapSize.height*marker.y/mapAsset.height,size:mapSize,viewport:viewportRef.current,zoom}));}} className="ml-2 max-w-[75%] rounded-full border border-[#dfd9c7] bg-white px-3 py-2"><option value="">記録のある場所、または施設を選ぶ</option>{markers.map(marker=><option key={marker.id} value={marker.id}>{marker.name}{marker.memoryCount?` · ${marker.memoryCount}件`:''}</option>)}</select></label>:null}
       <div className="absolute right-4 top-4 z-20 flex items-center gap-1 bg-white/75 px-2 py-1 shadow-sm ring-1 ring-slate-200/80 backdrop-blur sm:right-6 sm:top-6">
         <button
           type="button"
