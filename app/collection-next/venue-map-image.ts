@@ -55,10 +55,10 @@ export function getMapImagePositions(markers: VenueMapMarker[], asset: MapArtwor
   return positions;
 }
 
-function imageFromUrl(url: string): Promise<HTMLImageElement> {
+function imageFromUrl(url: string, timeoutMs=15000): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
-    const timer = setTimeout(() => reject(new Error("image-timeout")), 15000);
+    const timer = setTimeout(() => reject(new Error("image-timeout")), timeoutMs);
     image.onload = () => { clearTimeout(timer); resolve(image); };
     image.onerror = () => { clearTimeout(timer); reject(new Error("image-load")); };
     image.src = url;
@@ -177,10 +177,27 @@ export async function createVenueMapImage(source: SVGSVGElement, markers: VenueM
     const coverDeadline=Date.now()+18000;const covers=new Map<string,Promise<HTMLImageElement|null>>();
     async function coverFor(url:string){
       if(covers.has(url))return covers.get(url)!;
-      const task=(async()=>{try{const remaining=coverDeadline-Date.now();if(remaining<=0)return null;const response=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(Math.min(6000,remaining))});if(!response.ok)return null;const blob=await response.blob();if(blob.size>10*1024*1024)return null;const image=await imageFromUrl(await asDataUrl(blob));return (image.naturalWidth||600)*(image.naturalHeight||400)<=20000000?image:null;}catch{return null;}})();
+      const task=(async()=>{
+        for(let attempt=0;attempt<2;attempt++){
+          try{
+            const remaining=coverDeadline-Date.now();if(remaining<=0)return null;
+            const response=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(Math.min(6000,remaining))});
+            if(!response.ok){if(attempt===0&&[408,429,500,502,503,504].includes(response.status))continue;return null;}
+            const blob=await response.blob();if(blob.size>10*1024*1024)return null;
+            const decodeRemaining=coverDeadline-Date.now();if(decodeRemaining<=0)return null;
+            const image=await imageFromUrl(await asDataUrl(blob),Math.min(6000,decodeRemaining));
+            return (image.naturalWidth||600)*(image.naturalHeight||400)<=20000000?image:null;
+          }catch{if(attempt===1)return null;}
+        }
+        return null;
+      })();
       covers.set(url,task);if(covers.size>2)covers.delete(covers.keys().next().value!);return task;
     }
-    for (const { marker, x, y } of positions) {
+    for (let index=0;index<positions.length;index++) {
+      // Two photos at a time: a slow response must not prevent the next photo from starting.
+      // Keep only this batch decoded, retaining the existing memory and total wait bounds.
+      if(paperMode&&index%2===0)await Promise.all(positions.slice(index,index+2).map(p=>p.marker.previewUrl?coverFor(p.marker.previewUrl):null));
+      const {marker,x,y}=positions[index];
       if(paperMode){const cover=marker.previewUrl?await coverFor(marker.previewUrl):null;if(marker.previewUrl&&!cover)omittedPhotos++;drawPaperMemory(ctx,marker,x,y,cover);continue;}
       if (options?.badgeMarkers) {
         ctx.beginPath(); ctx.arc(x, y, marker.memoryCount ? 25 : 9, 0, Math.PI * 2);
