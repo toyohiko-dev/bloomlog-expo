@@ -2,6 +2,7 @@ import {separateMemorySymbols} from '@/lib/memory-map-symbols';
 import type { MapArtwork, VenueMapMarker } from "./venue-map-frame";
 import { VENUE_MAP_ASSET } from "./venue-map-config";
 
+export type UnplacedMapMemory={id:string;title:string;date:string|null;previewUrl:string|null};
 const WIDTH = 1800;
 const MAP_X = 44;
 const MAP_Y = 166;
@@ -125,7 +126,7 @@ function drawPaperMemory(ctx:CanvasRenderingContext2D,marker:VenueMapMarker,x:nu
 }
 
 /** Render the full map scene, independent of viewport zoom, panels and controls. */
-export async function createVenueMapImage(source: SVGSVGElement, markers: VenueMapMarker[], options?: { asset?: MapArtwork; badgeMarkers?: boolean; title?: string; memoryStyle?:boolean;onPhotosOmitted?:(count:number)=>void }): Promise<Blob> {
+export async function createVenueMapImage(source: SVGSVGElement, markers: VenueMapMarker[], options?: { asset?: MapArtwork; badgeMarkers?: boolean; title?: string; memoryStyle?:boolean;unplaced?:UnplacedMapMemory[];onPhotosOmitted?:(count:number)=>void }): Promise<Blob> {
   const asset = options?.asset ?? VENUE_MAP_ASSET;
   const MAP_HEIGHT = MAP_WIDTH * asset.height / asset.width;
   await document.fonts.ready;
@@ -134,7 +135,9 @@ export async function createVenueMapImage(source: SVGSVGElement, markers: VenueM
   const listed = summary.visited.slice(0, 24);
   const rows = Math.max(1, Math.ceil(listed.length / 3));
   const listY = MAP_Y + MAP_HEIGHT + 70;
-  const height = Math.ceil(listY + rows * 76 + 92);
+  const unplaced=options?.unplaced??[];
+  const appendixY=listY+rows*76+65;
+  const height = Math.ceil(listY + rows * 76 + 92+(unplaced.length?100+Math.ceil(unplaced.length/3)*190:0));
   const canvas = document.createElement("canvas");
   canvas.width = WIDTH; canvas.height = height;
   const ctx = canvas.getContext("2d");
@@ -159,7 +162,7 @@ export async function createVenueMapImage(source: SVGSVGElement, markers: VenueM
     ctx.font = `24px ${FONT}`; ctx.fillStyle = "#52675e";
     ctx.fillText(paperMode?"会場に重なる、わたしの思い出。":options?.badgeMarkers ? "思い出を、ひとつの庭に。配置はイメージです。" : "訪れた場所に、花が咲く。", 58, 128);
     ctx.textAlign = "right"; ctx.font = `700 48px ${FONT}`; ctx.fillStyle = "#0f3d32";
-    ctx.fillText(paperMode?`思い出 ${summary.markers.reduce((n,m)=>n+(m.memoryCount??0),0)}件`:`${summary.visited.length} / ${summary.total} 訪問済み`, WIDTH - 56, 80);
+    ctx.fillText(paperMode?`思い出 ${summary.markers.reduce((n,m)=>n+(m.memoryCount??0),0)+unplaced.length}件`:`${summary.visited.length} / ${summary.total} 訪問済み`, WIDTH - 56, 80);
     ctx.font = `24px ${FONT}`; ctx.fillStyle = "#52675e";
     ctx.fillText(paperMode?`訪問の記録 ${summary.visited.length}か所 · 場所はおおよそです`:`達成率 ${summary.percentage}%`, WIDTH - 56, 125);
     ctx.textAlign = "left";
@@ -224,6 +227,17 @@ export async function createVenueMapImage(source: SVGSVGElement, markers: VenueM
     if (!listed.length) {
       ctx.font = `24px ${FONT}`; ctx.fillStyle = "#64756d";
       ctx.fillText("最初の訪問を記録すると、地図に花が咲きます。", 56, listY + 50);
+    }
+    if(unplaced.length){
+      ctx.textAlign='left';ctx.font=`700 28px ${FONT}`;ctx.fillStyle='#234b3b';ctx.fillText('場所をまだ選んでいない思い出',56,appendixY);
+      for(let index=0;index<unplaced.length;index++){
+        if(index%2===0)await Promise.all(unplaced.slice(index,index+2).map(entry=>entry.previewUrl?coverFor(entry.previewUrl):null));
+        const entry=unplaced[index],x=56+(index%3)*columnWidth,y=appendixY+25+Math.floor(index/3)*190;
+        const photo=entry.previewUrl?await coverFor(entry.previewUrl):null;
+        if(photo){const width=photo.naturalWidth||600,height=photo.naturalHeight||400,scale=Math.min((columnWidth-30)/width,100/height);ctx.drawImage(photo,x,y,width*scale,height*scale);}else if(entry.previewUrl){omittedPhotos++;}
+        ctx.textAlign='left';ctx.fillStyle='#234b3b';ctx.font=`700 22px ${FONT}`;fittedText(ctx,entry.title,x,y+128,columnWidth-30);
+        ctx.fillStyle='#52675e';ctx.font=`18px ${FONT}`;ctx.fillText(entry.date??'日付なし',x,y+157);
+      }
     }
     if(omittedPhotos){ctx.font=`18px ${FONT}`;ctx.fillStyle='#64756d';ctx.fillText(`写真を読み込めなかった${omittedPhotos}か所は花で表示しています。`,56,height-70);options?.onPhotosOmitted?.(omittedPhotos);}
     ctx.font = `21px ${FONT}`; ctx.fillStyle = "#64756d";

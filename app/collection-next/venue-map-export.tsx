@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import type { MapArtwork, VenueMapMarker } from "./venue-map-frame";
 import {checkGeneratedPng} from '@/lib/png-metadata';
-import { createVenueMapImage } from "./venue-map-image";
+import { type UnplacedMapMemory, createVenueMapImage } from "./venue-map-image";
 
-export function VenueMapExport({ markers, asset, badgeMarkers, title, unavailableReason, memoryStyle=false }: { markers: VenueMapMarker[]; asset?: MapArtwork; badgeMarkers?: boolean; title?: string; unavailableReason?:string;memoryStyle?:boolean }) {
+export function VenueMapExport({ markers, asset, badgeMarkers, title, unavailableReason, memoryStyle=false,unplaced=[] }:  { markers: VenueMapMarker[]; asset?: MapArtwork; badgeMarkers?: boolean; title?: string; unavailableReason?:string;memoryStyle?:boolean;unplaced?:UnplacedMapMemory[] }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const busyRef = useRef(false);
   const [busy, setBusy] = useState(false);
@@ -19,7 +19,7 @@ export function VenueMapExport({ markers, asset, badgeMarkers, title, unavailabl
     try {
       const source = hostRef.current?.closest("section")?.querySelector<SVGSVGElement>("svg[data-venue-map-source]");
       if (!source) throw new Error("map-unavailable");
-      const blob = await createVenueMapImage(source, markers, { asset, badgeMarkers, title, memoryStyle,onPhotosOmitted:count=>setMessage(`${count}か所の写真を読み込めなかったため、花で表示しています。`) });
+      const blob = await createVenueMapImage(source, markers, { asset, badgeMarkers, title, memoryStyle,unplaced,onPhotosOmitted:count=>setMessage(`${count}か所の写真を読み込めなかったため、花で表示しています。`) });
       await checkGeneratedPng(blob);
       const date = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(new Date());
       const file = new File([blob], `bloomlog-map-${date}.png`, { type: "image/png" });

@@ -1,4 +1,5 @@
 "use client";
+import type {UnplacedMapMemory} from "./venue-map-image";
 
 import {GREEN_EXPO_MAP_ART} from '@/lib/green-expo-map';
 import type { ReactNode } from "react";
@@ -23,9 +24,11 @@ export function buildIllustratedMarkers(pavilions: PavilionOption[], places: Mem
   });
 }
 export function mapExportUnavailableReason(markers:VenueMapMarker[],places:MemoryPlace[],hasExplicitAnchors:boolean){return hasExplicitAnchors&&markers.length===0&&places.some(p=>p.entries.length>0)?'地図に置ける思い出がないため、まだ画像を作れません。思い出は下の一覧で見返せます。':undefined;}
-export function IllustratedMemoryMap({ pavilions, places, previews, daily, title, renderPlaceDetail, explicitAnchors, mapMode="illustration",focusPlaceId,onMapTap,pointMarkers=[],photoCounts=new Map() }: { photoCounts?:Map<string,number>;onMapTap?:(x:number,y:number)=>void;pointMarkers?:VenueMapMarker[]; focusPlaceId?:string|null; mapMode?:"illustration"|"geographic"; explicitAnchors?:{pavilionId:string;x:number;y:number}[]; pavilions:PavilionOption[]; places:MemoryPlace[]; previews:Map<string,string>; daily:boolean; title:string; renderPlaceDetail:(id:string,onClose:()=>void)=>ReactNode }) {
+export function IllustratedMemoryMap({ pavilions, places, previews, daily, title, renderPlaceDetail, explicitAnchors, mapMode="illustration",focusPlaceId,onMapTap,pointMarkers=[],photoCounts=new Map(),allPlaces=[],exportData }: { allPlaces?:MemoryPlace[];exportData?:{places:MemoryPlace[];previews:Map<string,string>;photoCounts:Map<string,number>;pointMarkers:VenueMapMarker[];unplaced?:UnplacedMapMemory[]};photoCounts?:Map<string,number>;onMapTap?:(x:number,y:number)=>void;pointMarkers?:VenueMapMarker[]; focusPlaceId?:string|null; mapMode?:"illustration"|"geographic"; explicitAnchors?:{pavilionId:string;x:number;y:number}[]; pavilions:PavilionOption[]; places:MemoryPlace[]; previews:Map<string,string>; daily:boolean; title:string; renderPlaceDetail:(id:string,onClose:()=>void)=>ReactNode }) {
   const artwork=mapMode==="geographic"?GREEN_EXPO_MAP_ART:MEMORY_MAP_ART;
   const markers = [...buildIllustratedMarkers(pavilions,places,previews,daily,explicitAnchors,artwork,mapMode==="geographic",photoCounts),...pointMarkers];
+  if(daily)for(const marker of markers){if(!marker.memoryCount&&!marker.id.startsWith('point:'))marker.otherDayCount=allPlaces.find(place=>place.id===marker.id)?.entries.length??0;}
+  const exportMarkers=exportData?[...buildIllustratedMarkers(pavilions,exportData.places,exportData.previews,false,explicitAnchors,artwork,mapMode==="geographic",exportData.photoCounts),...exportData.pointMarkers]:markers;
   return <section className="overflow-hidden rounded-[28px] border border-[#e6dfcf] bg-[#fffcf5] shadow-[0_16px_60px_#344c3910]">
     <div className="flex items-center justify-between gap-3 px-5 pt-5 text-xs text-[#60756b]"><span>わたしの会場マップ</span><span>● 訪問済み　○ 関連する記録</span></div>
     <VenueMapFrame onMapTap={onMapTap} focusPlaceId={focusPlaceId} markers={markers} mapAsset={artwork} badgeMarkers renderPlaceDetail={renderPlaceDetail}>
@@ -36,6 +39,7 @@ export function IllustratedMemoryMap({ pavilions, places, previews, daily, title
     </VenueMapFrame>
     <p className="px-5 pb-3 text-[11px] leading-5 text-[#405749]">{mapMode==="geographic"?"花や写真を押すと、思い出が開きます。地図は2025年9月の計画をもとにしたイメージで、場所はおおよそです。道案内には使えません。":"場所を押すと、思い出が開きます。並び方はイメージで、実際の会場とは異なります。"}</p>
     {pointMarkers.length>0?<p className="text-xs leading-5 text-slate-600">指定した写真の位置も画像に含まれます。共有前に確認してください。</p>:null}
-    <VenueMapExport memoryStyle={mapMode==="geographic"} markers={markers} asset={artwork} badgeMarkers title={title} unavailableReason={mapExportUnavailableReason(markers,places,explicitAnchors!==undefined)} />
+    <p className="px-5 pb-3 text-xs text-[#405749]">画像には、全日程の思い出をまとめます。</p>
+    <VenueMapExport unplaced={exportData?.unplaced} memoryStyle={mapMode==="geographic"} markers={exportMarkers} asset={artwork} badgeMarkers title={exportData?"わたしの思い出マップ（全日程）":title} unavailableReason={mapExportUnavailableReason(markers,places,explicitAnchors!==undefined)} />
   </section>;
 }

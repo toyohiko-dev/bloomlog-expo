@@ -114,3 +114,5 @@ test('map camera tap converts visible coordinates and ignores drag, pinch, cance
 });
 
 test('one actual photo renders one sheet even with four records, and only real additional photos add layers',()=>{const h=harness();function layers(n){if(!n||typeof n!=='object')return 0;return (n.props?.['data-photo-layer']?1:0)+[n.props?.children].flat(Infinity).reduce((sum,c)=>sum+layers(c),0);}for(const count of [1,2,3]){h.render([marker('a',{paperMemory:true,memoryCount:4,previewUrl:'/synthetic.png',photoCount:count})]);assert.equal(layers(h.badge('a')),count);}});
+
+test('older memories keep a green flower and explicit other-day count rather than an empty point',()=>{const h=harness();h.render([marker('a',{paperMemory:true,visited:false,memoryCount:0,otherDayCount:4})]);const b=h.badge('a');assert.match(b.props['aria-label'],/別の日の記録.*4件/);function nodes(n){if(!n||typeof n!=='object')return [];return [n,...[n.props?.children].flat(Infinity).flatMap(nodes)];}assert(nodes(b).some(n=>n.type==='svg'));assert(nodes(b).some(n=>n.type==='text'&&n.props.children===4));assert(nodes(b).some(n=>n.props?.children==='別の日'));});
