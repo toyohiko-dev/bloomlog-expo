@@ -24,7 +24,8 @@ export function decodeMapPoint(input:unknown):Result{
 }
 export function validateMapPoint(input:unknown,{eventId,pavilionId,activityType}:{eventId:string|null;pavilionId:string|null;activityType:string}):Result{
  const decoded=decodeMapPoint(input);if(!decoded.ok||!decoded.value)return decoded;const point=decoded.value;
- if(pavilionId||activityType==='pavilion_visit')return {ok:false,error:'point-is-not-facility-visit'};
+ // The record subject and photo position are independent. Subject validation stays in the save action.
+ if(activityType==='pavilion_visit'&&!pavilionId)return {ok:false,error:'point-visit-needs-subject'};
  if(eventId!==MAP_POINT_FRAME.eventId||point.event_id!==eventId||point.map_id!==MAP_POINT_FRAME.mapId||point.map_revision!==MAP_POINT_FRAME.revision)return {ok:false,error:'point-frame-mismatch'};
  return decoded;
 }
@@ -52,4 +53,22 @@ export function confirmMapPoint(draft:MapPointDraft,explicitConfirmation:boolean
 export function resolveMapPointEdit(field:{present:boolean;value?:unknown},original:unknown,context:Parameters<typeof validateMapPoint>[1]):Result&{shouldWrite:boolean}{
  const checked=validateMapPoint(field.present?field.value:original??null,context);
  return {...checked,shouldWrite:field.present&&checked.ok};
+}
+
+/** Interaction distance in the existing map frame, not a surveyed accuracy guarantee. */
+export function mapPointDistanceMeters(a:Pick<MapPoint,'x'|'y'>,b:Pick<MapPoint,'x'|'y'>){
+ return Math.hypot((a.x-b.x)*metadata.metadata.artworkSize[0],(a.y-b.y)*metadata.metadata.artworkSize[1])/metadata.metadata.unitsPerMeter;
+}
+/** Inverse of the saved map frame. Does not add accuracy to estimated source data. */
+export function mapPointCoordinates(point:Pick<MapPoint,'x'|'y'>){
+ const m=metadata.metadata,[xmin,ymin,xmax,ymax]=m.rotatedBoundsMeters,t=m.rotationDegrees*Math.PI/180;
+ const x=(point.x*m.artworkSize[0]-m.center[0])/m.unitsPerMeter+(xmin+xmax)/2;
+ const y=(point.y*m.artworkSize[1]-m.center[1])/m.unitsPerMeter+(ymin+ymax)/2;
+ const east=x*Math.cos(t)-y*Math.sin(t),north=-x*Math.sin(t)-y*Math.cos(t);
+ return {latitude:m.latitudeOrigin+north/m.earthRadiusMeters*180/Math.PI,longitude:m.longitudeOrigin+east/(m.earthRadiusMeters*Math.cos(m.latitudeOrigin*Math.PI/180))*180/Math.PI};
+}
+
+/** Radius of the device-reported GPS uncertainty only; EXIF has no invented radius. */
+export function gpsAccuracyMapRadius(point:{source:string;placement?:string;source_accuracy_m:number|null}){
+ return point.source==='current-gps'&&point.placement==='projected'&&point.source_accuracy_m!==null&&Number.isFinite(point.source_accuracy_m)&&point.source_accuracy_m>=0?point.source_accuracy_m*metadata.metadata.unitsPerMeter:null;
 }

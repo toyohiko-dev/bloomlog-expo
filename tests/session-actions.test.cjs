@@ -238,3 +238,13 @@ test('point storage feature gate rejects before upload; enabled actions preserve
  const edit=form();let updated;const update=actions('','',[],{pointEnabled:true,sessionEventId:eventId,originalPoint:point,onWrite:(table,p)=>{if(table==='activity_logs')updated=p;}});assert.equal((await update.updateActivityLogAction(edit)).status,'success');assert.equal('map_point' in updated,false);edit.set('mapPoint','');assert.equal((await update.updateActivityLogAction(edit)).status,'success');assert.equal(updated.map_point,null);
  for(const invalid of [{...point,confirmed:false},{...point,map_revision:'old'},{...point,latitude:35}]){const calls=[];const bad=form();bad.set('mapPoint',JSON.stringify(invalid));assert.equal((await actions('','',calls,{pointEnabled:true,sessionEventId:eventId}).submitActivityLogAction(bad)).status,'error');assert.equal(calls.length,0);}
 });
+
+
+test('create and edit save named subject and photo position independently without promoting food to a visit',async()=>{
+ const point=pointLogic.confirmMapPoint(pointLogic.manualMapPoint(.3,.4),true),f=form();f.set('pavilionId','garden');f.set('mapPoint',JSON.stringify(point));let saved;
+ const run=actions('','',[],{pointEnabled:true,sessionEventId:point.event_id,onWrite:(table,p)=>{if(table==='activity_logs')saved=p;}});
+ assert.equal((await run.submitActivityLogAction(f)).status,'success');assert.equal(saved.pavilion_id,'garden');assert.equal(saved.map_point.x,.3);assert.equal(saved.activity_type,'food');
+ const edit=form();edit.set('pavilionId','garden');edit.set('mapPoint',JSON.stringify({...point,x:.7}));let changed;
+ const update=actions('','',[],{pointEnabled:true,sessionEventId:point.event_id,originalPavilionId:'garden',originalPoint:point,onWrite:(table,p)=>{if(table==='activity_logs')changed=p;}});
+ assert.equal((await update.updateActivityLogAction(edit)).status,'success');assert.equal(changed.pavilion_id,'garden');assert.equal(changed.map_point.x,.7);assert.equal(changed.activity_type,'food');
+});

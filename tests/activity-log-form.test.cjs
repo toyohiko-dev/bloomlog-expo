@@ -115,10 +115,11 @@ function harness(props = {}, storage = memoryStorage(), prepare = async file => 
   render();
   return {
     calls, navigation, fileInput, render, storage,
-    openPoint(){nodes(tree).find(n=>n.type==='button'&&['地図で場所を選ぶ','場所を選び直す'].includes(n.props.children)).props.onClick();render();},
+    openPoint(){nodes(tree).find(n=>n.type==='button'&&(['撮ったところを地図で選ぶ','地図で変更'].includes(n.props.children)||n.props['aria-label']==='撮影地点を変更')).props.onClick();render();},
+    photoSuggestion(point){nodes(tree).find(n=>n.type==='LocationSuggestions').props.onPhotoPoint(point);render();},
     confirmPoint(point){nodes(tree).find(n=>n.type==='PointPicker').props.onConfirm(point);render();},
     cancelPoint(){nodes(tree).find(n=>n.type==='PointPicker').props.onCancel();render();},
-    deferPoint(){nodes(tree).find(n=>n.type==='button'&&n.props.children==='場所を決めずに保存').props.onClick();render();},
+    deferPoint(){nodes(tree).find(n=>n.type==='button'&&n.props.children==='地図では選ばない').props.onClick();render();},
     placeOptions(){return nodes(field("related-place")).filter(n=>n.type==="option").map(n=>n.props.value);},
     setAction(fn) { action = fn; },
     value(id) { return field(id)?.props.value; },
@@ -364,10 +365,10 @@ test('manual photo point survives failed save and retry, returns to its record, 
  h.setAction(async()=>({status:'error',message:'simulated upload failure',fieldErrors:{}}));h.submit();await h.settle();assert.equal(JSON.parse(h.calls[0].get('mapPoint')).x,.3);assert.equal(h.value('title'),'Synthetic parade');
  h.setAction(async()=>({status:'success',message:'saved',fieldErrors:{}}));h.submit();await h.settle();assert.equal(JSON.parse(h.calls[1].get('mapPoint')).y,.4);assert(h.calls[1].get('photo') instanceof File);assert(h.navigation.at(-1).includes('place=point%3A'));assert(h.navigation.at(-1).includes('day=2027-04-10'));
 });
-test('deferred point serializes explicit clearing, facility choice clears it, and disabled feature never submits a point',async()=>{
+test('clearing point is explicit, selecting a subject preserves it, and disabled schema omits the field',async()=>{
  const point={version:1,event_id:'e60f2360-8147-4112-969a-00954596ceb6',map_id:'green-expo-places-v1',map_revision:'3073fb3b299d73fe74c86ea12df767d45c4c6c42efb02a08162cb6643ff71fdc',x:.3,y:.4,source:'manual',placement:'manual',source_accuracy_m:null,confirmed:true};
  const h=harness({initialActivityType:'food',visitEventId:point.event_id,mapPointAvailable:true});h.change('title','Food');h.openPoint();h.confirmPoint(point);h.deferPoint();h.submit();await h.settle();assert.equal(h.calls[0].get('mapPoint'),'');
- const facility=harness({initialActivityType:'food',visitEventId:point.event_id,mapPointAvailable:true});facility.change('title','Food');facility.openPoint();facility.confirmPoint(point);facility.selectPavilion();facility.submit();await facility.settle();assert.equal(facility.calls[0].get('mapPoint'),'');assert.equal(facility.calls[0].get('pavilionId'),'garden');
+ const facility=harness({initialActivityType:'food',visitEventId:point.event_id,mapPointAvailable:true});facility.change('title','Food');facility.openPoint();facility.confirmPoint(point);facility.selectPavilion();facility.submit();await facility.settle();assert.equal(JSON.parse(facility.calls[0].get('mapPoint')).x,point.x);assert.equal(facility.calls[0].get('pavilionId'),'garden');
  const disabled=harness({initialActivityType:'food',mapPointAvailable:false});disabled.change('title','Food');disabled.submit();await disabled.settle();assert.equal(disabled.calls[0].has('mapPoint'),false);
 });
 
@@ -393,4 +394,30 @@ test('photo save preserves cumulative or selected map scope independently of rec
 
 test('photo form starts with category, facility suggestions and optional details collapsed',()=>{const h=harness({photoEntry:true,initialActivityType:'event_participation',initialTitle:'Photo'});const groups=h.disclosures();assert.equal(groups.length>=4,true);assert.equal(groups.filter(g=>g.open===true).length,1,'only the empty photo picker is expanded');assert.equal(h.value('title'),'Photo');});
 
-test('photo location copy explains the action without registry implementation jargon',()=>{const h=harness({photoEntry:true,initialActivityType:'event_participation',initialTitle:'Photo',visitEventId:'e60f2360-8147-4112-969a-00954596ceb6',mapPointAvailable:true});assert.doesNotMatch(h.text(),/公式台帳|同一性|達成対象/);assert.match(h.text(),/場所を選ばず、写真だけでも保存できます/);});
+test('photo location copy explains the action without registry implementation jargon',()=>{const h=harness({photoEntry:true,initialActivityType:'event_participation',initialTitle:'Photo',visitEventId:'e60f2360-8147-4112-969a-00954596ceb6',mapPointAvailable:true});assert.doesNotMatch(h.text(),/公式台帳|同一性|達成対象/);assert.match(h.text(),/撮ったところを地図で選ぶ/);assert.match(h.text(),/パビリオンやお店ごとにまとめる/);});
+
+
+test('subject and capture point survive create retry and independent edit without becoming duplicate map points',async()=>{
+ const point={version:1,event_id:'e60f2360-8147-4112-969a-00954596ceb6',map_id:'green-expo-places-v1',map_revision:'3073fb3b299d73fe74c86ea12df767d45c4c6c42efb02a08162cb6643ff71fdc',x:.3,y:.4,source:'manual',placement:'manual',source_accuracy_m:null,confirmed:true};
+ const h=harness({initialActivityType:'food',initialTitle:'Lunch',visitEventId:point.event_id,mapPointAvailable:true,returnToMap:true,visitDate:'2027-04-10'});
+ h.selectPavilion();h.openPoint();h.confirmPoint(point);h.photo(new File(['synthetic'],'synthetic.png',{type:'image/png'}));
+ h.setAction(async()=>({status:'error',message:'offline',fieldErrors:{}}));h.submit();await h.settle();assert.equal(h.calls[0].get('pavilionId'),'garden');assert.equal(JSON.parse(h.calls[0].get('mapPoint')).y,.4);
+ h.setAction(async()=>({status:'success',message:'saved',fieldErrors:{}}));h.submit();await h.settle();const returned=new URL(h.navigation.at(-1),'https://example.invalid');assert.equal(returned.searchParams.get('place'),'garden');assert.equal(h.calls[1].get('activityType'),'food');
+ const edit=harness({mode:'edit',logId:'saved',initialActivityType:'food',initialTitle:'Lunch',initialPavilionId:'garden',initialMapPoint:point,visitEventId:point.event_id,mapPointAvailable:true});edit.openPoint();edit.confirmPoint({...point,x:.8});edit.submit();await edit.settle();assert.equal(edit.calls[0].get('pavilionId'),'garden');assert.equal(JSON.parse(edit.calls[0].get('mapPoint')).x,.8);
+});
+
+
+test('photo-only entry does not require a typed title or subject selection',async()=>{const h=harness({photoEntry:true,initialActivityType:'event_participation',initialTitle:''});h.photo(new File(['synthetic'],'photo.png',{type:'image/png'}));h.submit();await h.settle();assert.equal(h.calls.length,1);assert.equal(h.calls[0].get('title'),'写真の思い出');assert.equal(h.calls[0].get('pavilionId'),'');});
+
+
+test('photo GPS suggests a capture point without changing subject, while a far manual point needs a visible correction',async()=>{
+ const base={version:1,event_id:'e60f2360-8147-4112-969a-00954596ceb6',map_id:'green-expo-places-v1',map_revision:'3073fb3b299d73fe74c86ea12df767d45c4c6c42efb02a08162cb6643ff71fdc',x:.3,y:.4,source:'photo-exif',placement:'projected',source_accuracy_m:null,confirmed:false};
+ const h=harness({photoEntry:true,initialActivityType:'event_participation',initialTitle:'Photo',initialPavilionId:'garden',visitEventId:base.event_id,mapPointAvailable:true});h.photoSuggestion(base);h.submit();await h.settle();assert.equal(JSON.parse(h.calls[0].get('mapPoint')).source,'photo-exif');assert.equal(h.calls[0].get('pavilionId'),'garden');assert.equal(h.calls[0].get('activityType'),'event_participation');
+ const manual={...base,x:.8,y:.9,source:'manual',placement:'manual',confirmed:true};const m=harness({photoEntry:true,initialActivityType:'food',initialTitle:'Food',initialPavilionId:'garden',initialMapPoint:manual,visitEventId:base.event_id,mapPointAvailable:true});m.photoSuggestion(base);assert.match(m.text(),/写真の撮影地点は、選んだ地点から離れています/);m.submit();await m.settle();assert.equal(JSON.parse(m.calls[0].get('mapPoint')).x,.8);assert.equal(m.calls[0].get('pavilionId'),'garden');
+});
+
+
+test('late photo metadata cannot undo an explicit decision to save without a photo point',async()=>{
+ const point={version:1,event_id:'e60f2360-8147-4112-969a-00954596ceb6',map_id:'green-expo-places-v1',map_revision:'3073fb3b299d73fe74c86ea12df767d45c4c6c42efb02a08162cb6643ff71fdc',x:.3,y:.4,source:'manual',placement:'manual',source_accuracy_m:null,confirmed:true};
+ const h=harness({photoEntry:true,initialActivityType:'food',initialTitle:'Food',initialMapPoint:point,visitEventId:point.event_id,mapPointAvailable:true});h.deferPoint();h.photoSuggestion({...point,confirmed:false,source:'photo-exif',placement:'projected'});h.submit();await h.settle();assert.equal(h.calls[0].get('mapPoint'),'');
+});

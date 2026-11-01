@@ -10,18 +10,19 @@ import {greenExpoResearch,registeredResearchPavilion} from '@/lib/green-expo-res
 import {coordinatesForEvent,reviewedBindings} from '@/lib/place-registry';
 import {researchPlacesForEvent,nearbyResearchPlaces,indoorOccurrencesOn} from '@/lib/green-expo-research';
 import type {PavilionOption} from '@/lib/session-shared';
-export function PhotoLocationSuggestions({photo,pavilions,onSelect,disabled=false,eventId=null,visitDate='',onContextSelect,onPointSuggest,photoOrigin='gallery',deviceLocationEnabled=true}:{deviceLocationEnabled?:boolean;onPointSuggest?:(point:MapPointDraft)=>void;photoOrigin?:'gallery'|'camera'|'none';onContextSelect?:(pavilionId:string,context:PlaceContext)=>void;visitDate?:string;eventId?:string|null;photo:File|null;pavilions:PavilionOption[];onSelect:(id:string)=>void;disabled?:boolean}){
+export function PhotoLocationSuggestions({photo,pavilions,onSelect,disabled=false,eventId=null,visitDate='',onContextSelect,onPointSuggest,photoOrigin='gallery',deviceLocationEnabled=true,onPhotoPoint,mode="all"}:{mode?:"all"|"point"|"subject";onPhotoPoint?:(point:MapPointDraft)=>void;deviceLocationEnabled?:boolean;onPointSuggest?:(point:MapPointDraft)=>void;photoOrigin?:'gallery'|'camera'|'none';onContextSelect?:(pavilionId:string,context:PlaceContext)=>void;visitDate?:string;eventId?:string|null;photo:File|null;pavilions:PavilionOption[];onSelect:(id:string)=>void;disabled?:boolean}){
  const [photoPosition,setPhotoPosition]=useState<PhotoCoordinates|null>(null);
  const [position,setPosition]=useState<PhotoCoordinates|null>(null);
  const [researchId,setResearchId]=useState('');
  const [source,setSource]=useState<'photo'|'current'|null>(null);
  const [notice,setNotice]=useState('');const [busy,setBusy]=useState(false);
  const request=useRef<AbortController|null>(null);
+ const onPhotoPointRef=useRef(onPhotoPoint);onPhotoPointRef.current=onPhotoPoint;
  useEffect(()=>{let active=true;request.current?.abort();setBusy(false);setPosition(null);setSource(null);setPhotoPosition(null);setResearchId('');
-  if(photo){setNotice('写真を撮った場所を調べています。');readPhotoGps(photo).then(point=>{if(!active)return;setPhotoPosition(point);if(point){setPosition(point);setSource('photo');}setNotice(point?'写真を撮った場所の近くにある施設です。合うものがなければ、選ばずに保存できます。':'この写真からは撮った場所が分かりませんでした。自分で選ぶか、あとで決められます。');}).catch(()=>{if(active)setNotice('写真を撮った場所は分かりませんでした。写真はそのまま保存できます。');});}
-  else setNotice('場所は地図や施設名から選べます。');
+  if(photo){setNotice('写真を撮った場所を調べています。');readPhotoGps(photo).then(point=>{if(!active)return;setPhotoPosition(point);if(point){setPosition(point);setSource('photo');const draft=projectedMapPoint(point,'photo-exif','gallery');if(draft)onPhotoPointRef.current?.(draft);}setNotice(mode==='point'?(point?'写真に撮影地点が見つかりました。':'この写真には撮影地点がありません。'):point?'写真を撮った場所の近くにある施設です。合うものがなければ、選ばずに保存できます。':'この写真からは撮った場所が分かりませんでした。自分で選ぶか、あとで決められます。');}).catch(()=>{if(active)setNotice('写真を撮った場所は分かりませんでした。写真はそのまま保存できます。');});}
+  else setNotice(mode==='point'?'':'場所は地図や施設名から選べます。');
   return()=>{active=false;request.current?.abort();};
- },[photo,eventId]);
+ },[photo,eventId,mode]);
  const catalog=coordinatesForEvent(placeRegistry,eventId,new Set(pavilions.map(place=>place.id)));
  const researchCatalog=researchPlacesForEvent(eventId);
  const researchNearby=position?nearbyResearchPlaces(position,eventId):[];
@@ -34,11 +35,20 @@ export function PhotoLocationSuggestions({photo,pavilions,onSelect,disabled=fals
  const hasRegisteredResearch=reviewedBindings(placeRegistry).some(p=>p.eventId===eventId&&pavilions.some(item=>item.id===p.pavilionId));
  const hasCoordinates=catalog.length>0||researchCatalog.some(p=>p.gpsEnabled);
  const places=rankNearbyPlaces(position&&position.accuracy<=150?position:{latitude:NaN,longitude:NaN,accuracy:0},catalog).filter(p=>pavilions.some(item=>item.id===p.pavilionId));
- async function locate(){if(!deviceLocationEnabled)return;request.current?.abort();const controller=new AbortController();request.current=controller;setBusy(true);setPosition(null);setSource('current');setNotice('今いる場所を調べています。写真の場所は自動で変わりません。');
-  try{const point=await requestCurrentPosition(navigator.geolocation,controller.signal);if(controller.signal.aborted)return;setPosition(point);setNotice(point.accuracy>150?'現在地がはっきり分かりません。地図や施設名から選んでください。':'近くにある施設です。合う場所を選んでください。');}
+ async function locate(){if(!deviceLocationEnabled||mode==='point'&&photoOrigin==='gallery')return;request.current?.abort();const controller=new AbortController();request.current=controller;setBusy(true);setPosition(null);setSource('current');setNotice('今いる場所を調べています。写真の場所は自動で変わりません。');
+  try{const point=await requestCurrentPosition(navigator.geolocation,controller.signal);if(controller.signal.aborted)return;setPosition(point);setNotice(mode==='point'?'現在地を取得しました。':point.accuracy>150?'現在地がはっきり分かりません。地図や施設名から選んでください。':'近くにある施設です。合う場所を選んでください。');}
   catch(e){if(request.current!==controller)return;const code=e instanceof Error?e.message:'';setNotice(code==='denied'?'現在地を使えませんでした。場所は自分で選べます。':code==='cancelled'?'現在地を調べるのをやめました。入力した内容は残っています。':code==='timeout'?'現在地が分かりませんでした。もう一度試すか、場所を自分で選んでください。':'現在地が分かりませんでした。地図や施設名から選んで保存できます。');}
   finally{if(request.current===controller)setBusy(false);}
  }
+ if(mode==='point')return <div className="space-y-3 rounded-xl bg-[#f3f5ed] p-3">
+  <div className="flex flex-wrap gap-2">
+   {photoPosition?<button type="button" disabled={disabled||busy} onClick={()=>{const draft=projectedMapPoint(photoPosition,'photo-exif','gallery');if(draft)onPointSuggest?.(draft);}} className="min-h-11 rounded-full border bg-white px-4 py-2 text-sm">写真のGPSを使う</button>:null}
+   {photoOrigin!=='gallery'?<button type="button" disabled={disabled||busy||!deviceLocationEnabled} onClick={locate} className="min-h-11 rounded-full border bg-white px-4 py-2 text-sm">現在地を使う</button>:null}
+   {busy?<button type="button" onClick={()=>request.current?.abort()} className="min-h-11 rounded-full border px-4 py-2 text-sm">やめる</button>:null}
+  </div>
+  {position&&source==='current'&&photoOrigin!=='gallery'?<button type="button" disabled={disabled||busy} onClick={()=>{const draft=projectedMapPoint(position,'current-gps',photoOrigin);if(draft)onPointSuggest?.(draft);else setNotice('会場の地図の外です。地図で選ぶか、そのまま写真を保存できます。');}} className="min-h-11 rounded-full border bg-white px-4 py-2 text-sm">この地点を確認</button>:null}
+  {busy?<p role="status" className="text-xs">現在地を確認中…</p>:notice?<p role="status" className="text-xs leading-5 text-[#425748]">{notice}</p>:null}
+ </div>;
  return <div className="space-y-3 rounded-2xl bg-[#f3f5ed] p-4">
   <p className="text-sm font-semibold text-[#275447]">近くの場所を探す</p>
   <p className="text-xs leading-5 text-slate-600">撮った場所や今いる場所の近くから探せます。写真の場所は、選ぶまで変わりません。</p>

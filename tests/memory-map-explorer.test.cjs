@@ -21,10 +21,10 @@ function find(node, predicate) {
   return null;
 }
 function text(node) { if (typeof node === 'string' || typeof node === 'number') return String(node); if (!node || typeof node !== 'object') return ''; return [node.props?.children].flat(Infinity).map(text).join(' '); }
-function harness(hydrated=true) {
+function harness(hydrated=true,captureState={}) {
   const slots=[];let cursor=0;
   const jsx = (type, props) => ({ type, props });
-  const dependencies = { './use-map-photo-capture':{useMapPhotoCapture:()=>({content:null,beginCapture:undefined})},react: { useSyncExternalStore:(_subscribe,getSnapshot,getServerSnapshot)=>hydrated?getSnapshot():getServerSnapshot(),useState: initial => {const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return [slots[i],v=>slots[i]=v];} },
+  const dependencies = { './use-map-photo-capture':{useMapPhotoCapture:()=>({content:null,beginCapture:undefined,...captureState})},react: { useSyncExternalStore:(_subscribe,getSnapshot,getServerSnapshot)=>hydrated?getSnapshot():getServerSnapshot(),useState: initial => {const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return [slots[i],v=>slots[i]=v];} },
     'react/jsx-runtime': { jsx, jsxs: jsx }, 'next/link': 'Link', 'next/image': 'Image',
     '@/lib/map-point-config':{mapPointStorageEnabled:false},'@/lib/memory-map-point':pointLogic,'./memory-photo-viewer':{MemoryPhotoViewer:'PhotoViewer'},'@/lib/memory-map-navigation':navigation,'@/lib/green-expo-map':{greenExpoMapAnchors:[]},'@/lib/memory-map': model, './illustrated-memory-map': { IllustratedMemoryMap: 'Map' } };
   const { MemoryMapExplorer } = load('app/collection-next/memory-map-explorer.tsx', dependencies);
@@ -104,7 +104,24 @@ test('day view shows current records while export retains every date and photo',
 
 test('ordinary map keeps a single photo action and removes technical header explanations',()=>{
  const h=harness();h.props.demo=false;h.props.scopeLabel='GREEN×EXPO 2027 · 場所はおおよそです';h.props.explicitAnchors=[];
- const tree=h.render(),copy=text(tree);assert.match(copy,/写真を追加/);
+ const tree=h.render(),copy=text(tree);assert.match(copy,/写真を選ぶ/);
  assert.doesNotMatch(copy,/写真から記録する|来場日を選んで記録|写真や場所はあとからでも指定|場所はおおよそです|画像には、場所をまだ/);
  assert(find(tree,n=>n.type==='nav'&&n.props['aria-label']==='地図の日付'));
+});
+
+
+test('a subject plus capture point groups once at the subject anchor and retains the original photo position',()=>{
+ const h=harness();const point=pointLogic.confirmMapPoint(pointLogic.manualMapPoint(.8,.9),true);h.props.mapMode='geographic';h.props.mapPointAvailable=true;h.props.explicitAnchors=[{pavilionId:'a',x:.2,y:.3}];h.props.logs=[{...h.props.logs[0],id:'combined',pavilion_id:'a',event_id:point.event_id,map_point:point,activity_type:'food',photoUrl:'/synthetic.jpg'}];
+ const map=find(h.render(),n=>n.type==='Map');assert.equal(map.props.places[0].entries.length,1);assert.equal(map.props.pointMarkers.length,0);assert.equal(map.props.exportData.pointMarkers.length,0);assert.equal(map.props.places[0].visited,false);assert.equal(h.props.logs[0].map_point.x,.8);
+ h.props.explicitAnchors=[];const fallback=find(h.render(),n=>n.type==='Map');assert.equal(fallback.props.pointMarkers.length,1);assert.equal(fallback.props.exportData.unplaced.length,0);
+});
+
+
+test('unmapped explicit visits keep their photo point visible without becoming duplicate map markers',()=>{
+ const h=harness();const point=pointLogic.confirmMapPoint(pointLogic.manualMapPoint(.6,.7),true);h.props.mapMode='geographic';h.props.mapPointAvailable=true;h.props.explicitAnchors=[];h.props.logs=[{...h.props.logs[0],id:'visit-point',pavilion_id:'a',event_id:point.event_id,map_point:point,activity_type:'pavilion_visit',photoUrl:'/synthetic.jpg'}];
+ const map=find(h.render(),n=>n.type==='Map');assert.equal(map.props.pointMarkers.length,1);assert.equal(map.props.pointMarkers[0].id,'point:visit-point');assert.equal(map.props.exportData.pointMarkers.length,1);assert.equal(map.props.exportData.unplaced.length,0);
+});
+
+test('an unfinished photo reopens its editor rather than navigating away to a new entry',()=>{
+ let resumed=0;const h=harness(true,{hasDraft:true,beginPhoto:()=>resumed++});h.props.demo=false;const tree=h.render();assert.equal(find(tree,n=>n.props?.href?.includes('/activities/new?return=map#photo')),null);const action=find(tree,n=>n.type==='button'&&n.props.children==='書きかけに戻る');assert(action);action.props.onClick();const detail=find(tree,n=>n.type==='Map').props.renderPlaceDetail('a',()=>{});find(detail,n=>n.type==='button'&&n.props.children==='書きかけに戻る').props.onClick();assert.equal(resumed,2);
 });

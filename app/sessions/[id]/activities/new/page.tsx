@@ -33,10 +33,8 @@ export default async function NewActivityPage({ params, searchParams }: NewActiv
 
         <section className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           {!photoEntry?<p className="text-sm font-medium text-sky-700">思い出を記録する</p>:null}
-          <h1 className="mt-2 text-3xl font-semibold text-slate-900">{photoEntry?"写真を記録する":"思い出を記録する"}</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            {photoEntry?"写真と来場日を確認して保存。場所やメモはあとで整えられます。":"種類を選んで入力すると、この来場日のタイムラインに思い出が追加されます。"}
-          </p>
+          <h1 className="mt-2 text-3xl font-semibold text-slate-900">{photoEntry?"写真を保存":"思い出を記録する"}</h1>
+          <p className={photoEntry?"hidden":"mt-3 text-sm leading-6 text-slate-600"}>{photoEntry?null:"種類を選んで入力すると、この来場日のタイムラインに思い出が追加されます。"}</p>
 
           {!photoEntry?<div className="mt-5 rounded-[1.5rem] bg-slate-50 px-5 py-4 ring-1 ring-slate-200">
             <p className="text-sm font-medium text-slate-500">流れ</p>
@@ -54,14 +52,14 @@ export default async function NewActivityPage({ params, searchParams }: NewActiv
               visitSessions={visitSessions.map(day=>({id:day.id,visit_date:day.visit_date,event_id:day.event_id}))}
               recentPavilionIds={recentLogs.map(log=>log.pavilion_id).filter((id):id is string=>Boolean(id))}
               initialPavilionId={selectedPlace?.id}
-              initialActivityType={photoEntry&&!selectedPlace?"event_participation":"pavilion_visit"}
+              initialActivityType={photoEntry?"event_participation":"pavilion_visit"}
               initialTitle={selectedPlace?.name??(photoEntry?"写真の思い出":undefined)}
               draftOwnerId={session.user_id}
               pavilions={pavilions}
               returnToMap={photoEntry}
               returnMapDate={returnMapDate}
               successRedirectPath={`/sessions/${session.id}`}
-              submitLabel="思い出を記録する"
+              submitLabel={photoEntry?"保存する":"思い出を記録する"}
             />
           </div>
         </section>
